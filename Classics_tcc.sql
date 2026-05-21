@@ -1,77 +1,80 @@
--- =========================================================
--- SISTEMA DE AGENDAMENTO SIMPLIFICADO (6 Tabelas)
--- =========================================================
-
--- 1. Usuários (Engloba Clientes, Empresas e Administradores)
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    tipo_perfil ENUM('CLIENTE', 'EMPRESA', 'ADMIN') NOT NULL,
+-- 1. Tabela de Clientes (Turistas)
+CREATE TABLE cliente (
+    id_cliente INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    senha VARCHAR(255) NOT NULL,
-    documento VARCHAR(20) UNIQUE, -- Armazena CPF ou CNPJ
-    telefone VARCHAR(20),
-    cidade VARCHAR(150), -- Usado principalmente por Empresas
-    status ENUM('ATIVO', 'PENDENTE', 'BLOQUEADO') DEFAULT 'ATIVO',
-    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP
+    email VARCHAR(255) UNIQUE NOT NULL, -- RN01: Email único
+    senha VARCHAR(255) NOT NULL, -- RN02: Validação feita no backend
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    telefone VARCHAR(20) -- RF01: Telefone opcional
 );
 
--- 2. Atividades
-CREATE TABLE atividades (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    empresa_id INT NOT NULL,
+-- 2. Tabela de Empresas Prestadoras
+CREATE TABLE empresa (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+    nome_empresa VARCHAR(255) NOT NULL,
+    cnpj VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL, -- RN01: Email único
+    senha VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20) NOT NULL,
+    cidade_atuacao VARCHAR(100) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Pendente' 
+        CHECK (status IN ('Pendente', 'Aprovada', 'Rejeitada')) -- RN22: Aprovação obrigatória
+);
+
+-- 3. Tabela de Atividades
+CREATE TABLE atividade (
+    id_atividade INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
     nome VARCHAR(255) NOT NULL,
     descricao TEXT NOT NULL,
-    categoria VARCHAR(100) NOT NULL, -- Ex: 'Passeio', 'Aventura', 'Cultural'
-    cidade VARCHAR(150) NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
     endereco VARCHAR(255) NOT NULL,
-    valor DECIMAL(10,2) NOT NULL,
-    capacidade_maxima INT NOT NULL,
-    imagem_url VARCHAR(500), -- Simplificação: apenas a URL da foto principal
-    FOREIGN KEY (empresa_id) REFERENCES usuarios(id) ON DELETE CASCADE
+    valor DECIMAL(10, 2) NOT NULL,
+    categoria VARCHAR(50) NOT NULL, -- ex: passeio, parque, aventura, cultural
+    min_participantes INT NOT NULL DEFAULT 1,
+    max_participantes INT NOT NULL, -- RN19: Limite escolhido pela empresa
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON DELETE CASCADE
 );
 
--- 3. Agendas / Sessões (Controla as datas, horários e vagas das atividades)
-CREATE TABLE agendas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    atividade_id INT NOT NULL,
-    data_hora DATETIME NOT NULL,
-    vagas_disponiveis INT NOT NULL,
-    FOREIGN KEY (atividade_id) REFERENCES atividades(id) ON DELETE CASCADE,
-    CHECK (vagas_disponiveis >= 0)
+-- 4. Tabela de Sessões / Datas Disponíveis da Atividade
+CREATE TABLE sessao_atividade (
+    id_sessao INT PRIMARY KEY AUTO_INCREMENT,
+    id_atividade INT NOT NULL,
+    data_horario DATETIME NOT NULL, -- RF08: Selecionar data e horário
+    vagas_disponiveis INT NOT NULL CHECK (vagas_disponiveis >= 0), -- RN10 e RN14: Redução e limite de vagas
+    FOREIGN KEY (id_atividade) REFERENCES atividade(id_atividade) ON DELETE CASCADE
 );
 
--- 4. Reservas / Agendamentos
-CREATE TABLE reservas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    cliente_id INT NOT NULL,
-    agenda_id INT NOT NULL,
-    quantidade_pessoas INT NOT NULL,
-    status ENUM('PENDENTE', 'CONFIRMADA', 'CANCELADA') DEFAULT 'PENDENTE',
+-- 5. Tabela de Agendamentos (Reservas)
+CREATE TABLE agendamento (
+    id_agendamento INT PRIMARY KEY AUTO_INCREMENT,
+    id_cliente INT NOT NULL,
+    id_sessao INT NOT NULL,
+    quantidade_pessoas INT NOT NULL CHECK (quantidade_pessoas > 0),
     data_reserva DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (cliente_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (agenda_id) REFERENCES agendas(id) ON DELETE CASCADE
+    status VARCHAR(20) DEFAULT 'Pendente' 
+        CHECK (status IN ('Confirmada', 'Cancelada', 'Pendente')), -- RN32: Status das reservas
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
+    FOREIGN KEY (id_sessao) REFERENCES sessao_atividade(id_sessao)
 );
 
--- 5. Avaliações
-CREATE TABLE avaliacoes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    cliente_id INT NOT NULL,
-    atividade_id INT NOT NULL,
-    nota INT NOT NULL CHECK (nota BETWEEN 1 AND 5),
+-- 6. Tabela de Avaliações
+CREATE TABLE avaliacao (
+    id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
+    id_cliente INT NOT NULL,
+    id_atividade INT NOT NULL,
+    nota INT NOT NULL CHECK (nota >= 1 AND nota <= 5), -- RN26: Nota entre 1 e 5 estrelas
     comentario TEXT,
-    data_avaliacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (cliente_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (atividade_id) REFERENCES atividades(id) ON DELETE CASCADE,
-    UNIQUE(cliente_id, atividade_id) -- Apenas uma avaliação por cliente por atividade
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_atividade) REFERENCES atividade(id_atividade) ON DELETE CASCADE,
+    UNIQUE (id_cliente, id_atividade) -- RN27: Uma avaliação por usuário por atividade
 );
 
--- 6. Favoritos
-CREATE TABLE favoritos (
-    cliente_id INT NOT NULL,
-    atividade_id INT NOT NULL,
-    data_favoritado DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (cliente_id, atividade_id),
-    FOREIGN KEY (cliente_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    FOREIGN KEY (atividade_id) REFERENCES atividades(id) ON DELETE CASCADE
+-- 7. Tabela de Favoritos
+CREATE TABLE favorito (
+    id_cliente INT NOT NULL,
+    id_atividade INT NOT NULL,
+    PRIMARY KEY (id_cliente, id_atividade),
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_atividade) REFERENCES atividade(id_atividade) ON DELETE CASCADE
 );
