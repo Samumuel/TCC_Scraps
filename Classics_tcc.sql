@@ -1,80 +1,95 @@
--- 1. Tabela de Clientes (Turistas)
-CREATE TABLE cliente (
-    id_cliente INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL, -- RN01: Email único
-    senha VARCHAR(255) NOT NULL, -- RN02: Validação feita no backend
-    cpf VARCHAR(14) UNIQUE NOT NULL,
-    telefone VARCHAR(20) -- RF01: Telefone opcional
+-- Criação das tabelas independentes (sem chaves estrangeiras iniciais)
+
+CREATE TABLE Usuario ( 
+    ID_Usuario INT PRIMARY KEY AUTO_INCREMENT, 
+    Nome VARCHAR(255), 
+    Email VARCHAR(255), 
+    CPF VARCHAR(14), 
+    Telefone INT, 
+    Idade INT, 
+    Tipo_usuario VARCHAR(50), 
+    Senha VARCHAR(255), 
+    Foto VARCHAR(255)
 );
 
--- 2. Tabela de Empresas Prestadoras
-CREATE TABLE empresa (
-    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
-    nome_empresa VARCHAR(255) NOT NULL,
-    cnpj VARCHAR(20) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL, -- RN01: Email único
-    senha VARCHAR(255) NOT NULL,
-    telefone VARCHAR(20) NOT NULL,
-    cidade_atuacao VARCHAR(100) NOT NULL,
-    status VARCHAR(20) DEFAULT 'Pendente' 
-        CHECK (status IN ('Pendente', 'Aprovada', 'Rejeitada')) -- RN22: Aprovação obrigatória
+CREATE TABLE Categorias ( 
+    ID_Categoria INT PRIMARY KEY AUTO_INCREMENT, 
+    Nome_Categoria VARCHAR(100) 
 );
 
--- 3. Tabela de Atividades
-CREATE TABLE atividade (
-    id_atividade INT PRIMARY KEY AUTO_INCREMENT,
-    id_empresa INT NOT NULL,
-    nome VARCHAR(255) NOT NULL,
-    descricao TEXT NOT NULL,
-    cidade VARCHAR(100) NOT NULL,
-    endereco VARCHAR(255) NOT NULL,
-    valor DECIMAL(10, 2) NOT NULL,
-    categoria VARCHAR(50) NOT NULL, -- ex: passeio, parque, aventura, cultural
-    min_participantes INT NOT NULL DEFAULT 1,
-    max_participantes INT NOT NULL, -- RN19: Limite escolhido pela empresa
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON DELETE CASCADE
+CREATE TABLE Empresa ( 
+    ID_Empresa INT PRIMARY KEY AUTO_INCREMENT, 
+    Name VARCHAR(255), 
+    Email VARCHAR(255), 
+    CNPJ VARCHAR(20), 
+    Localizacao VARCHAR(255), 
+    Telefone VARCHAR(20), 
+    Senha VARCHAR(255), 
+    Status VARCHAR(50) 
 );
 
--- 4. Tabela de Sessões / Datas Disponíveis da Atividade
-CREATE TABLE sessao_atividade (
-    id_sessao INT PRIMARY KEY AUTO_INCREMENT,
-    id_atividade INT NOT NULL,
-    data_horario DATETIME NOT NULL, -- RF08: Selecionar data e horário
-    vagas_disponiveis INT NOT NULL CHECK (vagas_disponiveis >= 0), -- RN10 e RN14: Redução e limite de vagas
-    FOREIGN KEY (id_atividade) REFERENCES atividade(id_atividade) ON DELETE CASCADE
+-- Criação da tabela principal que depende de Categorias e Empresa
+
+CREATE TABLE Atividades ( 
+    ID_Atividade INT PRIMARY KEY AUTO_INCREMENT, 
+    Nome VARCHAR(255), 
+    Duracao TIME, 
+    Descricao TEXT, 
+    Localizacao VARCHAR(255), 
+    Valor DECIMAL(18,2), 
+    Fotos VARCHAR(255),
+    Categoria_ID INT, 
+    Empresa_ID INT,
+    FOREIGN KEY (Categoria_ID) REFERENCES Categorias(ID_Categoria),
+    FOREIGN KEY (Empresa_ID) REFERENCES Empresa(ID_Empresa)
 );
 
--- 5. Tabela de Agendamentos (Reservas)
-CREATE TABLE agendamento (
-    id_agendamento INT PRIMARY KEY AUTO_INCREMENT,
-    id_cliente INT NOT NULL,
-    id_sessao INT NOT NULL,
-    quantidade_pessoas INT NOT NULL CHECK (quantidade_pessoas > 0),
-    data_reserva DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) DEFAULT 'Pendente' 
-        CHECK (status IN ('Confirmada', 'Cancelada', 'Pendente')), -- RN32: Status das reservas
-    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
-    FOREIGN KEY (id_sessao) REFERENCES sessao_atividade(id_sessao)
+-- Criação das tabelas dependentes de Atividades e Usuario
+
+CREATE TABLE Localizacao ( 
+    ID_Localizacao INT PRIMARY KEY AUTO_INCREMENT, 
+    CEP VARCHAR(20), 
+    Complemento VARCHAR(255), 
+    ID_Atividade INT, 
+    FOREIGN KEY (ID_Atividade) REFERENCES Atividades(ID_Atividade)
 );
 
--- 6. Tabela de Avaliações
-CREATE TABLE avaliacao (
-    id_avaliacao INT PRIMARY KEY AUTO_INCREMENT,
-    id_cliente INT NOT NULL,
-    id_atividade INT NOT NULL,
-    nota INT NOT NULL CHECK (nota >= 1 AND nota <= 5), -- RN26: Nota entre 1 e 5 estrelas
-    comentario TEXT,
-    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE CASCADE,
-    FOREIGN KEY (id_atividade) REFERENCES atividade(id_atividade) ON DELETE CASCADE,
-    UNIQUE (id_cliente, id_atividade) -- RN27: Uma avaliação por usuário por atividade
+CREATE TABLE Sessao (
+    ID_Sessao INT PRIMARY KEY AUTO_INCREMENT, 
+    Data DATE, 
+    Hora TIME, 
+    Qtd_min INT, 
+    Qtd_max INT, 
+    Qtd_disponivel INT, 
+    ID_Atividade INT, 
+    FOREIGN KEY (ID_Atividade) REFERENCES Atividades(ID_Atividade)
 );
 
--- 7. Tabela de Favoritos
-CREATE TABLE favorito (
-    id_cliente INT NOT NULL,
-    id_atividade INT NOT NULL,
-    PRIMARY KEY (id_cliente, id_atividade),
-    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE CASCADE,
-    FOREIGN KEY (id_atividade) REFERENCES atividade(id_atividade) ON DELETE CASCADE
+CREATE TABLE Avaliacao ( 
+    ID_Avaliacao INT PRIMARY KEY AUTO_INCREMENT, 
+    Nota INT, 
+    Comentario VARCHAR(500),
+    ID_Usuario INT, 
+    ID_Atividade INT,
+    FOREIGN KEY (ID_Usuario) REFERENCES Usuario(ID_Usuario),
+    FOREIGN KEY (ID_Atividade) REFERENCES Atividades(ID_Atividade)
+);
+
+CREATE TABLE Favorito ( 
+    ID_Favorito INT PRIMARY KEY AUTO_INCREMENT, 
+    ID_Usuario INT, 
+    ID_Atividade INT, 
+    FOREIGN KEY (ID_Usuario) REFERENCES Usuario(ID_Usuario),
+    FOREIGN KEY (ID_Atividade) REFERENCES Atividades(ID_Atividade)
+);
+
+CREATE TABLE Agendamento ( 
+    ID_Agendamento INT PRIMARY KEY AUTO_INCREMENT, 
+    Quantidade_Pessoas INT, 
+    Data_hora DATETIME, 
+    Status VARCHAR(50), 
+    ID_Atividade INT, 
+    ID_Usuario INT, 
+    FOREIGN KEY (ID_Atividade) REFERENCES Atividades(ID_Atividade),
+    FOREIGN KEY (ID_Usuario) REFERENCES Usuario(ID_Usuario)
 );
