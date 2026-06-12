@@ -1,0 +1,71 @@
+<?php 
+
+namespace app\repositories;
+use app\core\Controller;
+use app\models\Empresa;
+use app\services\EmpresaService;
+use PDO;
+
+class EmpresaRepository {
+
+    private PDO $pdo;
+
+    public function __construct()
+    {
+        $this->pdo = new PDO('mysql:host=localhost;dbname=classics', 'root', 'bancodedados');
+    }
+
+    public function getEmpresas() {
+        $stmt = $this->pdo->query("SELECT * FROM Empresa");
+        
+        $empresas = $stmt->fetchALL();
+        return $empresas;
+    }
+
+    public function getEmpresa(int $id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id");
+        $stmt->bindvalue('id', $id);
+        $stmt->execute();
+
+        $empresa = $stmt->fetch();
+        return $empresa; 
+    }
+
+    public function saveEmpresa(Empresa $empresa) {
+        $sql = "INSERT INTO Empresa (nome, email, cnpj, localizacao, telefone, senha, status) VALUES (:nome, :email, :cnpj, :localizacao, :telefone, :senha, :status)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':nome', $empresa->getNome());
+        $stmt->bindValue(':email', $empresa->getEmail());
+        $stmt->bindValue(':cnpj', $empresa->getCnpj());
+        $stmt->bindValue(':localizacao', $empresa->getLocalizacao());
+        $stmt->bindValue(':telefone', $empresa->getTelefone());
+        $stmt->bindValue(':senha', $empresa->getSenha());
+        $stmt->bindValue(':status', $empresa->getStatus());
+
+        return $stmt->execute();
+    }
+
+    public function deleteEmpresa(int $id) {
+        $sql = "DELETE FROM Empresa WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':id', $id);
+        return $stmt->execute();
+    }
+
+    public function updateEmpresa(Empresa $empresa) {
+        $sql = "UPDATE Empresa SET nome = :nome, email = :email, cnpj = :cnpj, localizacao = :localizacao, telefone = :telefone, senha = :senha, status = :status WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':nome', $empresa->getNome());
+        $stmt->bindValue(':email', $empresa->getEmail());
+        $stmt->bindValue(':cnpj', $empresa->getCnpj());
+        $stmt->bindValue(':localizacao', $empresa->getLocalizacao());
+        $stmt->bindValue(':telefone', $empresa->getTelefone());
+        $stmt->bindValue(':senha', $empresa->getSenha());
+        $stmt->bindValue(':status', $empresa->getStatus());
+        $stmt->bindValue(':id', $empresa->getIdEmpresa());
+
+        return $stmt->execute();
+    }
+}
+
+
