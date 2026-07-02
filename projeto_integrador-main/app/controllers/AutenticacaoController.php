@@ -30,7 +30,7 @@ class AutenticacaoController extends Controller
         $resultado = $this->autenticacaoService->logar($email, $senha);
 
         if ($resultado) {
-            $this->redirect(URL_BASE . '/jogadores');
+            $this->redirect(URL_BASE . '/empresa');
         } else {
 
             $dados['erros'] = "Uma linda mensagem de erro";

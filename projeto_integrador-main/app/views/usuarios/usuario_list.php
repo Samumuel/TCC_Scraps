@@ -34,17 +34,20 @@
                         <tbody>
                             <?php foreach ($usuarios as $u): ?>
                                 <tr>
-                                    <td class="px-4 py-3 align-middle"><?= $u['id'] ?></td>
-                                    <td class="px-4 py-3 align-middle"><?= $u['nomeUsuario'] ?></td>
-                                    <td class="px-4 py-3 align-middle"><?= $u['email'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $u['ID_Usuario'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $u['Nome'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $u['Email'] ?></td>
                                     <td class="px-4 py-3 align-middle">
-                                        <span class="badge bg-secondary"><?= $u['perfil'] ?></span>
+                                        <span class="badge bg-secondary"><?= $u['Tipo_usuario'] ?></span>
                                     </td>
                                     <td class="px-4 py-3 align-middle text-end">
-                                        <a href="<?= URL_BASE ?>/usuarios/editar?id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-primary">
+                                        <a href="<?= URL_BASE ?>/usuarios/ver?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                        <a href="<?= URL_BASE ?>/usuarios/editar?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil"></i> Editar
                                         </a>
-                                        <a href="<?= URL_BASE ?>/usuarios/excluir?id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir este usuário?')">
+                                        <a href="<?= URL_BASE ?>/usuarios/excluir?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir este usuário?')">
                                             <i class="bi bi-trash"></i> Excluir
                                         </a>
                                     </td>
@@ -56,7 +59,7 @@
             </div>
         </div>
         <div class="mt-4">
-            <a href="<?= URL_BASE ?>/jogadores" class="btn btn-link">Ver Jogadores</a>
+            <a href="<?= URL_BASE ?>/empresa" class="btn btn-link">Ver Empresas</a>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

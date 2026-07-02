@@ -17,6 +17,7 @@ $router->post('/usuarios/salvar', 'UsuarioController@salvar');
 $router->get('/usuarios/editar', 'UsuarioController@editar');
 $router->post('/usuarios/atualizar', 'UsuarioController@atualizar');
 $router->get('/usuarios/excluir', 'UsuarioController@excluir');
+$router->get('/usuarios/ver', 'UsuarioController@verUsuario');
 
 $router ->get('/empresa', 'EmpresaController@listarTodos');
 $router ->get('/empresa/animal', 'EmpresaController@verAnimal');
@@ -25,6 +26,7 @@ $router ->post('/empresa/salvar', 'EmpresaController@salvar');
 $router ->get('/empresa/editar', 'EmpresaController@editar');
 $router ->post('/empresa/atualizar', 'EmpresaController@atualizar');
 $router ->get('/empresa/excluir', 'EmpresaController@excluir');
+$router ->get('/empresa/ver', 'EmpresaController@verEmpresa');
 
 
 

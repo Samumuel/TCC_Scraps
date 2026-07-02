@@ -23,7 +23,7 @@ class EmpresaRepository {
     }
 
     public function getEmpresa(int $id) {
-        $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id");
+        $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE ID_Empresa = :id");
         $stmt->bindvalue('id', $id);
         $stmt->execute();
 
@@ -46,14 +46,14 @@ class EmpresaRepository {
     }
 
     public function deleteEmpresa(int $id) {
-        $sql = "DELETE FROM Empresa WHERE id = :id";
+        $sql = "DELETE FROM Empresa WHERE ID_Empresa = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':id', $id);
         return $stmt->execute();
     }
 
     public function updateEmpresa(Empresa $empresa) {
-        $sql = "UPDATE Empresa SET nome = :nome, email = :email, cnpj = :cnpj, localizacao = :localizacao, telefone = :telefone, senha = :senha, status = :status WHERE id = :id";
+        $sql = "UPDATE Empresa SET nome = :nome, email = :email, cnpj = :cnpj, localizacao = :localizacao, telefone = :telefone, senha = :senha, status = :status WHERE ID_Empresa = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':nome', $empresa->getNome());
         $stmt->bindValue(':email', $empresa->getEmail());

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Projeto Integrador • Dados do Animal</title>
+    <title>Projeto Integrador • Dados da Empresa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap 5 -->
@@ -17,11 +17,11 @@
 
     <div class="container py-5">
 
-        <?php if (isset($animal)): ?>
+        <?php if (isset($empresa)): ?>
             <!-- TÍTULO + VOLTAR -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Detalhes do Animal</h2>
-                <a href="<?= URL_BASE ?>/animais" class="btn btn-outline-secondary">
+                <h2 class="mb-0">Detalhes da Empresa</h2>
+                <a href="<?= URL_BASE ?>/empresa" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Voltar para Lista
                 </a>
             </div>
@@ -32,19 +32,20 @@
 
                         <!-- INFO -->
                         <div class="col-md-8">
-                            <h3 class="card-title mb-3"><?= $animal['nome'] ?></h3>
-                            <p class="mb-2"><strong>Espécie:</strong> <?= $animal['especie'] ?></p>
-                            <p class="mb-2"><strong>Dono:</strong> <?= $animal['dono'] ?></p>
-                            <p class="mb-2"><strong>Idade:</strong> <?= $animal['idade'] ?> anos</p>
+                            <h3 class="card-title mb-3"><?= $empresa['Nome'] ?? $empresa['nome'] ?></h3>
+                            <p class="mb-2"><strong>Email:</strong> <?= $empresa['Email'] ?? $empresa['email'] ?></p>
+                            <p class="mb-2"><strong>CNPJ:</strong> <?= $empresa['CNPJ'] ?? $empresa['cnpj'] ?></p>
+                            <p class="mb-2"><strong>Localização:</strong> <?= $empresa['Localizacao'] ?? $empresa['localizacao'] ?></p>
+                            <p class="mb-2"><strong>Telefone:</strong> <?= $empresa['Telefone'] ?? $empresa['telefone'] ?></p>
                         </div>
                     </div>
                 </div>
             </div>
         <?php else: ?>
             <div class="alert alert-warning shadow-sm" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i> Animal não encontrado.
+                <i class="bi bi-exclamation-triangle-fill"></i> Empresa não encontrada.
                 <div class="mt-3">
-                    <a href="<?= URL_BASE ?>/animais" class="btn btn-warning">Voltar para Lista</a>
+                    <a href="<?= URL_BASE ?>/empresa" class="btn btn-warning">Voltar para Lista</a>
                 </div>
             </div>
         <?php endif; ?>

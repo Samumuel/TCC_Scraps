@@ -19,9 +19,9 @@
 
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Lista de Animais</h2>
-            <a href="<?= URL_BASE ?>/animais/cadastrar" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Novo Animal
+            <h2 class="mb-0">Lista de Empresas</h2>
+            <a href="<?= URL_BASE ?>/empresas/cadastrar" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nova Empresa
             </a>
         </div>
 
@@ -33,33 +33,40 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="px-4 py-3">Nome</th>
-                                <th class="px-4 py-3">Espécie</th>
+                                <th class="px-4 py-3">Email</th>
+                                <th class="px-4 py-3">CNPJ</th>
+                                <th class="px-4 py-3">Localização</th>
+                                <th class="px-4 py-3">Telefone</th>
                                 <th class="px-4 py-3 text-end">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($lista as $animal): ?>
+                            <?php foreach ($lista as $empresa): ?>
                                 <tr>
-                                    <td class="px-4 py-3 align-middle"><?= $animal['nome'] ?></td>
-                                    <td class="px-4 py-3 align-middle"><?= $animal['especie'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $empresa['Nome'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $empresa['Email'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $empresa['CNPJ'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $empresa['Localizacao'] ?></td>
+                                    <td class="px-4 py-3 align-middle"><?= $empresa['Telefone'] ?></td>
                                     <td class="px-4 py-3 align-middle text-end">
-                                        <a href="<?= URL_BASE ?>/animais/animal?id=<?= $animal['id'] ?>" class="btn btn-sm btn-outline-primary">
+                                        <a href="<?= URL_BASE ?>/empresa/editar?id=<?= $empresa['ID_Empresa'] ?>" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+                                        <a href="<?= URL_BASE ?>/empresa/ver?id=<?= $empresa['ID_Empresa'] ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye"></i> Ver
                                         </a>
-                                        <?php if (isset($_SESSION['usuario']) && $_SESSION['usuario']['perfil'] === 'admin'): ?>
-                                            <a href="<?= URL_BASE ?>/animais/editar?id=<?= $animal['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-pencil"></i> Editar
-                                            </a>
-                                            <a href="<?= URL_BASE ?>/animais/excluir?id=<?= $animal['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir este animal?')">
-                                                <i class="bi bi-trash"></i> Excluir
-                                            </a>                                        
-                                        <?php endif; ?>
+                                        <a href="<?= URL_BASE ?>/empresa/excluir?id=<?= $empresa['ID_Empresa'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir esta empresa?')">
+                                            <i class="bi bi-trash"></i> Excluir
+                                        </a>                                        
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
+        <div class="mt-4">
+            <a href="<?= URL_BASE ?>/usuarios" class="btn btn-link">Ver Usuários</a>
         </div>
     </div>
     <!-- Bootstrap JS -->

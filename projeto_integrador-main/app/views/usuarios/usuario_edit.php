@@ -42,6 +42,26 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="cpf" class="form-label">CPF</label>
+                        <input type="text" class="form-control" id="cpf" name="cpf" value="<?= $usuario['cpf'] ?? '' ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" value="<?= $usuario['telefone'] ?? '' ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="idade" class="form-label">Idade</label>
+                        <input type="number" class="form-control" id="idade" name="idade" value="<?= $usuario['idade'] ?? '' ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="foto" class="form-label">Foto de Perfil (URL)</label>
+                        <input type="text" class="form-control" id="foto" name="foto" value="<?= $usuario['foto'] ?? '' ?>">
+                    </div>
+
+                    <div class="mb-3">
                         <label for="senha" class="form-label">Senha <?= isset($usuario['id']) ? '(Preencha apenas se quiser alterar)' : '' ?></label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="senha" name="senha">
@@ -53,15 +73,7 @@
                             <div class="text-danger small"><?= $erros['senha'] ?></div>
                         <?php endif; ?>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="perfil" class="form-label">Perfil</label>
-                        <select class="form-select" id="perfil" name="perfil">
-                            <option value="user" <?= (isset($usuario['perfil']) && $usuario['perfil'] == 'user') ? 'selected' : '' ?>>Usuário Padrão</option>
-                            <option value="admin" <?= (isset($usuario['perfil']) && $usuario['perfil'] == 'admin') ? 'selected' : '' ?>>Administrador</option>
-                        </select>
-                    </div>
-
+                    
                     <div class="d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary px-4">
                             <i class="bi bi-check-circle"></i> <?= isset($usuario['id']) ? 'Atualizar' : 'Salvar' ?>

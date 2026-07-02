@@ -95,6 +95,16 @@ class UsuarioController extends Controller
         $this->redirect(URL_BASE . '/usuarios');
     }
 
+    public function verUsuario() {
+        if (!isset($_GET['id'])) {
+            $this->redirect(URL_BASE . '/usuarios');
+        }
+
+        $id = $_GET['id'];
+        $data['usuario'] = $this->service->getUsuarioById($id);
+        $this->view('usuarios/usuario_show', $data);
+    }
+
     public function excluir()
     {
         $id = $_GET['id'];

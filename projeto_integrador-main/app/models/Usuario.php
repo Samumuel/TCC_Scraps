@@ -210,4 +210,20 @@ class Usuario
 
         return $this;
     }
+
+    public static function arrayParaObjeto(array $usuario){
+
+        return new self (
+            $usuario['ID_Usuario'],
+            $usuario['Nome'],
+            $usuario['Email'],
+            $usuario['CPF'],
+            $usuario['Telefone'],
+            $usuario['Idade'],
+            $usuario['Tipo_usuario'],
+            $usuario['Foto'],
+            $usuario['Senha']
+        );
+
+    }
 }
