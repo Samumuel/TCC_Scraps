@@ -2,16 +2,17 @@
 
 namespace app\repositories;
 
+use app\database\ConnectionFactory;
 use app\models\Atividade;
 use PDO;
 
 class AtividadeRepository {
 
-    private PDO $pdo;
+    private PDO $connection;
 
     public function __construct()
     {
-        $this->pdo = new PDO('mysql:host=localhost;dbname=classics', 'root', '');
+        $this->connection = ConnectionFactory::getConnection();
     }
 
     public function getAtividades() {
@@ -22,7 +23,7 @@ class AtividadeRepository {
             FROM Atividades a
             LEFT JOIN Categorias c ON c.ID_Categoria = a.Categoria_ID
         ';
-        $stmt = $this->pdo->query($sql);
+        $stmt = $this->connection->query($sql);
         return $stmt->fetchAll();
     }
 
@@ -35,7 +36,7 @@ class AtividadeRepository {
             LEFT JOIN Categorias c ON c.ID_Categoria = a.Categoria_ID
             WHERE a.ID_Atividade = :id
         ';
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':id', $id);
         $stmt->execute();
         return $stmt->fetch();
@@ -43,7 +44,7 @@ class AtividadeRepository {
 
     public function saveAtividade(Atividade $atividade) {
         $sql = 'INSERT INTO Atividades (Nome, Duracao, Descricao, Localizacao, Valor, Fotos, Categoria_ID, Empresa_ID) VALUES (:nome, :duracao, :descricao, :localizacao, :valor, :fotos, :categoria_id, :empresa_id)';
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':nome', $atividade->getNome());
         $stmt->bindValue(':duracao', $atividade->getDuracao());
         $stmt->bindValue(':descricao', $atividade->getDescricao());
@@ -57,7 +58,7 @@ class AtividadeRepository {
 
     public function updateAtividade(Atividade $atividade) {
         $sql = 'UPDATE Atividades SET Nome = :nome, Duracao = :duracao, Descricao = :descricao, Localizacao = :localizacao, Valor = :valor, Fotos = :fotos, Categoria_ID = :categoria_id, Empresa_ID = :empresa_id WHERE ID_Atividade = :id';
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':nome', $atividade->getNome());
         $stmt->bindValue(':duracao', $atividade->getDuracao());
         $stmt->bindValue(':descricao', $atividade->getDescricao());
@@ -72,7 +73,7 @@ class AtividadeRepository {
 
     public function deleteAtividade(int $id, int $empresaId) {
         $sql = 'DELETE FROM Atividades WHERE ID_Atividade = :id AND Empresa_ID = :empresa_id';
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':id', $id);
         $stmt->bindValue(':empresa_id', $empresaId);
         return $stmt->execute();

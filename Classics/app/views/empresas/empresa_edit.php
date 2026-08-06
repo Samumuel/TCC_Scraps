@@ -20,7 +20,7 @@
 
         <div class="card shadow-sm col-md-8 mx-auto">
             <div class="card-body p-4">
-                <form action="<?= URL_BASE ?>/empresas/<?= isset($empresa['ID_Empresa']) ? 'atualizar' : 'salvar' ?>" method="post">
+                <form action="<?= URL_BASE ?>/empresa/<?= isset($empresa['ID_Empresa']) ? 'atualizar' : 'salvar' ?>" method="post">
                     <?php if (isset($empresa['ID_Empresa'])): ?>
                         <input type="hidden" name="id" value="<?= $empresa['ID_Empresa'] ?>">
                     <?php endif; ?>
