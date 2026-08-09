@@ -94,6 +94,7 @@ CREATE TABLE Agendamento (
     FOREIGN KEY (ID_Usuario) REFERENCES Usuario(ID_Usuario)
 );
 
+ALTER TABLE `categorias` ADD `Empresa_ID` INT NOT NULL AFTER `Nome_Categoria`;
 
 INSERT INTO `usuario` (`ID_Usuario`, `Nome`, `Email`, `CPF`, `Telefone`, `Idade`, `Tipo_usuario`, `Senha`, `Foto`) VALUES 
     (1, 'Admin', 'samuelferreira.younis@gmail.com', '09104366905', '999045695', '17', 'admin', 'admin@123', 
