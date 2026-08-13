@@ -1,0 +1,51 @@
+Quero que você implemente as views e o fluxo de configuração da localização de uma atividade.
+
+Objetivo
+
+Após a criação de uma atividade, o usuário deve ser direcionado para uma etapa específica onde poderá cadastrar a localização dessa atividade. Depois que a localização for cadastrada, ela também deverá poder ser editada posteriormente.
+
+Fluxo de criação
+O usuário cria uma nova atividade normalmente, preenchendo todas as informações atuais da atividade.
+Ao clicar no botão "Confirmar" após a criação da atividade:
+A atividade deve ser criada normalmente.
+Em seguida, o usuário deve ser redirecionado para uma página/view de criação da localização da atividade.
+Nessa página, o usuário deverá preencher as informações necessárias para a localização.
+Após salvar a localização, o fluxo deve ser concluído e o usuário deve ser redirecionado para o destino adequado já utilizado pela aplicação.
+Fluxo de edição
+
+Na lista de atividades:
+
+Uma atividade só pode ser editada caso o usuário esteja autenticado com a empresa que criou aquela atividade.
+Ao clicar em "Editar", primeiro deve ser exibido o formulário atual de edição da atividade, mantendo o comportamento e as informações que já existem hoje.
+O usuário deve poder alterar normalmente as informações da atividade.
+Após essa etapa, deve existir uma aba/seção específica para editar a localização da atividade.
+Essa aba deve permitir:
+Visualizar os dados atuais da localização.
+Alterar os dados da localização.
+Salvar as alterações.
+Caso a atividade ainda não possua uma localização cadastrada, a interface deve permitir criar uma nova localização.
+Requisitos de autorização
+Apenas a empresa responsável pela criação da atividade pode editar a atividade e sua localização.
+Usuários que não possuem permissão de edição não devem conseguir acessar ou alterar esses dados.
+Siga o padrão de autenticação e autorização já existente no projeto.
+Requisitos de UI/UX
+Reutilize os componentes, estilos, layouts e padrões já existentes no projeto.
+Não crie um fluxo visual completamente diferente do restante da aplicação.
+A edição da atividade e a edição da localização devem ficar claramente separadas, preferencialmente por abas.
+Os estados de loading, erro, sucesso e validação devem seguir o padrão já utilizado no projeto.
+Evite duplicar componentes ou lógica que já exista e possa ser reutilizada.
+Implementação
+
+Antes de implementar, analise a estrutura atual do projeto para identificar:
+
+Como as atividades são criadas.
+Como as atividades são editadas.
+Como funciona a lista de atividades.
+Como é feita a autenticação/autorização da empresa proprietária.
+Quais componentes e rotas/views já existem e podem ser reutilizados.
+Como os dados das atividades são persistidos.
+Se já existe alguma estrutura relacionada à localização que possa ser aproveitada.
+
+Implemente apenas o que for necessário para adicionar esse fluxo, preservando o comportamento existente.
+
+Se alguma regra, estrutura, rota, componente ou comportamento necessário não estiver claro no código ou neste prompt, não assuma. Pare e me pergunte antes de tomar uma decisão de arquitetura ou comportamento.
