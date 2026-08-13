@@ -32,6 +32,8 @@ $router ->get('/atividade', 'AtividadeController@listarTodos');
 $router ->get('/atividade/listar', 'AtividadeController@listarTodos');
 $router ->get('/atividade/cadastrar', 'AtividadeController@criar'); 
 $router ->post('/atividade/salvar', 'AtividadeController@salvar');
+$router ->get('/atividade/localizacao/cadastrar', 'AtividadeController@localizacaoCadastrar');
+$router ->post('/atividade/localizacao/salvar', 'AtividadeController@salvarLocalizacao');
 $router ->get('/atividade/editar', 'AtividadeController@editar'); 
 $router ->post('/atividade/atualizar', 'AtividadeController@atualizar'); 
 $router ->get('/atividade/excluir', 'AtividadeController@excluir');

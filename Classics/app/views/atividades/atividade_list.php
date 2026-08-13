@@ -34,7 +34,6 @@
 								<th class="px-4 py-3">Localização</th>
 								<th class="px-4 py-3">Valor</th>
 								<th class="px-4 py-3">Categoria</th>
-								<th class="px-4 py-3">Empresa</th>
 								<th class="px-4 py-3 text-end">Ações</th>
 							</tr>
 						</thead>
@@ -47,7 +46,6 @@
 										<td class="px-4 py-3 align-middle"><?= htmlspecialchars($atividade['Localizacao'] ?? '-') ?></td>
 										<td class="px-4 py-3 align-middle">R$ <?= number_format((float) ($atividade['Valor'] ?? 0), 2, ',', '.') ?></td>
 										<td class="px-4 py-3 align-middle"><?= htmlspecialchars($atividade['Categoria_Nome'] ?? '-') ?></td>
-										<td class="px-4 py-3 align-middle"><?= htmlspecialchars((string) ($atividade['Empresa_ID'] ?? '-')) ?></td>
 										<td class="px-4 py-3 align-middle text-end">
 											<a href="<?= URL_BASE ?>/atividade/ver?id=<?= (int) ($atividade['ID_Atividade'] ?? 0) ?>" class="btn btn-sm btn-outline-primary">
 												<i class="bi bi-eye"></i> Ver

@@ -92,7 +92,10 @@ $categorias = $categorias ?? [];
                                 <input type="file" class="form-control" id="fotos" name="fotos" accept="image/*"
                                     multiple>
                             </div>
-                            <button type="submit" class="btn btn-primary" <?= empty($categorias) ? 'disabled' : '' ?>>Salvar</button>
+                            <div class="alert alert-info mb-3" role="alert">
+                                A localização será cadastrada na próxima etapa após salvar a atividade.
+                            </div>
+                            <button type="submit" class="btn btn-primary" <?= empty($categorias) ? 'disabled' : '' ?>>Confirmar</button>
                         </form>
                     </div>
                 </div>
