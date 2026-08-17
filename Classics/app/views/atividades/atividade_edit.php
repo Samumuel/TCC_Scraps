@@ -93,10 +93,6 @@ $paneLocalizacao = $abaAtiva === 'localizacao' ? 'show active' : '';
                                 <input type="text" class="form-control" id="valor" name="valor" value="<?= htmlspecialchars((string) ($atividade['Valor'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                             </div>
 
-                            <div class="mb-3">
-                                <label for="fotos" class="form-label">Fotos</label>
-                                <input type="text" class="form-control" id="fotos" name="fotos" value="<?= htmlspecialchars($atividade['Fotos'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                            </div>
 
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="<?= URL_BASE ?>/atividade/listar" class="btn btn-outline-secondary">Cancelar</a>
