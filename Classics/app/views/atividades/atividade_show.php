@@ -32,7 +32,6 @@
                             <p class="mb-2"><strong>CEP:</strong> <?= htmlspecialchars($atividade['Localizacao_CEP'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
                             <p class="mb-2"><strong>Complemento:</strong> <?= htmlspecialchars($atividade['Localizacao_Complemento'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
                             <p class="mb-2"><strong>Valor:</strong> R$ <?= number_format((float) ($atividade['Valor'] ?? 0), 2, ',', '.') ?></p>
-                            <p class="mb-2"><strong>Empresa:</strong> <?= htmlspecialchars((string) ($atividade['Empresa_ID'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></p>
                         </div>
                     </div>
                 </div>
