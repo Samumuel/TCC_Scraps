@@ -3,8 +3,8 @@
 CREATE TABLE Usuario ( 
     ID_Usuario INT PRIMARY KEY AUTO_INCREMENT, 
     Nome VARCHAR(255), 
-    Email VARCHAR(255), 
-    CPF VARCHAR(14), 
+    Email VARCHAR(255) UNIQUE, 
+    CPF VARCHAR(14) UNIQUE, 
     Telefone INT, 
     Idade INT, 
     Tipo_usuario VARCHAR(50), 
@@ -20,8 +20,8 @@ CREATE TABLE Categorias (
 CREATE TABLE Empresa ( 
     ID_Empresa INT PRIMARY KEY AUTO_INCREMENT, 
     Name VARCHAR(255), 
-    Email VARCHAR(255), 
-    CNPJ VARCHAR(20), 
+    Email VARCHAR(255) UNIQUE, 
+    CNPJ VARCHAR(20) UNIQUE, 
     Localizacao VARCHAR(255), 
     Telefone VARCHAR(20), 
     Senha VARCHAR(255), 
