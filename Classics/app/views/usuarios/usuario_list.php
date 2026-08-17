@@ -17,6 +17,7 @@ if(!isset($_SESSION['usuario_logado'])){
 
 <body>
     <div class="container py-5">
+        <?php $usuarioLogado = $_SESSION['usuario_logado'] ?? null; ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">Lista de Usuários</h2>
             <a href="<?= URL_BASE ?>/usuarios/cadastrar" class="btn btn-primary">
@@ -50,12 +51,14 @@ if(!isset($_SESSION['usuario_logado'])){
                                         <a href="<?= URL_BASE ?>/usuarios/ver?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye"></i> Ver
                                         </a>
-                                        <a href="<?= URL_BASE ?>/usuarios/editar?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i> Editar
-                                        </a>
-                                        <a href="<?= URL_BASE ?>/usuarios/excluir?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir este usuário?')">
-                                            <i class="bi bi-trash"></i> Excluir
-                                        </a>
+                                        <?php if ($usuarioLogado && (int) $u['ID_Usuario'] === (int) $usuarioLogado->getIdUsuario()): ?>
+                                            <a href="<?= URL_BASE ?>/usuarios/editar?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </a>
+                                            <a href="<?= URL_BASE ?>/usuarios/excluir?id=<?= $u['ID_Usuario'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir este usuário?')">
+                                                <i class="bi bi-trash"></i> Excluir
+                                            </a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

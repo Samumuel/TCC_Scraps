@@ -67,7 +67,7 @@ class UsuarioRepository
 
     public function getUsuarioByEmail(string $email)
     {
-        $sql = "SELECT * FROM Usuario WHERE email = :email";
+        $sql = "SELECT * FROM Usuario WHERE LOWER(TRIM(email)) = LOWER(TRIM(:email))";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':email', $email);
         $stmt->execute();
@@ -80,9 +80,37 @@ class UsuarioRepository
         return Usuario::arrayParaObjeto($usuario);
     }
 
+    public function hasEmail(string $email, ?int $ignorarId = null): bool
+    {
+        $sql = "SELECT 1 FROM Usuario WHERE LOWER(TRIM(Email)) = LOWER(TRIM(:email))";
+
+        if ($ignorarId !== null) {
+            $sql .= " AND ID_Usuario <> :id";
+        }
+
+        $sql .= " LIMIT 1";
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':email', $email);
+
+        if ($ignorarId !== null) {
+            $stmt->bindValue(':id', $ignorarId, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+
+        return (bool) $stmt->fetchColumn();
+    }
+
     public function updateUsuario(Usuario $usuario): bool
     {
-        $sql = "UPDATE Usuario SET nome = :nome, email = :email, cpf = :cpf, telefone = :telefone, idade = :idade, tipo_usuario = :tipo_usuario, foto = :foto, senha = :senha WHERE ID_Usuario = :id";
+        $atualizarSenha = trim($usuario->getSenha()) !== '';
+        $sql = "UPDATE Usuario SET nome = :nome, email = :email, cpf = :cpf, telefone = :telefone, idade = :idade, tipo_usuario = :tipo_usuario, foto = :foto";
+        if ($atualizarSenha) {
+            $sql .= ", senha = :senha";
+        }
+        $sql .= " WHERE ID_Usuario = :id";
+
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':nome', $usuario->getNome());
         $stmt->bindValue(':email', $usuario->getEmail());
@@ -91,7 +119,9 @@ class UsuarioRepository
         $stmt->bindValue(':idade', $usuario->getIdade());
         $stmt->bindValue(':tipo_usuario', $usuario->getTipoUsuario());
         $stmt->bindValue(':foto', $usuario->getFoto());
-        $stmt->bindValue(':senha', password_hash($usuario->getSenha(), PASSWORD_BCRYPT));
+        if ($atualizarSenha) {
+            $stmt->bindValue(':senha', password_hash($usuario->getSenha(), PASSWORD_BCRYPT));
+        }
         $stmt->bindValue(':id', $usuario->getIdUsuario());
         return $stmt->execute();
     }

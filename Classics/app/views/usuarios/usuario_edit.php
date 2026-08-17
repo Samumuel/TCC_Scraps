@@ -20,7 +20,7 @@
 
         <div class="card shadow-sm col-md-8 mx-auto">
             <div class="card-body p-4">
-                <form action="<?= URL_BASE ?>/usuarios/<?= isset($usuario['id']) ? 'atualizar' : 'salvar' ?>" method="post">
+                <form action="<?= URL_BASE ?>/usuarios/<?= isset($usuario['id']) ? 'atualizar' : 'salvar' ?>" method="post" enctype="multipart/form-data">
                     <?php if (isset($usuario['id'])): ?>
                         <input type="hidden" name="id" value="<?= $usuario['id'] ?>">
                     <?php endif; ?>
@@ -57,8 +57,28 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="foto" class="form-label">Foto de Perfil (URL)</label>
-                        <input type="text" class="form-control" id="foto" name="foto" value="<?= $usuario['foto'] ?? '' ?>">
+                        <label for="foto" class="form-label">Foto de Perfil</label>
+                        <input type="file" class="form-control" id="foto" name="foto" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                        <div class="form-text">Formatos permitidos: JPG, PNG e WEBP. Tamanho máximo: 5MB.</div>
+                        <?php if (isset($erros['foto'])): ?>
+                            <div class="text-danger small"><?= htmlspecialchars($erros['foto'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="mb-3">
+                        <?php if (!empty($usuario['foto'])): ?>
+                            <?php
+                            $fotoAtual = (string) $usuario['foto'];
+                            $fotoSrc = preg_match('#^https?://#i', $fotoAtual)
+                                ? $fotoAtual
+                                : URL_BASE . '/' . ltrim($fotoAtual, '/');
+                            ?>
+                            <img src="<?= htmlspecialchars($fotoSrc, ENT_QUOTES, 'UTF-8') ?>" alt="Foto atual do usuário" class="rounded-circle" style="width:120px; height:120px; object-fit:cover;">
+                        <?php else: ?>
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                <i class="bi bi-person-circle" style="font-size: 48px; color: #999;"></i>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="mb-3">

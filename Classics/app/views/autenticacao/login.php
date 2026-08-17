@@ -68,7 +68,6 @@
                 <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
                 <h3 class="card-title mt-2">Acesso ao Sistema</h3>
                 <p class="text-muted small">Entre com suas credenciais para continuar</p>
-                <p><a href="<?= URL_BASE ?>/cadastrar" class="link-underline-primary"> Criar Conta</a></p>
             </div>
 
             <?php if (isset($erros)): ?>
@@ -106,7 +105,7 @@
                         Entrar <i class="bi bi-arrow-right ms-2"></i>
                     </button>
                 </div>
-                <p><a href="<?= URL_BASE ?>/usuarios/cadastrar" class="link-underline-primary"> Não possui conta? Cadastre-se</a></p>
+                <p><a href="<?= URL_BASE ?>/cadastrar" class="link-underline-primary"> Não possui conta? Cadastre-se</a></p>
             </form>
         </div>
     </div>

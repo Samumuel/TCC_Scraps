@@ -4,18 +4,22 @@ namespace app\controllers;
 
 use app\core\Controller;
 use app\models\Atividade;
+use app\models\Localizacao;
 use app\services\AtividadeService;
 use app\services\CategoriaService;
+use app\services\LocalizacaoService;
 
 class AtividadeController extends Controller {
 
 	private AtividadeService $service;
 	private CategoriaService $categoriaService;
+	private LocalizacaoService $localizacaoService;
 
 	public function __construct()
 	{
 		$this->service = new AtividadeService();
 		$this->categoriaService = new CategoriaService();
+		$this->localizacaoService = new LocalizacaoService();
 	}
 
 	public function listarTodos() {
@@ -58,8 +62,9 @@ class AtividadeController extends Controller {
 		$atividade->setCategoriaId($categoriaId);
 		$atividade->setEmpresaId($empresaId);
 
-		if ($this->service->saveAtividade($atividade)) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+		$atividadeId = $this->service->saveAtividade($atividade);
+		if ($atividadeId) {
+			$this->redirect(URL_BASE . '/atividade/localizacao/cadastrar?id=' . (int) $atividadeId);
 		} else {
 			echo 'Erro ao salvar a atividade.';
 		}
@@ -78,6 +83,8 @@ class AtividadeController extends Controller {
 		}
 
 		$data['categorias'] = $this->categoriaService->getCategorias($empresaId);
+		$data['localizacao'] = $this->localizacaoService->getLocalizacaoPorAtividade($id);
+		$data['aba_ativa'] = $_GET['tab'] ?? 'atividade';
 		$this->view('atividades/atividade_edit', $data);
 	}
 
@@ -91,7 +98,6 @@ class AtividadeController extends Controller {
 		$nome = $_POST['nome'] ?? '';
 		$duracao = $_POST['duracao'] ?? null;
 		$descricao = $_POST['descricao'] ?? null;
-		$localizacao = $_POST['localizacao'] ?? null;
 		$valor = isset($_POST['valor']) && $_POST['valor'] !== '' ? (float) $_POST['valor'] : null;
 		$fotos = $_POST['fotos'] ?? null;
 		$categoriaId = isset($_POST['categoria_id']) ? (int) $_POST['categoria_id'] : (isset($_POST['categoria']) && $_POST['categoria'] !== '' ? (int) $_POST['categoria'] : null);
@@ -105,7 +111,7 @@ class AtividadeController extends Controller {
 			$nome,
 			$duracao,
 			$descricao,
-			$localizacao,
+			$atividadeAtual['Localizacao'] ?? null,
 			$valor,
 			$fotos,
 			$categoriaId,
@@ -113,6 +119,53 @@ class AtividadeController extends Controller {
 		);
 
 		$this->service->updateAtividade($atividade);
+		$this->redirect(URL_BASE . '/atividade/listar');
+	}
+
+	public function localizacaoCadastrar()
+	{
+		$empresaId = $this->getEmpresaLogadaId();
+		if ($empresaId === null) {
+			$this->redirect(URL_BASE);
+		}
+
+		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$atividade = $this->getAtividadeDaEmpresa($id, $empresaId);
+		if (!$atividade) {
+			$this->redirect(URL_BASE . '/atividade/listar');
+		}
+
+		$data['atividade'] = $atividade;
+		$data['localizacao'] = $this->localizacaoService->getLocalizacaoPorAtividade($id);
+		$data['origem'] = 'create';
+		$this->view('atividades/localizacao_create', $data);
+	}
+
+	public function salvarLocalizacao()
+	{
+		$empresaId = $this->getEmpresaLogadaId();
+		if ($empresaId === null) {
+			$this->redirect(URL_BASE);
+		}
+
+		$idAtividade = isset($_POST['id_atividade']) ? (int) $_POST['id_atividade'] : 0;
+		$atividade = $this->getAtividadeDaEmpresa($idAtividade, $empresaId);
+		if (!$atividade) {
+			$this->redirect(URL_BASE . '/atividade/listar');
+		}
+
+		$localizacao = new Localizacao();
+		$localizacao->setIdAtividade($idAtividade);
+		$localizacao->setCep(trim((string) ($_POST['cep'] ?? '')));
+		$localizacao->setComplemento(trim((string) ($_POST['complemento'] ?? '')));
+
+		$this->localizacaoService->saveOrUpdateLocalizacao($localizacao);
+
+		$origem = $_POST['origem'] ?? 'create';
+		if ($origem === 'editar') {
+			$this->redirect(URL_BASE . '/atividade/editar?id=' . $idAtividade . '&tab=localizacao');
+		}
+
 		$this->redirect(URL_BASE . '/atividade/listar');
 	}
 
@@ -152,5 +205,15 @@ class AtividadeController extends Controller {
 		}
 
 		return (int) $_SESSION['empresa_logada']->getIdEmpresa();
+	}
+
+	private function getAtividadeDaEmpresa(int $id, int $empresaId): ?array
+	{
+		$atividade = $this->service->getAtividade($id);
+		if (!$atividade || (int) ($atividade['Empresa_ID'] ?? 0) !== $empresaId) {
+			return null;
+		}
+
+		return $atividade;
 	}
 }

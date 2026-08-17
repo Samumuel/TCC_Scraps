@@ -4,7 +4,7 @@ CREATE TABLE Usuario (
     ID_Usuario INT PRIMARY KEY AUTO_INCREMENT, 
     Nome VARCHAR(255), 
     Email VARCHAR(255) UNIQUE, 
-    CPF VARCHAR(14) UNIQUE, 
+    CPF VARCHAR(14), 
     Telefone INT, 
     Idade INT, 
     Tipo_usuario VARCHAR(50), 
@@ -21,7 +21,7 @@ CREATE TABLE Empresa (
     ID_Empresa INT PRIMARY KEY AUTO_INCREMENT, 
     Name VARCHAR(255), 
     Email VARCHAR(255) UNIQUE, 
-    CNPJ VARCHAR(20) UNIQUE, 
+    CNPJ VARCHAR(20), 
     Localizacao VARCHAR(255), 
     Telefone VARCHAR(20), 
     Senha VARCHAR(255), 
@@ -95,6 +95,7 @@ CREATE TABLE Agendamento (
 );
 
 ALTER TABLE `categorias` ADD `Empresa_ID` INT NOT NULL AFTER `Nome_Categoria`;
+
 
 INSERT INTO `usuario` (`ID_Usuario`, `Nome`, `Email`, `CPF`, `Telefone`, `Idade`, `Tipo_usuario`, `Senha`, `Foto`) VALUES 
     (1, 'Admin', 'samuelferreira.younis@gmail.com', '09104366905', '999045695', '17', 'admin', 'admin@123', 

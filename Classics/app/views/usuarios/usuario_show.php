@@ -33,7 +33,13 @@
                         <!-- FOTO -->
                         <div class="col-md-4 text-center">
                             <?php if (!empty($usuario['foto'])): ?>
-                                    <img src="<?= htmlspecialchars($usuario['foto'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($usuario['nomeUsuario'] ?? $usuario['nome'] ?? '', ENT_QUOTES) ?>" class="rounded-circle" style="width:250px; height:250px; object-fit:cover; max-width:100%;">
+                                    <?php
+                                    $fotoUsuario = (string) $usuario['foto'];
+                                    $fotoSrc = preg_match('#^https?://#i', $fotoUsuario)
+                                        ? $fotoUsuario
+                                        : URL_BASE . '/' . ltrim($fotoUsuario, '/');
+                                    ?>
+                                    <img src="<?= htmlspecialchars($fotoSrc, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($usuario['nomeUsuario'] ?? $usuario['nome'] ?? '', ENT_QUOTES) ?>" class="rounded-circle" style="width:250px; height:250px; object-fit:cover; max-width:100%;">
                             <?php else: ?>
                                 <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 250px; height: 250px; margin: 0 auto;">
                                     <i class="bi bi-person-circle" style="font-size: 80px; color: #999;"></i>

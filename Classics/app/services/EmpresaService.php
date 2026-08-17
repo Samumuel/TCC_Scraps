@@ -4,14 +4,17 @@ namespace app\services;
 
 use app\models\Empresa;
 use app\repositories\EmpresaRepository;
+use app\repositories\UsuarioRepository;
 
 class EmpresaService {
 
     private EmpresaRepository $repository;
+    private UsuarioRepository $usuarioRepository;
 
     public function __construct(){
 
         $this->repository = new EmpresaRepository();
+        $this->usuarioRepository = new UsuarioRepository();
 
     }
 
@@ -25,6 +28,13 @@ class EmpresaService {
     }
 
     public function saveEmpresa(Empresa $empresa){
+        $emailNormalizado = $this->normalizarEmail((string) $empresa->getEmail());
+        $empresa->setEmail($emailNormalizado);
+
+        if ($this->repository->hasEmail($emailNormalizado) || $this->usuarioRepository->hasEmail($emailNormalizado)) {
+            return false;
+        }
+
         return $this->repository->saveEmpresa($empresa);
     }
 
@@ -33,6 +43,21 @@ class EmpresaService {
     }
 
     public function updateEmpresa(Empresa $empresa) {
+        $emailNormalizado = $this->normalizarEmail((string) $empresa->getEmail());
+        $empresa->setEmail($emailNormalizado);
+
+        if (
+            $this->repository->hasEmail($emailNormalizado, $empresa->getIdEmpresa()) ||
+            $this->usuarioRepository->hasEmail($emailNormalizado)
+        ) {
+            return false;
+        }
+
         return $this->repository->updateEmpresa($empresa);
+    }
+
+    private function normalizarEmail(string $email): string
+    {
+        return strtolower(trim($email));
     }
 }

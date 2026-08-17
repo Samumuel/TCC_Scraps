@@ -26,7 +26,7 @@ class EmpresaController extends Controller {
 
     public function salvar() {
         $nome = $_POST['nome'];
-        $email = $_POST['email'] ?? null;
+        $email = trim((string) ($_POST['email'] ?? ''));
         $cnpj = $_POST['cnpj'] ?? null;
         $localizacao = $_POST['localizacao'] ?? null;
         $telefone = $_POST['telefone'] ?? null;
@@ -45,7 +45,16 @@ class EmpresaController extends Controller {
         if ($this->service->saveEmpresa($empresa)) {
             $this->redirect(URL_BASE . '/empresa');
         } else {
-            echo "Erro ao salvar a empresa.";
+            $data['empresa'] = [
+                'nome' => $nome,
+                'email' => $email,
+                'cnpj' => $cnpj,
+                'localizacao' => $localizacao,
+                'telefone' => $telefone,
+                'status' => $_POST['status'] ?? 'pendente'
+            ];
+            $data['erros']['email'] = "Este e-mail já está cadastrado.";
+            $this->view('empresas/empresa_create', $data);
         }
     }
 
@@ -60,7 +69,7 @@ class EmpresaController extends Controller {
         $empresa = new Empresa(
             $_POST['id'],
             $_POST['nome'],
-            $_POST['email'],
+            trim((string) ($_POST['email'] ?? '')),
             $_POST['cnpj'],
             $_POST['localizacao'],
             $_POST['telefone'],
@@ -68,8 +77,21 @@ class EmpresaController extends Controller {
             $_POST['status'] ?? 'pendente'
         );
 
-        $this->service->updateEmpresa($empresa);
-        $this->redirect(URL_BASE . '/empresa');
+        if ($this->service->updateEmpresa($empresa)) {
+            $this->redirect(URL_BASE . '/empresa');
+        } else {
+            $data['empresa'] = [
+                'ID_Empresa' => (int) ($_POST['id'] ?? 0),
+                'nome' => $_POST['nome'] ?? '',
+                'email' => trim((string) ($_POST['email'] ?? '')),
+                'cnpj' => $_POST['cnpj'] ?? '',
+                'localizacao' => $_POST['localizacao'] ?? '',
+                'telefone' => $_POST['telefone'] ?? '',
+                'status' => $_POST['status'] ?? 'pendente'
+            ];
+            $data['erros']['email'] = "Este e-mail já está cadastrado.";
+            $this->view('empresas/empresa_edit', $data);
+        }
     }
 
     public function verEmpresa() {

@@ -45,23 +45,26 @@ if(!isset($_SESSION['empresa_logada'])){
                         <form action="<?= URL_BASE ?>/empresa/salvar" method="POST">
                             <div class="mb-3">
                                 <label for="nome" class="form-label">Nome da empresa</label>
-                                <input type="text" class="form-control" id="nome" name="nome" required>
+                                <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($empresa['nome'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">E-mail</label>
-                                <input type="email" class="form-control" id="email" name="email">
+                                <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($empresa['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <?php if (isset($erros['email'])): ?>
+                                    <div class="text-danger small"><?= htmlspecialchars($erros['email'], ENT_QUOTES, 'UTF-8') ?></div>
+                                <?php endif; ?>
                             </div>
                             <div class="mb-3">
                                 <label for="cnpj" class="form-label">CNPJ</label>
-                                <input type="text" class="form-control" id="cnpj" name="cnpj">
+                                <input type="text" class="form-control" id="cnpj" name="cnpj" value="<?= htmlspecialchars($empresa['cnpj'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             </div>
                             <div class="mb-3">
                                 <label for="localizacao" class="form-label">Localização</label>
-                                <input type="text" class="form-control" id="localizacao" name="localizacao">
+                                <input type="text" class="form-control" id="localizacao" name="localizacao" value="<?= htmlspecialchars($empresa['localizacao'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             </div>
                             <div class="mb-3">
                                 <label for="telefone" class="form-label">Telefone</label>
-                                <input type="text" class="form-control" id="telefone" name="telefone">
+                                <input type="text" class="form-control" id="telefone" name="telefone" value="<?= htmlspecialchars($empresa['telefone'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             </div>
                             <div class="mb-3">
                                 <label for="senha" class="form-label">Senha</label>
