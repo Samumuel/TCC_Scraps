@@ -49,6 +49,67 @@ class AgendamentoController extends Controller
         $this->redirect($this->montarUrlRetorno($atividadeId, 'erro_inscricao=' . rawurlencode($erro)));
     }
 
+    public function meusAgendamentos()
+    {
+        $usuarioId = $this->getUsuarioLogadoId();
+        if ($usuarioId === null) {
+            $this->redirect(URL_BASE);
+        }
+
+        $data['agendamentos'] = $this->service->getAgendamentosPorUsuario($usuarioId);
+        $this->view('agendamentos/meus_agendamentos', $data);
+    }
+
+    public function atualizar()
+    {
+        $usuarioId = $this->getUsuarioLogadoId();
+        if ($usuarioId === null) {
+            $this->redirect(URL_BASE);
+        }
+
+        $agendamentoId = isset($_POST['agendamento_id']) ? (int) $_POST['agendamento_id'] : 0;
+        $quantidadePessoasInput = trim((string) ($_POST['quantidade_pessoas'] ?? ''));
+
+        if ($agendamentoId <= 0) {
+            $this->redirect(URL_BASE . '/agendamento/meus?erro=agendamento');
+        }
+
+        if (!preg_match('/^\d+$/', $quantidadePessoasInput) || (int) $quantidadePessoasInput <= 0) {
+            $this->redirect(URL_BASE . '/agendamento/meus?erro=quantidade');
+        }
+
+        $resultado = $this->service->atualizarQuantidadePessoas($usuarioId, $agendamentoId, (int) $quantidadePessoasInput);
+
+        if (!empty($resultado['sucesso'])) {
+            $this->redirect(URL_BASE . '/agendamento/meus?sucesso=atualizado');
+        }
+
+        $erro = (string) ($resultado['erro'] ?? 'falha');
+        $this->redirect(URL_BASE . '/agendamento/meus?erro=' . rawurlencode($erro));
+    }
+
+    public function cancelar()
+    {
+        $usuarioId = $this->getUsuarioLogadoId();
+        if ($usuarioId === null) {
+            $this->redirect(URL_BASE);
+        }
+
+        $agendamentoId = isset($_POST['agendamento_id']) ? (int) $_POST['agendamento_id'] : 0;
+        if ($agendamentoId <= 0) {
+            $this->redirect(URL_BASE . '/agendamento/meus?erro=agendamento');
+        }
+
+        $resultado = $this->service->cancelarAgendamento($usuarioId, $agendamentoId);
+
+        if (!empty($resultado['sucesso'])) {
+            $this->redirect(URL_BASE . '/agendamento/meus?sucesso=cancelado');
+        }
+
+        $erro = (string) ($resultado['erro'] ?? 'falha');
+        $this->redirect(URL_BASE . '/agendamento/meus?erro=' . rawurlencode($erro));
+    }
+
     private function getUsuarioLogadoId(): ?int
     {
         if (!isset($_SESSION['usuario_logado']) || !is_object($_SESSION['usuario_logado'])) {
