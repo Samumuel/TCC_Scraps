@@ -9,22 +9,17 @@ if(!isset($_SESSION['empresa_logada'])){
 
 <head>
 	<meta charset="UTF-8">
-	<title>Projeto Integrador • Nova Categoria</title>
+	<title>Classics • Nova Categoria</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-
-	<!-- Bootstrap 5 -->
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-	<!-- Bootstrap Icons -->
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
+<?php require __DIR__ . '/../partials/head.php'; ?>
 </head>
 
 <body>
+<?php require __DIR__ . '/../partials/navbar.php'; ?>
 
-	<div class="container">
+	<div class="container cl-page">
 
-		<div class="d-flex mt-5">
+		<div class="d-flex">
 
 			<!-- CONTEUDO -->
 			<main class="flex-fill content">

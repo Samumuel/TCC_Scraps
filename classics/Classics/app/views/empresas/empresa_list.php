@@ -9,19 +9,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Projeto Integrador • Lista de Animais</title>
+    <title>Classics • Empresas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<?php require __DIR__ . '/../partials/head.php'; ?>
 </head>
 
 <body>
+<?php require __DIR__ . '/../partials/navbar.php'; ?>
 
-    <div class="container">
+    <div class="container cl-page">
 
 
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -74,11 +70,6 @@
                     </table>
                 </div>
             </div>
-        </div>
-        <div class="mt-4">
-            <a href="<?= URL_BASE ?>/usuarios" class="btn btn-link">Ver Usuários</a>
-            <a href="<?= URL_BASE ?>/atividade" class="btn btn-link">Ver Atividades</a>
-            <a href="<?= URL_BASE ?>/categoria" class="btn btn-link">Ver Categorias</a>
         </div>
     </div>
     <!-- Bootstrap JS -->

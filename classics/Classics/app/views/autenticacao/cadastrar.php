@@ -3,28 +3,46 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Projeto Integrador • Novo Usuário</title>
+    <title>Classics • Criar conta</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<?php require __DIR__ . '/../partials/head.php'; ?>
 </head>
 
 <body>
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Cadastre-se</h2>
-            <a href="<?= URL_BASE ?>/usuarios" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar
-            </a>
+    <div class="cl-auth">
+        <?php require __DIR__ . '/_auth_hero.php'; ?>
+
+        <div class="cl-auth-panel">
+            <div class="d-flex justify-content-between align-items-center px-4 pt-4">
+                <a href="<?= URL_BASE ?>/" class="cl-brand">
+                    <span class="cl-logo">C</span>
+                    <span class="cl-brand-name">Classics</span>
+                </a>
+                <a href="<?= URL_BASE ?>/" class="text-muted small fw-semibold text-decoration-none">
+                    <i class="bi bi-x-lg"></i> <span class="d-none d-sm-inline">Continuar sem entrar</span>
+                </a>
+            </div>
+
+            <div class="cl-auth-form">
+        <div class="cl-tab-switcher mb-4">
+            <a href="<?= URL_BASE ?>/login">Entrar</a>
+            <a href="<?= URL_BASE ?>/cadastrar" class="ativo">Criar conta</a>
         </div>
 
-        <div class="tipo-cadastro">
-            <button type="button" id="btnUsuario" class="ativo btn btn-primary">
-                Usuário
+        <h2 class="h3 mb-1">Criar sua conta</h2>
+        <p class="text-muted small mb-4">Comece a explorar experiências incríveis hoje</p>
+
+        <div class="tipo-cadastro cl-account-type mb-4">
+            <button type="button" id="btnUsuario" class="ativo">
+                <i class="bi bi-person"></i>
+                <strong>Cliente</strong>
+                <small>Busco e reservo atividades</small>
             </button>
 
-            <button type="button" id="btnEmpresa" class="btn btn-primary">
-                Empresa
+            <button type="button" id="btnEmpresa">
+                <i class="bi bi-building"></i>
+                <strong>Empresa</strong>
+                <small>Ofereço atividades e serviços</small>
             </button>
         </div>
 
@@ -44,8 +62,8 @@
         <?php endif; ?>
 
         <!-- Formulário para cadastro de usuário -->
-        <div class="card shadow-sm col-md-8 mx-auto" id="formUsuario">
-            <div class="card-body p-4">
+        <div id="formUsuario">
+            <div>
                 <form action="<?= URL_BASE ?>/usuarios/salvar" method="post">
                     <input type="hidden" name="cadastro_publico" value="1">
                     <?php if (isset($usuario['id'])): ?>
@@ -103,7 +121,7 @@
                     <input type="hidden" name="id" value="user">
 
                     <div class="mb-3">
-                        <label for="senha" class="form-label">Senha
+                        <label for="senha" class="form-label">Senha</label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="senha" name="senha">
                             <button class="btn btn-outline-secondary" type="button" id="toggleSenha">
@@ -115,9 +133,9 @@
                         <?php endif; ?>
                     </div>
 
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-check-circle"></i> <?= isset($usuario['id']) ? 'Atualizar' : 'Salvar' ?>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary py-2">
+                            <?= isset($usuario['id']) ? 'Atualizar' : 'Criar conta' ?> <i class="bi bi-arrow-right ms-1"></i>
                         </button>
                     </div>
                 </form>
@@ -125,8 +143,8 @@
         </div>
 
         <!-- Formulário para cadastro de empresa -->
-        <div class="card shadow-sm" id="formEmpresa" style="display: none;">
-            <div class="card-body">
+        <div id="formEmpresa" style="display: none;">
+            <div>
                 <form action="<?= URL_BASE ?>/empresa/salvar" method="POST">
                     <input type="hidden" name="cadastro_publico" value="1">
                     <div class="mb-3">
@@ -168,11 +186,21 @@
                         <label for="senha" class="form-label">Senha</label>
                         <input type="password" class="form-control" id="senha" name="senha" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary py-2">
+                            Criar conta <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
 
+        <p class="mt-4 text-center small text-muted">
+            Já tem uma conta?
+            <a href="<?= URL_BASE ?>/login" class="fw-bold">Entrar</a>
+        </p>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= URL_BASE ?>/js/cadastro.js"></script>

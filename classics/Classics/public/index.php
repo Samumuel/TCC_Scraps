@@ -7,7 +7,9 @@ use app\core\Router;
 
 $router = new Router();
 
-$router->get('/', 'AutenticacaoController@login');
+$router->get('/', 'AtividadeController@listarTodos');
+$router->get('/login', 'AutenticacaoController@login');
+$router->post('/logout', 'AutenticacaoController@logout');
 $router->get('/cadastrar', 'AutenticacaoController@cadastrar');
 $router->post('/logar', 'AutenticacaoController@logar');
 

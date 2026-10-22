@@ -47,4 +47,10 @@ class AutenticacaoController extends Controller
             $this->view('autenticacao/login', $dados);
         }
     }
+
+    public function logout()
+    {
+        $this->autenticacaoService->logout();
+        $this->redirect(URL_BASE);
+    }
 }

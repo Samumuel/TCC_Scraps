@@ -1,90 +1,98 @@
-<!--Feito pelo chat, tem que validar-->
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
 	<meta charset="UTF-8">
-	<title>Projeto Integrador • Lista de Atividades</title>
+	<title>Classics • Atividades</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<?php require __DIR__ . '/../partials/head.php'; ?>
 </head>
 
 <body>
-	<div class="container py-4">
-		<?php $empresaLogada = $_SESSION['empresa_logada'] ?? null; ?>
-		<div class="d-flex justify-content-between align-items-center mb-4">
-			<h2 class="mb-0">Lista de Atividades</h2>
-			<?php if(isset($_SESSION['empresa_logada'])): ?>
-				<a href="<?= URL_BASE ?>/atividade/cadastrar" class="btn btn-primary">
-					<i class="bi bi-plus-circle"></i> Nova Atividade
-				</a>
-			<?php endif; ?>
-		</div>
+<?php require __DIR__ . '/../partials/navbar.php'; ?>
+	<?php $empresaLogada = $_SESSION['empresa_logada'] ?? null; ?>
 
-		<div class="card shadow-sm">
-			<div class="card-body p-0">
-				<div class="table-responsive">
-					<table class="table table-hover mb-0">
-						<thead class="table-light">
-							<tr>
-								<th class="px-4 py-3">Foto</th>
-								<th class="px-4 py-3">Nome</th>
-								<th class="px-4 py-3">Duração</th>
-								<th class="px-4 py-3">Localização</th>
-								<th class="px-4 py-3">Valor</th>
-								<th class="px-4 py-3">Categoria</th>
-								<th class="px-4 py-3 text-end">Ações</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php if (!empty($lista)): ?>
-								<?php foreach ($lista as $atividade): ?>
-									<tr>
-										<td class="px-4 py-3 align-middle">
-											<?php if (!empty($atividade['Fotos'])): ?>
-												<img src="<?= htmlspecialchars(URL_BASE . '/' . ltrim($atividade['Fotos'], '/'), ENT_QUOTES, 'UTF-8') ?>" alt="Foto da atividade" style="width: 72px; height: 52px; object-fit: cover;" class="rounded">
-											<?php else: ?>
-												<i class="bi bi-image text-muted" style="font-size: 28px;" aria-label="Sem foto"></i>
-											<?php endif; ?>
-										</td>
-										<td class="px-4 py-3 align-middle"><?= htmlspecialchars($atividade['Nome'] ?? '-') ?></td>
-										<td class="px-4 py-3 align-middle"><?= htmlspecialchars($atividade['Duracao'] ?? '-') ?></td>
-										<td class="px-4 py-3 align-middle"><?= htmlspecialchars($atividade['Localizacao'] ?? '-') ?></td>
-										<td class="px-4 py-3 align-middle">R$ <?= number_format((float) ($atividade['Valor'] ?? 0), 2, ',', '.') ?></td>
-										<td class="px-4 py-3 align-middle"><?= htmlspecialchars($atividade['Categoria_Nome'] ?? '-') ?></td>
-										<td class="px-4 py-3 align-middle text-end">
-											<a href="<?= URL_BASE ?>/atividade/ver?id=<?= (int) ($atividade['ID_Atividade'] ?? 0) ?>" class="btn btn-sm btn-outline-primary">
-												<i class="bi bi-eye"></i> Ver
-											</a>
-											<?php if ($empresaLogada && (int) ($atividade['Empresa_ID'] ?? 0) === (int) $empresaLogada->getIdEmpresa()): ?>
-												<a href="<?= URL_BASE ?>/atividade/editar?id=<?= (int) ($atividade['ID_Atividade'] ?? 0) ?>" class="btn btn-sm btn-outline-primary">
-													<i class="bi bi-pencil"></i> Editar
-												</a>
-												<a href="<?= URL_BASE ?>/atividade/excluir?id=<?= (int) ($atividade['ID_Atividade'] ?? 0) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir esta atividade?')">
-													<i class="bi bi-trash"></i> Excluir
-												</a>
-											<?php endif; ?>
-										</td>
-									</tr>
-								<?php endforeach; ?>
-							<?php else: ?>
-								<tr>
-									<td class="px-4 py-4 text-center text-muted" colspan="8">Nenhuma atividade cadastrada.</td>
-								</tr>
-							<?php endif; ?>
-						</tbody>
-					</table>
-				</div>
+	<section class="cl-hero">
+		<div class="container">
+			<div class="col-lg-7">
+				<h1 class="mb-3">Descubra atividades de lazer incríveis</h1>
+				<p class="mb-0">Conecte-se com as melhores empresas de entretenimento e lazer</p>
+				<?php if ($empresaLogada): ?>
+					<a href="<?= URL_BASE ?>/atividade/cadastrar" class="btn btn-primary mt-4">
+						<i class="bi bi-plus-circle"></i> Nova Atividade
+					</a>
+				<?php endif; ?>
 			</div>
 		</div>
+	</section>
 
-		<div class="mt-4">
-			<a href="<?= URL_BASE ?>/empresa" class="btn btn-link">Ver Empresas</a>
-			<a href="<?= URL_BASE ?>/usuarios" class="btn btn-link">Ver Usuários</a>
-			<a href="<?= URL_BASE ?>/categoria" class="btn btn-link">Ver Categorias</a>
+	<div class="container cl-page">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="mb-0">Atividades</h2>
+			<span class="text-muted small"><?= count($lista ?? []) ?> atividade(s)</span>
 		</div>
+
+		<?php if (!empty($lista)): ?>
+			<div class="row g-4">
+				<?php foreach ($lista as $atividade): ?>
+					<?php $atividadeId = (int) ($atividade['ID_Atividade'] ?? 0); ?>
+					<div class="col-12 col-md-6 col-lg-4 col-xl-3">
+						<div class="card cl-activity-card cl-card-hover">
+							<a href="<?= URL_BASE ?>/atividade/ver?id=<?= $atividadeId ?>">
+								<?php if (!empty($atividade['Fotos'])): ?>
+									<img src="<?= htmlspecialchars(URL_BASE . '/' . ltrim($atividade['Fotos'], '/'), ENT_QUOTES, 'UTF-8') ?>" alt="Foto da atividade" class="cl-activity-img">
+								<?php else: ?>
+									<div class="cl-activity-img cl-placeholder-img">
+										<i class="bi bi-image" style="font-size: 48px;" aria-label="Sem foto"></i>
+									</div>
+								<?php endif; ?>
+							</a>
+							<div class="card-body d-flex flex-column">
+								<?php if (!empty($atividade['Categoria_Nome'])): ?>
+									<div class="mb-2">
+										<span class="cl-badge cl-badge-category"><?= htmlspecialchars($atividade['Categoria_Nome']) ?></span>
+									</div>
+								<?php endif; ?>
+								<h3 class="card-title mb-2"><?= htmlspecialchars($atividade['Nome'] ?? '-') ?></h3>
+								<div class="cl-meta mb-1">
+									<i class="bi bi-geo-alt"></i>
+									<span><?= htmlspecialchars($atividade['Localizacao'] ?? '-') ?></span>
+								</div>
+								<div class="cl-meta mb-3">
+									<i class="bi bi-clock"></i>
+									<span><?= htmlspecialchars($atividade['Duracao'] ?? '-') ?></span>
+								</div>
+								<div class="cl-price mt-auto mb-3">
+									R$ <?= number_format((float) ($atividade['Valor'] ?? 0), 2, ',', '.') ?>
+									<span class="text-muted small fw-normal">/pessoa</span>
+								</div>
+								<a href="<?= URL_BASE ?>/atividade/ver?id=<?= $atividadeId ?>" class="btn btn-primary btn-sm w-100">
+									Ver detalhes
+								</a>
+								<?php if ($empresaLogada && (int) ($atividade['Empresa_ID'] ?? 0) === (int) $empresaLogada->getIdEmpresa()): ?>
+									<div class="d-flex gap-2 mt-2">
+										<a href="<?= URL_BASE ?>/atividade/editar?id=<?= $atividadeId ?>" class="btn btn-sm btn-outline-primary flex-fill">
+											<i class="bi bi-pencil"></i> Editar
+										</a>
+										<a href="<?= URL_BASE ?>/atividade/excluir?id=<?= $atividadeId ?>" class="btn btn-sm btn-outline-danger flex-fill" onclick="return confirm('Deseja excluir esta atividade?')">
+											<i class="bi bi-trash"></i> Excluir
+										</a>
+									</div>
+								<?php endif; ?>
+							</div>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		<?php else: ?>
+			<div class="card text-center py-5">
+				<div class="card-body">
+					<i class="bi bi-compass text-muted" style="font-size: 56px;"></i>
+					<h3 class="mt-3 mb-2">Nenhuma atividade cadastrada</h3>
+					<p class="text-muted mb-0">Volte em breve para conferir as novidades.</p>
+				</div>
+			</div>
+		<?php endif; ?>
 	</div>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

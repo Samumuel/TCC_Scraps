@@ -3,14 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Projeto Integrador • <?= isset($empresa['ID_Empresa']) ? 'Editar' : 'Nova' ?> Empresa</title>
+    <title>Classics • <?= isset($empresa['ID_Empresa']) ? 'Editar' : 'Nova' ?> Empresa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<?php require __DIR__ . '/../partials/head.php'; ?>
 </head>
 
 <body>
-    <div class="container py-5">
+<?php require __DIR__ . '/../partials/navbar.php'; ?>
+    <div class="container cl-page">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0"><?= isset($empresa['ID_Empresa']) ? 'Editar' : 'Nova' ?> Empresa</h2>
             <a href="<?= URL_BASE ?>/empresa" class="btn btn-outline-secondary">
