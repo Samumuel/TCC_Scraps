@@ -40,9 +40,16 @@
                             <p class="text-muted small mb-0"><?= htmlspecialchars((string) ($usuario['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
 
                             <?php if ($usuarioLogado && isset($usuario['id']) && (int) $usuario['id'] === (int) $usuarioLogado->getIdUsuario()): ?>
-                                <a href="<?= URL_BASE ?>/usuarios/editar?id=<?= (int) $usuario['id'] ?>" class="btn btn-outline-primary btn-sm mt-3">
-                                    <i class="bi bi-pencil"></i> Editar perfil
-                                </a>
+                                <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+                                    <a href="<?= URL_BASE ?>/usuarios/editar?id=<?= (int) $usuario['id'] ?>" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-pencil"></i> Editar perfil
+                                    </a>
+                                    <?php if (in_array(strtolower(trim((string) ($usuario['tipo_usuario'] ?? ''))), ['user', 'cliente'], true)): ?>
+                                        <a href="<?= URL_BASE ?>/favorito/meus" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-heart"></i> Meus favoritos
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>

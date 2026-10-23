@@ -9,6 +9,7 @@ $navLinks = [
 
 if ($navUsuario !== null) {
     $navLinks[] = ['Meus Agendamentos', '/agendamento/meus', ['/agendamento/meus']];
+    $navLinks[] = ['Favoritos', '/favorito/meus', ['/favorito/meus']];
     $navLinks[] = ['Usuários', '/usuarios', ['/usuarios', '/usuarios/cadastrar', '/usuarios/editar', '/usuarios/ver']];
     $navLinks[] = ['Empresas', '/empresa', ['/empresa', '/empresa/ver']];
 } elseif ($navEmpresa !== null) {

@@ -110,6 +110,11 @@ class AtividadeRepository {
             $stmtAgendamento->bindValue(':id_atividade', $id);
             $stmtAgendamento->execute();
 
+            $sqlFavorito = 'DELETE FROM Favorito WHERE ID_Atividade = :id_atividade';
+            $stmtFavorito = $this->connection->prepare($sqlFavorito);
+            $stmtFavorito->bindValue(':id_atividade', $id);
+            $stmtFavorito->execute();
+
             $sqlSessao = 'DELETE FROM Sessao WHERE ID_Atividade = :id_atividade';
             $stmtSessao = $this->connection->prepare($sqlSessao);
             $stmtSessao->bindValue(':id_atividade', $id);

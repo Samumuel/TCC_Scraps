@@ -8,6 +8,7 @@ use app\models\Localizacao;
 use app\models\Sessao;
 use app\services\AtividadeService;
 use app\services\CategoriaService;
+use app\services\FavoritoService;
 use app\services\LocalizacaoService;
 use app\services\SessaoService;
 
@@ -18,6 +19,7 @@ class AtividadeController extends Controller {
 	private CategoriaService $categoriaService;
 	private LocalizacaoService $localizacaoService;
 	private SessaoService $sessaoService;
+	private FavoritoService $favoritoService;
 
 	public function __construct()
 	{
@@ -25,6 +27,7 @@ class AtividadeController extends Controller {
 		$this->categoriaService = new CategoriaService();
 		$this->localizacaoService = new LocalizacaoService();
 		$this->sessaoService = new SessaoService();
+		$this->favoritoService = new FavoritoService();
 	}
 
 	public function listarTodos() {
@@ -690,6 +693,12 @@ class AtividadeController extends Controller {
 		$data['atividade'] = $this->service->getAtividade($id);
 		$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($id);
 		$data['aba_ativa'] = $_GET['tab'] ?? 'dados';
+
+		$usuarioLogado = $_SESSION['usuario_logado'] ?? null;
+		$data['favoritado'] = is_object($usuarioLogado) && method_exists($usuarioLogado, 'getIdUsuario')
+			? $this->favoritoService->isFavorito((int) $usuarioLogado->getIdUsuario(), $id)
+			: false;
+
 		$this->view('atividades/atividade_show', $data);
 	}
 

@@ -56,7 +56,27 @@
                         <span class="cl-badge cl-badge-category mb-3"><?= htmlspecialchars($atividade['Categoria_Nome'], ENT_QUOTES, 'UTF-8') ?></span>
                     <?php endif; ?>
 
-                    <h1 class="mb-3"><?= htmlspecialchars($atividade['Nome'] ?? '-', ENT_QUOTES, 'UTF-8') ?></h1>
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <h1 class="mb-0"><?= htmlspecialchars($atividade['Nome'] ?? '-', ENT_QUOTES, 'UTF-8') ?></h1>
+
+                        <?php if ($usuarioPodeSeInscrever): ?>
+                            <?php $favoritado = !empty($favoritado); ?>
+                            <form action="<?= URL_BASE ?>/favorito/alternar" method="POST" class="m-0">
+                                <input type="hidden" name="atividade_id" value="<?= (int) ($atividade['ID_Atividade'] ?? 0) ?>">
+                                <input type="hidden" name="origem" value="atividade">
+                                <button type="submit" class="cl-heart-btn <?= $favoritado ? 'ativo' : '' ?>"
+                                    title="<?= $favoritado ? 'Remover dos favoritos' : 'Adicionar aos favoritos' ?>"
+                                    aria-label="<?= $favoritado ? 'Remover dos favoritos' : 'Adicionar aos favoritos' ?>"
+                                    aria-pressed="<?= $favoritado ? 'true' : 'false' ?>">
+                                    <i class="bi <?= $favoritado ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
+                                </button>
+                            </form>
+                        <?php elseif (!isset($usuario_logado) && !isset($empresa_logada)): ?>
+                            <a href="<?= URL_BASE ?>/login" class="cl-heart-btn" title="Entre para favoritar" aria-label="Entre para favoritar">
+                                <i class="bi bi-heart"></i>
+                            </a>
+                        <?php endif; ?>
+                    </div>
 
                     <div class="cl-meta mb-4">
                         <i class="bi bi-geo-alt"></i>
