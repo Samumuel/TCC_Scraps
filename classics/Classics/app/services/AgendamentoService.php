@@ -141,6 +141,41 @@ class AgendamentoService
         ];
     }
 
+    public function getAgendamentosPorEmpresa(int $empresaId, int $atividadeId = 0): array
+    {
+        if ($empresaId <= 0) {
+            return [];
+        }
+
+        $agendamentos = $this->repository->getAgendamentosPorEmpresa($empresaId, $atividadeId);
+
+        foreach ($agendamentos as $indice => $item) {
+            $agendamentos[$indice]['pode_alterar'] = $this->podeAlterar($item['agendamento'], $item['sessao']);
+        }
+
+        return $agendamentos;
+    }
+
+    public function cancelarAgendamentoDaEmpresa(int $empresaId, int $agendamentoId): array
+    {
+        $carregado = $this->carregarAgendamentoAlteravelDaEmpresa($empresaId, $agendamentoId);
+        if (empty($carregado['sucesso'])) {
+            return $carregado;
+        }
+
+        // TODO RF08: notificar o cliente sobre o cancelamento feito pela empresa
+        if (!$this->repository->cancelarAgendamento($carregado['agendamento'], self::STATUS_CANCELADO)) {
+            return [
+                'sucesso' => false,
+                'erro' => 'falha'
+            ];
+        }
+
+        return [
+            'sucesso' => true
+        ];
+    }
+
     private function carregarAgendamentoAlteravel(int $usuarioId, int $agendamentoId): array
     {
         if ($usuarioId <= 0) {
@@ -151,6 +186,26 @@ class AgendamentoService
         }
 
         $agendamento = $agendamentoId > 0 ? $this->repository->getAgendamentoPorUsuario($agendamentoId, $usuarioId) : null;
+
+        return $this->validarAgendamentoAlteravel($agendamento);
+    }
+
+    private function carregarAgendamentoAlteravelDaEmpresa(int $empresaId, int $agendamentoId): array
+    {
+        if ($empresaId <= 0) {
+            return [
+                'sucesso' => false,
+                'erro' => 'acesso'
+            ];
+        }
+
+        $agendamento = $agendamentoId > 0 ? $this->repository->getAgendamentoPorEmpresa($agendamentoId, $empresaId) : null;
+
+        return $this->validarAgendamentoAlteravel($agendamento);
+    }
+
+    private function validarAgendamentoAlteravel(?Agendamento $agendamento): array
+    {
         if ($agendamento === null) {
             return [
                 'sucesso' => false,

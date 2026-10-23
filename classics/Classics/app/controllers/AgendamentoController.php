@@ -3,15 +3,18 @@
 namespace app\controllers;
 
 use app\core\Controller;
+use app\services\AtividadeService;
 
 class AgendamentoController extends Controller
 {
     private $service;
+    private AtividadeService $atividadeService;
 
     public function __construct()
     {
         $serviceClass = 'app\\services\\AgendamentoService';
         $this->service = new $serviceClass();
+        $this->atividadeService = new AtividadeService();
     }
 
     public function salvar()
@@ -110,6 +113,46 @@ class AgendamentoController extends Controller
         $this->redirect(URL_BASE . '/agendamento/meus?erro=' . rawurlencode($erro));
     }
 
+    public function reservasEmpresa()
+    {
+        $empresaId = $this->getEmpresaLogadaId();
+        if ($empresaId === null) {
+            $this->redirect(URL_BASE);
+        }
+
+        $atividadeId = isset($_GET['atividade']) ? (int) $_GET['atividade'] : 0;
+
+        $data['atividades'] = $this->atividadeService->getAtividadesPorEmpresa($empresaId);
+        $data['atividade_selecionada'] = $atividadeId;
+        $data['agendamentos'] = $this->service->getAgendamentosPorEmpresa($empresaId, $atividadeId);
+        $this->view('agendamentos/reservas_empresa', $data);
+    }
+
+    public function cancelarReservaEmpresa()
+    {
+        $empresaId = $this->getEmpresaLogadaId();
+        if ($empresaId === null) {
+            $this->redirect(URL_BASE);
+        }
+
+        $agendamentoId = isset($_POST['agendamento_id']) ? (int) $_POST['agendamento_id'] : 0;
+        $atividadeId = isset($_POST['atividade']) ? (int) $_POST['atividade'] : 0;
+        $filtro = $atividadeId > 0 ? 'atividade=' . $atividadeId . '&' : '';
+
+        if ($agendamentoId <= 0) {
+            $this->redirect(URL_BASE . '/agendamento/empresa?' . $filtro . 'erro=agendamento');
+        }
+
+        $resultado = $this->service->cancelarAgendamentoDaEmpresa($empresaId, $agendamentoId);
+
+        if (!empty($resultado['sucesso'])) {
+            $this->redirect(URL_BASE . '/agendamento/empresa?' . $filtro . 'sucesso=cancelado');
+        }
+
+        $erro = (string) ($resultado['erro'] ?? 'falha');
+        $this->redirect(URL_BASE . '/agendamento/empresa?' . $filtro . 'erro=' . rawurlencode($erro));
+    }
+
     private function getUsuarioLogadoId(): ?int
     {
         if (!isset($_SESSION['usuario_logado']) || !is_object($_SESSION['usuario_logado'])) {
@@ -121,6 +164,15 @@ class AgendamentoController extends Controller
         }
 
         return (int) $_SESSION['usuario_logado']->getIdUsuario();
+    }
+
+    private function getEmpresaLogadaId(): ?int
+    {
+        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada'])) {
+            return null;
+        }
+
+        return (int) $_SESSION['empresa_logada']->getIdEmpresa();
     }
 
     private function usuarioPodeSeInscrever(): bool

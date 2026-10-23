@@ -12,6 +12,7 @@ if ($navUsuario !== null) {
     $navLinks[] = ['Usuários', '/usuarios', ['/usuarios', '/usuarios/cadastrar', '/usuarios/editar', '/usuarios/ver']];
     $navLinks[] = ['Empresas', '/empresa', ['/empresa', '/empresa/ver']];
 } elseif ($navEmpresa !== null) {
+    $navLinks[] = ['Reservas', '/agendamento/empresa', ['/agendamento/empresa']];
     $navLinks[] = ['Nova Atividade', '/atividade/cadastrar', ['/atividade/cadastrar', '/atividade/localizacao/cadastrar', '/atividade/sessao/cadastrar']];
     $navLinks[] = ['Categorias', '/categoria', ['/categoria', '/categoria/listar', '/categoria/cadastrar', '/categoria/editar']];
     $navLinks[] = ['Empresas', '/empresa', ['/empresa', '/empresa/ver', '/empresa/editar']];

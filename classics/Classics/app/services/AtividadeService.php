@@ -17,6 +17,18 @@ class AtividadeService {
         return $this->repository->getAtividades();
     }
 
+    public function getAtividadesPorEmpresa(int $empresaId): array
+    {
+        $atividades = [];
+        foreach ($this->repository->getAtividades() ?: [] as $atividade) {
+            if ((int) ($atividade['Empresa_ID'] ?? 0) === $empresaId) {
+                $atividades[] = Atividade::arrayParaObjeto($atividade);
+            }
+        }
+
+        return $atividades;
+    }
+
     public function getAtividade(int $id){
         return $this->repository->getAtividade($id);
     }

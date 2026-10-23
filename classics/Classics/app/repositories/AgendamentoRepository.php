@@ -146,6 +146,61 @@ class AgendamentoRepository
         return $agendamentos;
     }
 
+    public function getAgendamentosPorEmpresa(int $empresaId, int $atividadeId = 0): array
+    {
+        $sql = 'SELECT a.*, s.Data, s.Hora, s.Qtd_min, s.Qtd_max, s.Qtd_disponivel, s.ID_Atividade AS Sessao_ID_Atividade,
+                    at.Nome AS Atividade_Nome, u.Nome AS Cliente_Nome, u.Email AS Cliente_Email
+                FROM Agendamento a
+                INNER JOIN Sessao s ON s.ID_Sessao = a.ID_Sessao
+                INNER JOIN Atividades at ON at.ID_Atividade = a.ID_Atividade
+                LEFT JOIN Usuario u ON u.ID_Usuario = a.ID_Usuario
+                WHERE at.Empresa_ID = :empresa_id';
+
+        if ($atividadeId > 0) {
+            $sql .= ' AND a.ID_Atividade = :id_atividade';
+        }
+
+        $sql .= ' ORDER BY s.Data ASC, s.Hora ASC, at.Nome ASC';
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':empresa_id', $empresaId, PDO::PARAM_INT);
+        if ($atividadeId > 0) {
+            $stmt->bindValue(':id_atividade', $atividadeId, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        $agendamentos = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $linha) {
+            $sessao = $linha;
+            $sessao['ID_Atividade'] = $linha['Sessao_ID_Atividade'] ?? null;
+
+            $agendamentos[] = [
+                'agendamento' => Agendamento::arrayParaObjeto($linha),
+                'sessao' => Sessao::arrayParaObjeto($sessao),
+                'atividade_nome' => (string) ($linha['Atividade_Nome'] ?? ''),
+                'cliente_nome' => (string) ($linha['Cliente_Nome'] ?? ''),
+                'cliente_email' => (string) ($linha['Cliente_Email'] ?? '')
+            ];
+        }
+
+        return $agendamentos;
+    }
+
+    public function getAgendamentoPorEmpresa(int $idAgendamento, int $empresaId): ?Agendamento
+    {
+        $sql = 'SELECT a.* FROM Agendamento a
+                INNER JOIN Atividades at ON at.ID_Atividade = a.ID_Atividade
+                WHERE a.ID_Agendamento = :id_agendamento AND at.Empresa_ID = :empresa_id LIMIT 1';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id_agendamento', $idAgendamento, PDO::PARAM_INT);
+        $stmt->bindValue(':empresa_id', $empresaId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $agendamento = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $agendamento ? Agendamento::arrayParaObjeto($agendamento) : null;
+    }
+
     public function getAgendamentoPorUsuario(int $idAgendamento, int $usuarioId): ?Agendamento
     {
         $sql = 'SELECT * FROM Agendamento WHERE ID_Agendamento = :id_agendamento AND ID_Usuario = :id_usuario LIMIT 1';
