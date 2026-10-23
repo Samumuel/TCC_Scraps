@@ -25,6 +25,18 @@ class CategoriaRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getNomesCategoriasComAtividades(): array
+    {
+        $sql = 'SELECT DISTINCT c.Nome_Categoria
+                FROM Categorias c
+                INNER JOIN Atividades a ON a.Categoria_ID = c.ID_Categoria
+                ORDER BY c.Nome_Categoria ASC';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    }
+
     public function getCategoria(int $id, int $empresaId)
     {
         $sql = 'SELECT * FROM Categorias WHERE ID_Categoria = :id AND Empresa_ID = :empresa_id';
