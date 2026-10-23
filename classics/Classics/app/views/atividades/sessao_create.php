@@ -40,7 +40,7 @@ $erros = $erros ?? [];
                         <h5 class="card-title mb-3">Resumo da atividade</h5>
                         <p class="mb-2"><strong>Nome:</strong> <?= htmlspecialchars($atividade['Nome'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
                         <p class="mb-2"><strong>Categoria:</strong> <?= htmlspecialchars($atividade['Categoria_Nome'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
-                        <p class="mb-3"><strong>Duração:</strong> <?= htmlspecialchars($atividade['Duracao'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
+                        <p class="mb-3"><strong>Duração:</strong> <?= htmlspecialchars(\app\helpers\Formatador::duracao($atividade['Duracao'] ?? null), ENT_QUOTES, 'UTF-8') ?></p>
                         <div class="alert <?= $totalSessoes > 0 ? 'alert-success' : 'alert-warning' ?> mb-0" role="alert">
                             Sessões cadastradas: <strong><?= $totalSessoes ?></strong>
                         </div>

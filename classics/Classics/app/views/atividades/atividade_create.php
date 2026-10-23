@@ -85,10 +85,24 @@ $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
                                 </div>
                             <?php endif; ?>
                             <div class="mb-3">
-                                <label for="duracao" class="form-label">Duração</label>
-                                <input type="time" class="form-control <?= isset($erros['duracao']) ? 'is-invalid' : '' ?>" id="duracao" name="duracao" value="<?= htmlspecialchars($atividade['Duracao'] ?? '', ENT_QUOTES, 'UTF-8') ?>" step="60">
+                                <label for="duracao_horas" class="form-label">Duração</label>
+                                <div class="row g-2">
+                                    <div class="col-6 col-sm-4">
+                                        <div class="input-group">
+                                            <input type="number" class="form-control <?= isset($erros['duracao']) ? 'is-invalid' : '' ?>" id="duracao_horas" name="duracao_horas" min="0" max="838" step="1" placeholder="0" aria-label="Horas de duração" value="<?= htmlspecialchars((string) ($atividade['Duracao_Horas'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                            <span class="input-group-text">h</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-sm-4">
+                                        <div class="input-group">
+                                            <input type="number" class="form-control <?= isset($erros['duracao']) ? 'is-invalid' : '' ?>" id="duracao_minutos" name="duracao_minutos" min="0" max="59" step="1" placeholder="0" aria-label="Minutos de duração" value="<?= htmlspecialchars((string) ($atividade['Duracao_Minutos'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text">Quanto tempo a atividade dura. Ex.: 1 h e 30 min.</div>
                                 <?php if (isset($erros['duracao'])): ?>
-                                    <div class="invalid-feedback"><?= htmlspecialchars($erros['duracao'], ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="invalid-feedback d-block"><?= htmlspecialchars($erros['duracao'], ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php endif; ?>
                             </div>
                             <div class="mb-3">

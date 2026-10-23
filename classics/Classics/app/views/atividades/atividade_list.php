@@ -60,7 +60,7 @@
 								</div>
 								<div class="cl-meta mb-3">
 									<i class="bi bi-clock"></i>
-									<span><?= htmlspecialchars($atividade['Duracao'] ?? '-') ?></span>
+									<span><?= htmlspecialchars(\app\helpers\Formatador::duracao($atividade['Duracao'] ?? null)) ?></span>
 								</div>
 								<div class="cl-price mt-auto mb-3">
 									R$ <?= number_format((float) ($atividade['Valor'] ?? 0), 2, ',', '.') ?>

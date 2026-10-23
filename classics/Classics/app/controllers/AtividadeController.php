@@ -50,7 +50,8 @@ class AtividadeController extends Controller {
 		}
 
 		$nome = trim((string) ($_POST['nome'] ?? ''));
-		$duracao = trim((string) ($_POST['duracao'] ?? ''));
+		$duracaoHoras = trim((string) ($_POST['duracao_horas'] ?? ''));
+		$duracaoMinutos = trim((string) ($_POST['duracao_minutos'] ?? ''));
 		$descricao = trim((string) ($_POST['descricao'] ?? ''));
 		$localizacao = trim((string) ($_POST['localizacao'] ?? ''));
 		$valorInput = trim((string) ($_POST['valor'] ?? ''));
@@ -65,12 +66,11 @@ class AtividadeController extends Controller {
 		if ($descricao === '') {
 			$erros['descricao'] = 'Informe a descricao da atividade.';
 		}
-		if ($duracao === '') {
-			$erros['duracao'] = 'Informe a duracao da atividade.';
-		} elseif (!$this->isValidTimeInput($duracao)) {
-			$erros['duracao'] = 'Informe a duracao no formato HH:MM.';
+		$validacaoDuracao = $this->validarDuracao($duracaoHoras, $duracaoMinutos);
+		if ($validacaoDuracao['erro'] !== null) {
+			$erros['duracao'] = $validacaoDuracao['erro'];
 		} else {
-			$duracaoNormalizada = $this->normalizeTimeInputForDb($duracao);
+			$duracaoNormalizada = $validacaoDuracao['duracao'];
 		}
 		if ($valorInput === '') {
 			$erros['valor'] = 'Informe o valor da atividade.';
@@ -101,7 +101,8 @@ class AtividadeController extends Controller {
 		if (!empty($erros)) {
 			$data['atividade'] = [
 				'Nome' => $nome,
-				'Duracao' => $duracao,
+				'Duracao_Horas' => $duracaoHoras,
+				'Duracao_Minutos' => $duracaoMinutos,
 				'Descricao' => $descricao,
 				'Localizacao' => $localizacao,
 				'Valor' => $valorInput,
@@ -118,7 +119,8 @@ class AtividadeController extends Controller {
 		if (!$resultadoUpload['sucesso']) {
 			$data['atividade'] = [
 				'Nome' => $nome,
-				'Duracao' => $duracao,
+				'Duracao_Horas' => $duracaoHoras,
+				'Duracao_Minutos' => $duracaoMinutos,
 				'Descricao' => $descricao,
 				'Localizacao' => $localizacao,
 				'Valor' => $valorInput,
@@ -165,7 +167,7 @@ class AtividadeController extends Controller {
 		$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($id);
 		$data['sessao_form'] = [];
 		$data['sessao_editando_id'] = 0;
-		$data['atividade']['Duracao'] = $this->formatTimeForInput((string) ($data['atividade']['Duracao'] ?? ''));
+		$data['atividade'] = $this->prepararDuracaoParaFormulario($data['atividade']);
 		$data['aba_ativa'] = $_GET['tab'] ?? 'atividade';
 		$this->view('atividades/atividade_edit', $data);
 	}
@@ -183,7 +185,8 @@ class AtividadeController extends Controller {
 		}
 
 		$nome = trim((string) ($_POST['nome'] ?? ''));
-		$duracao = trim((string) ($_POST['duracao'] ?? ''));
+		$duracaoHoras = trim((string) ($_POST['duracao_horas'] ?? ''));
+		$duracaoMinutos = trim((string) ($_POST['duracao_minutos'] ?? ''));
 		$descricao = trim((string) ($_POST['descricao'] ?? ''));
 		$valorInput = trim((string) ($_POST['valor'] ?? ''));
 		$categoriaInput = trim((string) ($_POST['categoria_id'] ?? ($_POST['categoria'] ?? '')));
@@ -197,12 +200,11 @@ class AtividadeController extends Controller {
 		if ($descricao === '') {
 			$erros['descricao'] = 'Informe a descricao da atividade.';
 		}
-		if ($duracao === '') {
-			$erros['duracao'] = 'Informe a duracao da atividade.';
-		} elseif (!$this->isValidTimeInput($duracao)) {
-			$erros['duracao'] = 'Informe a duracao no formato HH:MM.';
+		$validacaoDuracao = $this->validarDuracao($duracaoHoras, $duracaoMinutos);
+		if ($validacaoDuracao['erro'] !== null) {
+			$erros['duracao'] = $validacaoDuracao['erro'];
 		} else {
-			$duracaoNormalizada = $this->normalizeTimeInputForDb($duracao);
+			$duracaoNormalizada = $validacaoDuracao['duracao'];
 		}
 		if ($valorInput === '') {
 			$erros['valor'] = 'Informe o valor da atividade.';
@@ -234,7 +236,8 @@ class AtividadeController extends Controller {
 			$data['atividade'] = [
 				'ID_Atividade' => $id,
 				'Nome' => $nome,
-				'Duracao' => $duracao,
+				'Duracao_Horas' => $duracaoHoras,
+				'Duracao_Minutos' => $duracaoMinutos,
 				'Descricao' => $descricao,
 				'Localizacao' => $atividadeAtual['Localizacao'] ?? null,
 				'Valor' => $valorInput,
@@ -261,7 +264,8 @@ class AtividadeController extends Controller {
 			$data['atividade'] = [
 				'ID_Atividade' => $id,
 				'Nome' => $nome,
-				'Duracao' => $duracao,
+				'Duracao_Horas' => $duracaoHoras,
+				'Duracao_Minutos' => $duracaoMinutos,
 				'Descricao' => $descricao,
 				'Localizacao' => $atividadeAtual['Localizacao'] ?? null,
 				'Valor' => $valorInput,
@@ -417,7 +421,7 @@ class AtividadeController extends Controller {
 			$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($idAtividade);
 			$data['sessao_form'] = $validacao['form'];
 			$data['sessao_editando_id'] = 0;
-			$data['atividade']['Duracao'] = $this->formatTimeForInput((string) ($data['atividade']['Duracao'] ?? ''));
+			$data['atividade'] = $this->prepararDuracaoParaFormulario($data['atividade']);
 			$data['aba_ativa'] = 'sessoes';
 			$data['erros'] = $validacao['erros'];
 			$this->view('atividades/atividade_edit', $data);
@@ -439,7 +443,7 @@ class AtividadeController extends Controller {
 			$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($idAtividade);
 			$data['sessao_form'] = $validacao['form'];
 			$data['sessao_editando_id'] = 0;
-			$data['atividade']['Duracao'] = $this->formatTimeForInput((string) ($data['atividade']['Duracao'] ?? ''));
+			$data['atividade'] = $this->prepararDuracaoParaFormulario($data['atividade']);
 			$data['aba_ativa'] = 'sessoes';
 			$data['erros'] = ['geral' => 'Erro ao salvar a sessao. Tente novamente.'];
 			$this->view('atividades/atividade_edit', $data);
@@ -476,7 +480,7 @@ class AtividadeController extends Controller {
 			$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($idAtividade);
 			$data['sessao_form'] = $validacao['form'];
 			$data['sessao_editando_id'] = $idSessao;
-			$data['atividade']['Duracao'] = $this->formatTimeForInput((string) ($data['atividade']['Duracao'] ?? ''));
+			$data['atividade'] = $this->prepararDuracaoParaFormulario($data['atividade']);
 			$data['aba_ativa'] = 'sessoes';
 			$data['erros'] = $validacao['erros'];
 			$this->view('atividades/atividade_edit', $data);
@@ -499,7 +503,7 @@ class AtividadeController extends Controller {
 			$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($idAtividade);
 			$data['sessao_form'] = $validacao['form'];
 			$data['sessao_editando_id'] = $idSessao;
-			$data['atividade']['Duracao'] = $this->formatTimeForInput((string) ($data['atividade']['Duracao'] ?? ''));
+			$data['atividade'] = $this->prepararDuracaoParaFormulario($data['atividade']);
 			$data['aba_ativa'] = 'sessoes';
 			$data['erros'] = ['geral' => 'Erro ao atualizar a sessao. Tente novamente.'];
 			$this->view('atividades/atividade_edit', $data);
@@ -684,9 +688,6 @@ class AtividadeController extends Controller {
 
 		$id = (int) $_GET['id'];
 		$data['atividade'] = $this->service->getAtividade($id);
-		if (!empty($data['atividade'])) {
-			$data['atividade']['Duracao'] = $this->formatTimeForInput((string) ($data['atividade']['Duracao'] ?? ''));
-		}
 		$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($id);
 		$data['aba_ativa'] = $_GET['tab'] ?? 'dados';
 		$this->view('atividades/atividade_show', $data);
@@ -745,13 +746,48 @@ class AtividadeController extends Controller {
 		return $value . ':00';
 	}
 
-	private function formatTimeForInput(string $value): string
+	private function validarDuracao(string $horas, string $minutos): array
 	{
-		if (preg_match('/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $value) === 1) {
-			return substr($value, 0, 5);
+		if ($horas === '' && $minutos === '') {
+			return ['duracao' => null, 'erro' => 'Informe a duracao da atividade.'];
 		}
 
-		return $value;
+		$horas = $horas === '' ? '0' : $horas;
+		$minutos = $minutos === '' ? '0' : $minutos;
+
+		if (!$this->isDigitsOnly($horas) || !$this->isDigitsOnly($minutos)) {
+			return ['duracao' => null, 'erro' => 'Informe horas e minutos usando apenas numeros inteiros.'];
+		}
+
+		$horasInt = (int) $horas;
+		$minutosInt = (int) $minutos;
+
+		if ($minutosInt > 59) {
+			return ['duracao' => null, 'erro' => 'Os minutos devem estar entre 0 e 59.'];
+		}
+
+		// Limite do tipo TIME do MySQL
+		if ($horasInt > 838) {
+			return ['duracao' => null, 'erro' => 'A duracao maxima e de 838 horas.'];
+		}
+
+		if ($horasInt === 0 && $minutosInt === 0) {
+			return ['duracao' => null, 'erro' => 'A duracao deve ser maior que zero.'];
+		}
+
+		return ['duracao' => sprintf('%02d:%02d:00', $horasInt, $minutosInt), 'erro' => null];
+	}
+
+	private function prepararDuracaoParaFormulario(array $atividade): array
+	{
+		$duracao = trim((string) ($atividade['Duracao'] ?? ''));
+
+		if (preg_match('/^(\d+):([0-5]\d)(:[0-5]\d)?$/', $duracao, $partes) === 1) {
+			$atividade['Duracao_Horas'] = (int) $partes[1];
+			$atividade['Duracao_Minutos'] = (int) $partes[2];
+		}
+
+		return $atividade;
 	}
 
 	private function isValidDecimalInput(string $value): bool

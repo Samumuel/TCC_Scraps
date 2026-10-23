@@ -80,7 +80,7 @@
                                 <i class="bi bi-clock"></i>
                                 <div>
                                     <small>Duração</small>
-                                    <?= htmlspecialchars($atividade['Duracao'] ?? '-', ENT_QUOTES, 'UTF-8') ?>
+                                    <?= htmlspecialchars(\app\helpers\Formatador::duracao($atividade['Duracao'] ?? null), ENT_QUOTES, 'UTF-8') ?>
                                 </div>
                             </div>
                         </div>
