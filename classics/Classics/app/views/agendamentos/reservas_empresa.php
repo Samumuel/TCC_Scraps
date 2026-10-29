@@ -18,8 +18,13 @@
 
         $mensagem = null;
         $tipoMensagem = null;
-        if (isset($_GET['sucesso']) && (string) $_GET['sucesso'] === 'cancelado') {
-            $mensagem = 'Reserva cancelada com sucesso! As vagas foram devolvidas para a sessão.';
+        $mensagensSucesso = [
+            'cancelado' => 'Reserva cancelada com sucesso! As vagas foram devolvidas para a sessão.',
+            'aprovado' => 'Reserva aceita! O agendamento do cliente está confirmado.',
+            'recusado' => 'Reserva recusada. As vagas foram devolvidas para a sessão.'
+        ];
+        if (isset($_GET['sucesso']) && isset($mensagensSucesso[(string) $_GET['sucesso']])) {
+            $mensagem = $mensagensSucesso[(string) $_GET['sucesso']];
             $tipoMensagem = 'success';
         } elseif (isset($_GET['erro'])) {
             $erro = (string) $_GET['erro'];
@@ -28,7 +33,9 @@
             } elseif ($erro === 'sessao') {
                 $mensagem = 'Sessão não encontrada.';
             } elseif ($erro === 'bloqueado') {
-                $mensagem = 'Esta reserva não pode mais ser cancelada.';
+                $mensagem = 'Esta reserva não pode mais ser alterada.';
+            } elseif ($erro === 'status') {
+                $mensagem = 'Esta reserva não está mais aguardando aprovação.';
             } else {
                 $mensagem = 'Não foi possível concluir a operação. Tente novamente.';
             }
@@ -36,11 +43,14 @@
         }
 
         $statusLabels = [
+            'pendente' => ['Aguardando aprovação', 'warning', 'bi-hourglass-split'],
             'aprovado' => ['Confirmado', 'success', 'bi-check-circle'],
-            'cancelado' => ['Cancelado', 'danger', 'bi-x-circle']
+            'cancelado' => ['Cancelado', 'danger', 'bi-x-circle'],
+            'recusado' => ['Recusado', 'danger', 'bi-slash-circle']
         ];
 
-        $proximos = array_values(array_filter($agendamentos, fn($item) => !empty($item['pode_alterar'])));
+        $pendentes = array_values(array_filter($agendamentos, fn($item) => !empty($item['pode_alterar']) && $item['agendamento']->getStatus() === 'pendente'));
+        $proximos = array_values(array_filter($agendamentos, fn($item) => !empty($item['pode_alterar']) && $item['agendamento']->getStatus() !== 'pendente'));
         $anteriores = array_values(array_filter($agendamentos, fn($item) => empty($item['pode_alterar'])));
         $pessoasConfirmadas = array_sum(array_map(fn($item) => (int) $item['agendamento']->getQuantidadePessoas(), $proximos));
 
@@ -64,18 +74,29 @@
         <?php endif; ?>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
+            <div class="col-6 col-lg-3">
                 <div class="card h-100">
                     <div class="card-body p-4 d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted small mb-1">Reservas ativas</p>
+                            <p class="text-muted small mb-1">Aguardando aprovação</p>
+                            <p class="h2 mb-0"><?= count($pendentes) ?></p>
+                        </div>
+                        <i class="bi bi-hourglass-split" style="font-size: 40px; color: var(--cl-warning);"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card h-100">
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted small mb-1">Reservas confirmadas</p>
                             <p class="h2 mb-0"><?= count($proximos) ?></p>
                         </div>
                         <i class="bi bi-calendar-check text-primary" style="font-size: 40px;"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-6 col-lg-3">
                 <div class="card h-100">
                     <div class="card-body p-4 d-flex justify-content-between align-items-center">
                         <div>
@@ -86,7 +107,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-6 col-lg-3">
                 <div class="card h-100">
                     <div class="card-body p-4 d-flex justify-content-between align-items-center">
                         <div>
@@ -119,82 +140,41 @@
         </form>
 
         <section class="mb-5">
-            <h2 class="mb-3">Próximas reservas</h2>
+            <h2 class="mb-3">Aguardando aprovação</h2>
+
+            <?php if (!empty($pendentes)): ?>
+                <div class="d-flex flex-column gap-3">
+                    <?php foreach ($pendentes as $item): ?>
+                        <?php $acoesCard = 'pendente'; ?>
+                        <?php require __DIR__ . '/_reserva_card.php'; ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="card text-center py-4">
+                    <div class="card-body">
+                        <i class="bi bi-hourglass text-muted" style="font-size: 40px;"></i>
+                        <p class="text-muted mt-2 mb-0">Nenhuma reserva aguardando aprovação.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </section>
+
+        <section class="mb-5">
+            <h2 class="mb-3">Próximas reservas confirmadas</h2>
 
             <?php if (!empty($proximos)): ?>
                 <div class="d-flex flex-column gap-3">
                     <?php foreach ($proximos as $item): ?>
-                        <?php
-                        $agendamento = $item['agendamento'];
-                        $sessao = $item['sessao'];
-                        $quantidade = (int) $agendamento->getQuantidadePessoas();
-                        $statusLabel = $statusLabels[(string) $agendamento->getStatus()] ?? [ucfirst((string) $agendamento->getStatus()), 'neutral', 'bi-info-circle'];
-                        ?>
-                        <div class="card">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                                    <h3 class="h5 mb-0">
-                                        <a href="<?= URL_BASE ?>/atividade/ver?id=<?= (int) $agendamento->getIdAtividade() ?>" class="text-reset text-decoration-none">
-                                            <?= htmlspecialchars($item['atividade_nome'] !== '' ? $item['atividade_nome'] : '-', ENT_QUOTES, 'UTF-8') ?>
-                                        </a>
-                                    </h3>
-                                    <span class="cl-badge cl-badge-<?= $statusLabel[1] ?>">
-                                        <i class="bi <?= $statusLabel[2] ?>"></i> <?= htmlspecialchars($statusLabel[0], ENT_QUOTES, 'UTF-8') ?>
-                                    </span>
-                                </div>
-
-                                <div class="row g-3 pb-3 mb-3 border-bottom">
-                                    <div class="col-12 col-md-4">
-                                        <div class="cl-info-tile">
-                                            <i class="bi bi-person"></i>
-                                            <div>
-                                                <small>Cliente</small>
-                                                <?= htmlspecialchars($item['cliente_nome'] !== '' ? $item['cliente_nome'] : '-', ENT_QUOTES, 'UTF-8') ?>
-                                                <?php if ($item['cliente_email'] !== ''): ?>
-                                                    <small><?= htmlspecialchars($item['cliente_email'], ENT_QUOTES, 'UTF-8') ?></small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="cl-info-tile">
-                                            <i class="bi bi-calendar3"></i>
-                                            <div><small>Data</small><?= htmlspecialchars($formatarData($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-2">
-                                        <div class="cl-info-tile">
-                                            <i class="bi bi-clock"></i>
-                                            <div><small>Horário</small><?= htmlspecialchars(substr((string) ($sessao->getHora() ?? '-'), 0, 5), ENT_QUOTES, 'UTF-8') ?></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="cl-info-tile">
-                                            <i class="bi bi-people"></i>
-                                            <div><small>Participantes</small><?= $quantidade ?> <?= $quantidade > 1 ? 'pessoas' : 'pessoa' ?></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex justify-content-end">
-                                    <form action="<?= URL_BASE ?>/agendamento/empresa/cancelar" method="POST" class="m-0" onsubmit="return confirm('Deseja cancelar esta reserva? As vagas serão devolvidas para a sessão.')">
-                                        <input type="hidden" name="agendamento_id" value="<?= (int) $agendamento->getIdAgendamento() ?>">
-                                        <input type="hidden" name="atividade" value="<?= $atividadeSelecionada ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-x-circle"></i> Cancelar reserva
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                        <?php $acoesCard = 'confirmada'; ?>
+                        <?php require __DIR__ . '/_reserva_card.php'; ?>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div class="card text-center py-5">
                     <div class="card-body">
                         <i class="bi bi-calendar3 text-muted" style="font-size: 56px;"></i>
-                        <h3 class="h5 mt-3 mb-2">Nenhuma reserva futura</h3>
-                        <p class="text-muted mb-0">Quando clientes agendarem suas atividades, as reservas aparecerão aqui.</p>
+                        <h3 class="h5 mt-3 mb-2">Nenhuma reserva confirmada</h3>
+                        <p class="text-muted mb-0">As reservas que você aceitar aparecerão aqui.</p>
                     </div>
                 </div>
             <?php endif; ?>
@@ -202,7 +182,7 @@
 
         <?php if (!empty($anteriores)): ?>
             <section>
-                <h2 class="mb-3">Reservas anteriores e canceladas</h2>
+                <h2 class="mb-3">Reservas anteriores, canceladas e recusadas</h2>
 
                 <div class="card">
                     <div class="table-responsive">
@@ -222,7 +202,9 @@
                                     <?php
                                     $agendamento = $item['agendamento'];
                                     $sessao = $item['sessao'];
-                                    $statusLabel = $statusLabels[(string) $agendamento->getStatus()] ?? [ucfirst((string) $agendamento->getStatus()), 'neutral', 'bi-info-circle'];
+                                    $statusLabel = $agendamento->getStatus() === 'pendente'
+                                        ? ['Não confirmado', 'neutral', 'bi-clock-history']
+                                        : ($statusLabels[(string) $agendamento->getStatus()] ?? [ucfirst((string) $agendamento->getStatus()), 'neutral', 'bi-info-circle']);
                                     ?>
                                     <tr>
                                         <td class="px-4 py-3"><?= htmlspecialchars($item['atividade_nome'] !== '' ? $item['atividade_nome'] : '-', ENT_QUOTES, 'UTF-8') ?></td>

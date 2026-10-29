@@ -84,7 +84,7 @@ class AgendamentoController extends Controller
         $resultado = $this->service->atualizarQuantidadePessoas($usuarioId, $agendamentoId, (int) $quantidadePessoasInput);
 
         if (!empty($resultado['sucesso'])) {
-            $this->redirect(URL_BASE . '/agendamento/meus?sucesso=atualizado');
+            $this->redirect(URL_BASE . '/agendamento/meus?sucesso=' . (!empty($resultado['pendente']) ? 'atualizado_pendente' : 'atualizado'));
         }
 
         $erro = (string) ($resultado['erro'] ?? 'falha');
@@ -130,6 +130,21 @@ class AgendamentoController extends Controller
 
     public function cancelarReservaEmpresa()
     {
+        $this->executarAcaoReservaEmpresa('cancelar');
+    }
+
+    public function aprovarReservaEmpresa()
+    {
+        $this->executarAcaoReservaEmpresa('aprovar');
+    }
+
+    public function recusarReservaEmpresa()
+    {
+        $this->executarAcaoReservaEmpresa('recusar');
+    }
+
+    private function executarAcaoReservaEmpresa(string $acao)
+    {
         $empresaId = $this->getEmpresaLogadaId();
         if ($empresaId === null) {
             $this->redirect(URL_BASE);
@@ -143,10 +158,19 @@ class AgendamentoController extends Controller
             $this->redirect(URL_BASE . '/agendamento/empresa?' . $filtro . 'erro=agendamento');
         }
 
-        $resultado = $this->service->cancelarAgendamentoDaEmpresa($empresaId, $agendamentoId);
+        if ($acao === 'aprovar') {
+            $resultado = $this->service->aprovarAgendamentoDaEmpresa($empresaId, $agendamentoId);
+            $sucesso = 'aprovado';
+        } elseif ($acao === 'recusar') {
+            $resultado = $this->service->recusarAgendamentoDaEmpresa($empresaId, $agendamentoId);
+            $sucesso = 'recusado';
+        } else {
+            $resultado = $this->service->cancelarAgendamentoDaEmpresa($empresaId, $agendamentoId);
+            $sucesso = 'cancelado';
+        }
 
         if (!empty($resultado['sucesso'])) {
-            $this->redirect(URL_BASE . '/agendamento/empresa?' . $filtro . 'sucesso=cancelado');
+            $this->redirect(URL_BASE . '/agendamento/empresa?' . $filtro . 'sucesso=' . $sucesso);
         }
 
         $erro = (string) ($resultado['erro'] ?? 'falha');

@@ -82,7 +82,7 @@ class AgendamentoRepository
             $agendamento->setIdAtividade((int) ($sessao['ID_Atividade'] ?? 0));
             $agendamento->setQuantidadePessoas($quantidadePessoas);
             $agendamento->setDataHora($dataSessao . ' ' . $horaSessao);
-            $agendamento->setStatus('aprovado');
+            $agendamento->setStatus('pendente');
 
             $sqlAgendamento = 'INSERT INTO Agendamento (Quantidade_Pessoas, Data_hora, Status, ID_Atividade, ID_Usuario, ID_Sessao)
                 VALUES (:quantidade_pessoas, :data_hora, :status, :id_atividade, :id_usuario, :id_sessao)';
@@ -214,18 +214,20 @@ class AgendamentoRepository
         return $agendamento ? Agendamento::arrayParaObjeto($agendamento) : null;
     }
 
-    public function atualizarQuantidadePessoas(Agendamento $agendamento, int $novaQuantidade): bool
+    public function atualizarQuantidadePessoas(Agendamento $agendamento, int $novaQuantidade, ?string $novoStatus = null): bool
     {
         $diferenca = $novaQuantidade - (int) $agendamento->getQuantidadePessoas();
+        $novoStatus = $novoStatus ?? (string) $agendamento->getStatus();
 
         $this->connection->beginTransaction();
 
         try {
-            $sqlAgendamento = 'UPDATE Agendamento SET Quantidade_Pessoas = :nova_quantidade
+            $sqlAgendamento = 'UPDATE Agendamento SET Quantidade_Pessoas = :nova_quantidade, Status = :novo_status
                 WHERE ID_Agendamento = :id_agendamento AND ID_Usuario = :id_usuario
                 AND Quantidade_Pessoas = :quantidade_atual AND Status = :status';
             $stmtAgendamento = $this->connection->prepare($sqlAgendamento);
             $stmtAgendamento->bindValue(':nova_quantidade', $novaQuantidade, PDO::PARAM_INT);
+            $stmtAgendamento->bindValue(':novo_status', $novoStatus);
             $stmtAgendamento->bindValue(':id_agendamento', $agendamento->getIdAgendamento(), PDO::PARAM_INT);
             $stmtAgendamento->bindValue(':id_usuario', $agendamento->getIdUsuario(), PDO::PARAM_INT);
             $stmtAgendamento->bindValue(':quantidade_atual', $agendamento->getQuantidadePessoas(), PDO::PARAM_INT);
@@ -255,6 +257,7 @@ class AgendamentoRepository
 
             $this->connection->commit();
             $agendamento->setQuantidadePessoas($novaQuantidade);
+            $agendamento->setStatus($novoStatus);
 
             return true;
         } catch (Throwable $e) {
@@ -264,6 +267,25 @@ class AgendamentoRepository
 
             return false;
         }
+    }
+
+    public function aprovarAgendamento(Agendamento $agendamento, string $statusAprovado): bool
+    {
+        $sql = 'UPDATE Agendamento SET Status = :status_aprovado
+                WHERE ID_Agendamento = :id_agendamento AND Status = :status_atual';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':status_aprovado', $statusAprovado);
+        $stmt->bindValue(':id_agendamento', $agendamento->getIdAgendamento(), PDO::PARAM_INT);
+        $stmt->bindValue(':status_atual', $agendamento->getStatus());
+        $stmt->execute();
+
+        if ($stmt->rowCount() === 0) {
+            return false;
+        }
+
+        $agendamento->setStatus($statusAprovado);
+
+        return true;
     }
 
     public function cancelarAgendamento(Agendamento $agendamento, string $statusCancelado): bool

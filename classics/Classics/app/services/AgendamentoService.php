@@ -10,8 +10,10 @@ use Throwable;
 
 class AgendamentoService
 {
+    private const STATUS_PENDENTE = 'pendente';
     private const STATUS_ATIVO = 'aprovado';
     private const STATUS_CANCELADO = 'cancelado';
+    private const STATUS_RECUSADO = 'recusado';
 
     private AgendamentoRepository $repository;
     private SessaoService $sessaoService;
@@ -110,7 +112,11 @@ class AgendamentoService
             ];
         }
 
-        if (!$this->repository->atualizarQuantidadePessoas($agendamento, $novaQuantidade)) {
+        // Aumentar a quantidade de um agendamento confirmado exige nova aprovação da empresa
+        $voltaParaPendente = $agendamento->getStatus() === self::STATUS_ATIVO && $novaQuantidade > $quantidadeAtual;
+        $novoStatus = $voltaParaPendente ? self::STATUS_PENDENTE : null;
+
+        if (!$this->repository->atualizarQuantidadePessoas($agendamento, $novaQuantidade, $novoStatus)) {
             return [
                 'sucesso' => false,
                 'erro' => 'falha'
@@ -118,7 +124,8 @@ class AgendamentoService
         }
 
         return [
-            'sucesso' => true
+            'sucesso' => true,
+            'pendente' => $voltaParaPendente
         ];
     }
 
@@ -174,6 +181,62 @@ class AgendamentoService
         return [
             'sucesso' => true
         ];
+    }
+
+    public function aprovarAgendamentoDaEmpresa(int $empresaId, int $agendamentoId): array
+    {
+        $carregado = $this->carregarAgendamentoPendenteDaEmpresa($empresaId, $agendamentoId);
+        if (empty($carregado['sucesso'])) {
+            return $carregado;
+        }
+
+        if (!$this->repository->aprovarAgendamento($carregado['agendamento'], self::STATUS_ATIVO)) {
+            return [
+                'sucesso' => false,
+                'erro' => 'falha'
+            ];
+        }
+
+        return [
+            'sucesso' => true
+        ];
+    }
+
+    public function recusarAgendamentoDaEmpresa(int $empresaId, int $agendamentoId): array
+    {
+        $carregado = $this->carregarAgendamentoPendenteDaEmpresa($empresaId, $agendamentoId);
+        if (empty($carregado['sucesso'])) {
+            return $carregado;
+        }
+
+        // Recusar devolve as vagas reservadas, assim como o cancelamento
+        if (!$this->repository->cancelarAgendamento($carregado['agendamento'], self::STATUS_RECUSADO)) {
+            return [
+                'sucesso' => false,
+                'erro' => 'falha'
+            ];
+        }
+
+        return [
+            'sucesso' => true
+        ];
+    }
+
+    private function carregarAgendamentoPendenteDaEmpresa(int $empresaId, int $agendamentoId): array
+    {
+        $carregado = $this->carregarAgendamentoAlteravelDaEmpresa($empresaId, $agendamentoId);
+        if (empty($carregado['sucesso'])) {
+            return $carregado;
+        }
+
+        if ($carregado['agendamento']->getStatus() !== self::STATUS_PENDENTE) {
+            return [
+                'sucesso' => false,
+                'erro' => 'status'
+            ];
+        }
+
+        return $carregado;
     }
 
     private function carregarAgendamentoAlteravel(int $usuarioId, int $agendamentoId): array
@@ -238,7 +301,7 @@ class AgendamentoService
 
     private function podeAlterar(Agendamento $agendamento, Sessao $sessao): bool
     {
-        if ($agendamento->getStatus() !== self::STATUS_ATIVO) {
+        if (!in_array($agendamento->getStatus(), [self::STATUS_PENDENTE, self::STATUS_ATIVO], true)) {
             return false;
         }
 

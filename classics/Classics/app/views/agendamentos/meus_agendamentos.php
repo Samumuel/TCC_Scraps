@@ -20,6 +20,8 @@
             $sucesso = (string) $_GET['sucesso'];
             if ($sucesso === 'atualizado') {
                 $mensagem = 'Agendamento atualizado com sucesso!';
+            } elseif ($sucesso === 'atualizado_pendente') {
+                $mensagem = 'Agendamento atualizado! Como a quantidade de pessoas aumentou, ele voltou a aguardar a aprovação da empresa.';
             } elseif ($sucesso === 'cancelado') {
                 $mensagem = 'Agendamento cancelado com sucesso!';
             }
@@ -45,8 +47,10 @@
         }
 
         $statusLabels = [
+            'pendente' => ['Aguardando aprovação', 'warning', 'bi-hourglass-split'],
             'aprovado' => ['Confirmado', 'success', 'bi-check-circle'],
-            'cancelado' => ['Cancelado', 'danger', 'bi-x-circle']
+            'cancelado' => ['Cancelado', 'danger', 'bi-x-circle'],
+            'recusado' => ['Recusado', 'danger', 'bi-slash-circle']
         ];
 
         $proximos = array_values(array_filter($agendamentos, fn($item) => !empty($item['pode_alterar'])));
@@ -142,7 +146,7 @@
                                                     </div>
                                                 </form>
                                                 <p class="text-muted small mt-3 mb-0">
-                                                    * Até <?= $qtdLivre ?> pessoa(s) nesta sessão. Para trocar de sessão, data ou hora, cancele este agendamento e faça uma nova inscrição na página da atividade.
+                                                    * Até <?= $qtdLivre ?> pessoa(s) nesta sessão.<?= $agendamento->getStatus() === 'aprovado' ? ' Se aumentar a quantidade, o agendamento voltará a aguardar a aprovação da empresa.' : '' ?> Para trocar de sessão, data ou hora, cancele este agendamento e faça uma nova inscrição na página da atividade.
                                                 </p>
                                             </div>
                                         </div>
@@ -166,7 +170,7 @@
 
         <?php if (!empty($anteriores)): ?>
             <section>
-                <h2 class="mb-3">Atividades anteriores e canceladas</h2>
+                <h2 class="mb-3">Atividades anteriores, canceladas e recusadas</h2>
 
                 <div class="d-flex flex-column gap-3">
                     <?php foreach ($anteriores as $item): ?>
@@ -174,7 +178,9 @@
                         $agendamento = $item['agendamento'];
                         $sessao = $item['sessao'];
                         $quantidade = (int) $agendamento->getQuantidadePessoas();
-                        $statusLabel = $statusLabels[(string) $agendamento->getStatus()] ?? [ucfirst((string) $agendamento->getStatus()), 'neutral', 'bi-info-circle'];
+                        $statusLabel = $agendamento->getStatus() === 'pendente'
+                            ? ['Não confirmado', 'neutral', 'bi-clock-history']
+                            : ($statusLabels[(string) $agendamento->getStatus()] ?? [ucfirst((string) $agendamento->getStatus()), 'neutral', 'bi-info-circle']);
                         ?>
                         <div class="card">
                             <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-md-center">

@@ -40,6 +40,8 @@ $router ->post('/agendamento/atualizar', 'AgendamentoController@atualizar');
 $router ->post('/agendamento/cancelar', 'AgendamentoController@cancelar');
 $router ->get('/agendamento/empresa', 'AgendamentoController@reservasEmpresa');
 $router ->post('/agendamento/empresa/cancelar', 'AgendamentoController@cancelarReservaEmpresa');
+$router ->post('/agendamento/empresa/aprovar', 'AgendamentoController@aprovarReservaEmpresa');
+$router ->post('/agendamento/empresa/recusar', 'AgendamentoController@recusarReservaEmpresa');
 
 $router->get('/favorito/meus', 'FavoritoController@meusFavoritos');
 $router->post('/favorito/alternar', 'FavoritoController@alternar');

@@ -20,7 +20,7 @@
         $mensagemInscricao = null;
         $tipoMensagemInscricao = null;
         if (isset($_GET['sucesso_inscricao']) && (string) $_GET['sucesso_inscricao'] === '1') {
-            $mensagemInscricao = 'Inscrição realizada com sucesso!';
+            $mensagemInscricao = 'Solicitação enviada! Seu agendamento está aguardando a aprovação da empresa. Acompanhe em Meus Agendamentos.';
             $tipoMensagemInscricao = 'success';
         } elseif (isset($_GET['erro_inscricao'])) {
             $erroInscricao = (string) $_GET['erro_inscricao'];
