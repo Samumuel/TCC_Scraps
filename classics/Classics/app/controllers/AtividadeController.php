@@ -11,6 +11,7 @@ use app\services\CategoriaService;
 use app\services\FavoritoService;
 use app\services\LocalizacaoService;
 use app\services\SessaoService;
+use DateTime;
 
 class AtividadeController extends Controller {
 	private const TAMANHO_MAX_FOTO = 5_242_880; // 5mb de tamanha maximo;
@@ -34,7 +35,8 @@ class AtividadeController extends Controller {
 		$resultado = $this->service->filtrarAtividades(
 			(string) ($_GET['busca'] ?? ''),
 			(string) ($_GET['categoria'] ?? ''),
-			(string) ($_GET['data'] ?? '')
+			(string) ($_GET['data'] ?? ''),
+			(int) ($this->getEmpresaLogadaId() ?? 0)
 		);
 
 		$data['lista'] = $resultado['atividades'];
@@ -594,6 +596,11 @@ class AtividadeController extends Controller {
 			$erros['hora'] = 'Informe a hora inicial no formato HH:MM.';
 		}
 
+		$erroDataHora = $this->validarDataHoraSessao($dataSessao, $hora);
+		if ($erroDataHora !== null && !isset($erros['data']) && !isset($erros['hora'])) {
+			$erros['data'] = $erroDataHora;
+		}
+
 		if ($qtdMinInput === '') {
 			$erros['qtd_min'] = 'Informe a quantidade minima.';
 		} elseif (!$this->isDigitsOnly($qtdMinInput)) {
@@ -700,7 +707,7 @@ class AtividadeController extends Controller {
 
 		$id = (int) $_GET['id'];
 		$data['atividade'] = $this->service->getAtividade($id);
-		$data['sessoes'] = $this->sessaoService->getSessoesPorAtividade($id);
+		$data['sessoes'] = $this->sessaoService->getSessoesDisponiveisPorAtividade($id);
 		$data['aba_ativa'] = $_GET['tab'] ?? 'dados';
 
 		$usuarioLogado = $_SESSION['usuario_logado'] ?? null;
@@ -813,6 +820,25 @@ class AtividadeController extends Controller {
 		return preg_match('/^\d+(\.\d{1,2})?$/', $value) === 1;
 	}
 
+	// RN04: a sessao deve ter data valida e acontecer em data e horario futuros
+	private function validarDataHoraSessao(string $dataSessao, string $hora): ?string
+	{
+		if ($dataSessao === '' || !$this->isValidTimeInput($hora)) {
+			return null;
+		}
+
+		$data = DateTime::createFromFormat('!Y-m-d', $dataSessao);
+		if ($data === false || $data->format('Y-m-d') !== $dataSessao) {
+			return 'Informe uma data valida.';
+		}
+
+		if (new DateTime($dataSessao . ' ' . $hora) <= new DateTime()) {
+			return 'A sessao deve ser em uma data e horario futuros.';
+		}
+
+		return null;
+	}
+
 	private function validarCamposSessao(array $input): array
 	{
 		$dataSessao = trim((string) ($input['data'] ?? ''));
@@ -830,6 +856,11 @@ class AtividadeController extends Controller {
 			$erros['hora'] = 'Informe a hora inicial da sessao.';
 		} elseif (!$this->isValidTimeInput($hora)) {
 			$erros['hora'] = 'Informe a hora inicial no formato HH:MM.';
+		}
+
+		$erroDataHora = $this->validarDataHoraSessao($dataSessao, $hora);
+		if ($erroDataHora !== null && !isset($erros['data']) && !isset($erros['hora'])) {
+			$erros['data'] = $erroDataHora;
 		}
 
 		if ($qtdMinInput === '') {

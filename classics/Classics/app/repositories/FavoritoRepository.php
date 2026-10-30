@@ -49,9 +49,11 @@ class FavoritoRepository
         return $stmt->execute();
     }
 
-    public function getFavoritosPorUsuario(int $usuarioId): array
+    public function getFavoritosPorUsuario(int $usuarioId, string $hoje, string $agora): array
     {
-        $sql = 'SELECT f.ID_Favorito, f.ID_Usuario, at.*, c.Nome_Categoria AS Categoria_Nome
+        $sql = 'SELECT f.ID_Favorito, f.ID_Usuario, at.*, c.Nome_Categoria AS Categoria_Nome,
+                    EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = at.ID_Atividade
+                        AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))) AS Tem_Sessao_Disponivel
                 FROM Favorito f
                 INNER JOIN Atividades at ON at.ID_Atividade = f.ID_Atividade
                 LEFT JOIN Categorias c ON c.ID_Categoria = at.Categoria_ID
@@ -59,6 +61,9 @@ class FavoritoRepository
                 ORDER BY f.ID_Favorito DESC';
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':id_usuario', $usuarioId, PDO::PARAM_INT);
+        $stmt->bindValue(':hoje', $hoje);
+        $stmt->bindValue(':hoje_hora', $hoje);
+        $stmt->bindValue(':agora', $agora);
         $stmt->execute();
 
         $favoritos = [];
@@ -66,7 +71,8 @@ class FavoritoRepository
             $favoritos[] = [
                 'favorito' => Favorito::arrayParaObjeto($linha),
                 'atividade' => Atividade::arrayParaObjeto($linha),
-                'categoria_nome' => (string) ($linha['Categoria_Nome'] ?? '')
+                'categoria_nome' => (string) ($linha['Categoria_Nome'] ?? ''),
+                'disponivel' => (bool) ($linha['Tem_Sessao_Disponivel'] ?? false)
             ];
         }
 

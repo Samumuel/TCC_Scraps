@@ -5,6 +5,7 @@ namespace app\repositories;
 use app\database\ConnectionFactory;
 use app\models\Agendamento;
 use app\models\Sessao;
+use DateTime;
 use PDO;
 use Throwable;
 
@@ -75,6 +76,22 @@ class AgendamentoRepository
                 return [
                     'sucesso' => false,
                     'erro' => 'sessao'
+                ];
+            }
+
+            // Não permite inscrição em sessão que já começou ou passou
+            try {
+                $sessaoEncerrada = new DateTime($dataSessao . ' ' . $horaSessao) <= new DateTime();
+            } catch (Throwable $e) {
+                $sessaoEncerrada = true;
+            }
+
+            if ($sessaoEncerrada) {
+                $this->connection->rollBack();
+
+                return [
+                    'sucesso' => false,
+                    'erro' => 'encerrada'
                 ];
             }
 

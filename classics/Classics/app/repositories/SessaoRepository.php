@@ -25,6 +25,22 @@ class SessaoRepository
         return $stmt->fetchAll() ?: [];
     }
 
+    public function getSessoesDisponiveisPorAtividade(int $atividadeId, string $hoje, string $agora): array
+    {
+        $sql = 'SELECT * FROM Sessao
+                WHERE ID_Atividade = :id_atividade
+                AND (Data > :hoje OR (Data = :hoje_hora AND Hora > :agora))
+                ORDER BY Data ASC, Hora ASC';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id_atividade', $atividadeId, PDO::PARAM_INT);
+        $stmt->bindValue(':hoje', $hoje);
+        $stmt->bindValue(':hoje_hora', $hoje);
+        $stmt->bindValue(':agora', $agora);
+        $stmt->execute();
+
+        return $stmt->fetchAll() ?: [];
+    }
+
     public function countSessoesPorAtividade(int $atividadeId): int
     {
         $sql = 'SELECT COUNT(*) AS total FROM Sessao WHERE ID_Atividade = :id_atividade';

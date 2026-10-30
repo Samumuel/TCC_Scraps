@@ -267,7 +267,7 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
                                             <div class="row g-3">
                                                 <div class="col-md-6">
                                                     <label for="sessao_data" class="form-label">Data</label>
-                                                    <input type="date" class="form-control <?= isset($erros['data']) && $sessaoEditandoId === 0 ? 'is-invalid' : '' ?>" id="sessao_data" name="data" value="<?= htmlspecialchars($sessaoForm['Data'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+                                                    <input type="date" min="<?= date('Y-m-d') ?>" class="form-control <?= isset($erros['data']) && $sessaoEditandoId === 0 ? 'is-invalid' : '' ?>" id="sessao_data" name="data" value="<?= htmlspecialchars($sessaoForm['Data'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                                                     <?php if (isset($erros['data']) && $sessaoEditandoId === 0): ?>
                                                         <div class="invalid-feedback"><?= htmlspecialchars($erros['data'], ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php endif; ?>
@@ -341,7 +341,7 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
                                                             ?>
                                                             <tr>
                                                                 <td>
-                                                                    <input type="date" form="<?= htmlspecialchars($updateFormId, ENT_QUOTES, 'UTF-8') ?>" class="form-control form-control-sm <?= isset($erros['data']) && $editandoLinha ? 'is-invalid' : '' ?>" name="data" value="<?= htmlspecialchars($dataLinha, ENT_QUOTES, 'UTF-8') ?>" required>
+                                                                    <input type="date" min="<?= date('Y-m-d') ?>" form="<?= htmlspecialchars($updateFormId, ENT_QUOTES, 'UTF-8') ?>" class="form-control form-control-sm <?= isset($erros['data']) && $editandoLinha ? 'is-invalid' : '' ?>" name="data" value="<?= htmlspecialchars($dataLinha, ENT_QUOTES, 'UTF-8') ?>" required>
                                                                     <?php if (isset($erros['data']) && $editandoLinha): ?>
                                                                         <div class="invalid-feedback d-block"><?= htmlspecialchars($erros['data'], ENT_QUOTES, 'UTF-8') ?></div>
                                                                     <?php endif; ?>

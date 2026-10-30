@@ -18,7 +18,7 @@ class AtividadeService {
         return $this->repository->getAtividades();
     }
 
-    public function filtrarAtividades(string $busca, string $categoria, string $data): array
+    public function filtrarAtividades(string $busca, string $categoria, string $data, int $empresaId = 0): array
     {
         $erros = [];
         $filtros = [
@@ -40,8 +40,17 @@ class AtividadeService {
             }
         }
 
+        // RN03: listar apenas atividades com sessão que ainda não começou
+        $agora = new DateTime();
+        $consulta = $filtros + [
+            'somente_disponiveis' => true,
+            'hoje' => $agora->format('Y-m-d'),
+            'agora' => $agora->format('H:i:s'),
+            'empresa_id' => $empresaId
+        ];
+
         return [
-            'atividades' => $this->repository->getAtividades($filtros),
+            'atividades' => $this->repository->getAtividades($consulta),
             'filtros' => $filtros,
             'erros' => $erros
         ];

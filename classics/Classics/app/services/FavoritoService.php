@@ -4,6 +4,7 @@ namespace app\services;
 
 use app\models\Favorito;
 use app\repositories\FavoritoRepository;
+use DateTime;
 
 class FavoritoService
 {
@@ -31,7 +32,9 @@ class FavoritoService
             return [];
         }
 
-        return $this->repository->getFavoritosPorUsuario($usuarioId);
+        $agora = new DateTime();
+
+        return $this->repository->getFavoritosPorUsuario($usuarioId, $agora->format('Y-m-d'), $agora->format('H:i:s'));
     }
 
     public function alternarFavorito(int $usuarioId, int $atividadeId): array

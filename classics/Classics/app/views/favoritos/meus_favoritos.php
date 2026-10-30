@@ -80,6 +80,11 @@
                                     </div>
                                 <?php endif; ?>
                                 <h3 class="card-title mb-2"><?= htmlspecialchars((string) ($atividade->getNome() ?? '-'), ENT_QUOTES, 'UTF-8') ?></h3>
+                                <?php if (empty($item['disponivel'])): ?>
+                                    <div class="mb-2">
+                                        <span class="cl-badge cl-badge-neutral"><i class="bi bi-calendar-x"></i> Sem sessões disponíveis</span>
+                                    </div>
+                                <?php endif; ?>
                                 <div class="cl-meta mb-1">
                                     <i class="bi bi-geo-alt"></i>
                                     <span><?= htmlspecialchars((string) ($atividade->getLocalizacao() ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>

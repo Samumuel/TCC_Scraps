@@ -44,7 +44,32 @@ class AtividadeRepository {
             $parametros[':categoria'] = (string) $filtros['categoria'];
         }
 
-        if (!empty($filtros['data'])) {
+        if (!empty($filtros['somente_disponiveis'])) {
+            // Atividade disponível: possui sessão que ainda não começou (no dia filtrado, se houver)
+            $sessaoDisponivel = 'EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = a.ID_Atividade'
+                . (!empty($filtros['data']) ? ' AND s.Data = :data' : '')
+                . ' AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora)))';
+            $parametros[':hoje'] = (string) $filtros['hoje'];
+            $parametros[':hoje_hora'] = (string) $filtros['hoje'];
+            $parametros[':agora'] = (string) $filtros['agora'];
+
+            if (!empty($filtros['empresa_id'])) {
+                // A empresa logada continua vendo as próprias atividades, mesmo sem sessão disponível
+                $propriaEmpresa = 'a.Empresa_ID = :empresa_id'
+                    . (!empty($filtros['data']) ? ' AND EXISTS (SELECT 1 FROM Sessao s2 WHERE s2.ID_Atividade = a.ID_Atividade AND s2.Data = :data_empresa)' : '');
+                $condicoes[] = '(' . $sessaoDisponivel . ' OR (' . $propriaEmpresa . '))';
+                $parametros[':empresa_id'] = (int) $filtros['empresa_id'];
+                if (!empty($filtros['data'])) {
+                    $parametros[':data_empresa'] = (string) $filtros['data'];
+                }
+            } else {
+                $condicoes[] = $sessaoDisponivel;
+            }
+
+            if (!empty($filtros['data'])) {
+                $parametros[':data'] = (string) $filtros['data'];
+            }
+        } elseif (!empty($filtros['data'])) {
             $condicoes[] = 'EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = a.ID_Atividade AND s.Data = :data)';
             $parametros[':data'] = (string) $filtros['data'];
         }

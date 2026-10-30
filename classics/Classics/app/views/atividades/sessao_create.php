@@ -69,7 +69,7 @@ $erros = $erros ?? [];
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="data" class="form-label">Data</label>
-                                    <input type="date" class="form-control <?= isset($erros['data']) ? 'is-invalid' : '' ?>" id="data" name="data" value="<?= htmlspecialchars($sessao['Data'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+                                    <input type="date" min="<?= date('Y-m-d') ?>" class="form-control <?= isset($erros['data']) ? 'is-invalid' : '' ?>" id="data" name="data" value="<?= htmlspecialchars($sessao['Data'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                                     <?php if (isset($erros['data'])): ?>
                                         <div class="invalid-feedback"><?= htmlspecialchars($erros['data'], ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php endif; ?>

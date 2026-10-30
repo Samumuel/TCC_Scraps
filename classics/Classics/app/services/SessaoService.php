@@ -4,6 +4,7 @@ namespace app\services;
 
 use app\models\Sessao;
 use app\repositories\SessaoRepository;
+use DateTime;
 
 class SessaoService
 {
@@ -17,6 +18,14 @@ class SessaoService
     public function getSessoesPorAtividade(int $atividadeId): array
     {
         return $this->repository->getSessoesPorAtividade($atividadeId);
+    }
+
+    // Sessões que ainda não começaram: data futura ou de hoje com horário ainda por vir
+    public function getSessoesDisponiveisPorAtividade(int $atividadeId): array
+    {
+        $agora = new DateTime();
+
+        return $this->repository->getSessoesDisponiveisPorAtividade($atividadeId, $agora->format('Y-m-d'), $agora->format('H:i:s'));
     }
 
     public function countSessoesPorAtividade(int $atividadeId): int

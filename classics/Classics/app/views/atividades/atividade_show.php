@@ -30,6 +30,8 @@
                 $mensagemInscricao = 'Informe uma quantidade de pessoas válida.';
             } elseif ($erroInscricao === 'sessao') {
                 $mensagemInscricao = 'Sessão não encontrada.';
+            } elseif ($erroInscricao === 'encerrada') {
+                $mensagemInscricao = 'Esta sessão não está mais disponível para inscrição.';
             } elseif ($erroInscricao === 'lotacao') {
                 $mensagemInscricao = 'Não há disponibilidade suficiente para esta inscrição.';
             } else {
@@ -129,7 +131,7 @@
 
                         <?php if (empty($sessoes)): ?>
                             <div class="alert alert-info mb-0" role="alert">
-                                Esta atividade ainda não possui sessões cadastradas.
+                                Esta atividade não possui sessões disponíveis no momento.
                             </div>
                         <?php else: ?>
                             <?php if (!$usuarioPodeSeInscrever): ?>

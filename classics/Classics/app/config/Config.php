@@ -9,6 +9,9 @@ if (DEV_ENVIRONMENT == true) {
     error_reporting(E_ALL);
 }
 
+// Fuso horário usado nas regras de data (sessões, agendamentos e filtros)
+date_default_timezone_set('America/Sao_Paulo');
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
