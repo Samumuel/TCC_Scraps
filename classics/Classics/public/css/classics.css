@@ -615,3 +615,30 @@ h2, .h2 {
     right: 0.75rem;
     margin: 0;
 }
+
+/* Barra de busca e filtros */
+.cl-search-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--cl-radius);
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 768px) {
+    .cl-search-bar {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .cl-search-busca {
+        flex: 2 1 0;
+    }
+
+    .cl-search-categoria,
+    .cl-search-data {
+        flex: 1 1 0;
+    }
+}

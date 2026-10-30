@@ -31,7 +31,16 @@ class AtividadeController extends Controller {
 	}
 
 	public function listarTodos() {
-		$data['lista'] = $this->service->getAtividades();
+		$resultado = $this->service->filtrarAtividades(
+			(string) ($_GET['busca'] ?? ''),
+			(string) ($_GET['categoria'] ?? ''),
+			(string) ($_GET['data'] ?? '')
+		);
+
+		$data['lista'] = $resultado['atividades'];
+		$data['filtros'] = $resultado['filtros'];
+		$data['erros'] = $resultado['erros'];
+		$data['categorias_filtro'] = $this->categoriaService->getNomesCategoriasComAtividades();
 		$this->view('atividades/atividade_list', $data);
 	}
 

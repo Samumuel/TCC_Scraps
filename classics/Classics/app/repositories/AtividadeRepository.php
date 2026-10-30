@@ -16,7 +16,7 @@ class AtividadeRepository {
         $this->connection = ConnectionFactory::getConnection();
     }
 
-    public function getAtividades() {
+    public function getAtividades(array $filtros = []) {
         $sql = "
             SELECT
                 a.*, 
@@ -28,7 +28,37 @@ class AtividadeRepository {
             LEFT JOIN Categorias c ON c.ID_Categoria = a.Categoria_ID
             LEFT JOIN Localizacao l ON l.ID_Atividade = a.ID_Atividade
         ";
-        $stmt = $this->connection->query($sql);
+
+        $condicoes = [];
+        $parametros = [];
+
+        if (!empty($filtros['busca'])) {
+            // Escapa os curingas do LIKE para que "%" e "_" digitados sejam tratados como texto
+            $busca = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], (string) $filtros['busca']);
+            $condicoes[] = "a.Nome LIKE :busca ESCAPE '!'";
+            $parametros[':busca'] = '%' . $busca . '%';
+        }
+
+        if (!empty($filtros['categoria'])) {
+            $condicoes[] = 'c.Nome_Categoria = :categoria';
+            $parametros[':categoria'] = (string) $filtros['categoria'];
+        }
+
+        if (!empty($filtros['data'])) {
+            $condicoes[] = 'EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = a.ID_Atividade AND s.Data = :data)';
+            $parametros[':data'] = (string) $filtros['data'];
+        }
+
+        if (!empty($condicoes)) {
+            $sql .= ' WHERE ' . implode(' AND ', $condicoes);
+        }
+
+        $stmt = $this->connection->prepare($sql);
+        foreach ($parametros as $parametro => $valor) {
+            $stmt->bindValue($parametro, $valor);
+        }
+        $stmt->execute();
+
         return $stmt->fetchAll();
     }
 

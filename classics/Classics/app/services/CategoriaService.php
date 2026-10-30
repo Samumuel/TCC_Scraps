@@ -19,6 +19,11 @@ class CategoriaService
         return $this->repository->getCategorias($empresaId);
     }
 
+    public function getNomesCategoriasComAtividades(): array
+    {
+        return $this->repository->getNomesCategoriasComAtividades();
+    }
+
     public function getCategoria(int $id, int $empresaId)
     {
         return $this->repository->getCategoria($id, $empresaId);
