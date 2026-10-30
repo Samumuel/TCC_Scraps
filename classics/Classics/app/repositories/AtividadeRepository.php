@@ -45,9 +45,10 @@ class AtividadeRepository {
         }
 
         if (!empty($filtros['somente_disponiveis'])) {
-            // Atividade disponível: possui sessão que ainda não começou (no dia filtrado, se houver)
+            // RN03: atividade disponível possui sessão com vagas que ainda não começou (no dia filtrado, se houver)
             $sessaoDisponivel = 'EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = a.ID_Atividade'
                 . (!empty($filtros['data']) ? ' AND s.Data = :data' : '')
+                . ' AND s.Qtd_disponivel > 0'
                 . ' AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora)))';
             $parametros[':hoje'] = (string) $filtros['hoje'];
             $parametros[':hoje_hora'] = (string) $filtros['hoje'];

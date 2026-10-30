@@ -52,7 +52,7 @@ class FavoritoRepository
     public function getFavoritosPorUsuario(int $usuarioId, string $hoje, string $agora): array
     {
         $sql = 'SELECT f.ID_Favorito, f.ID_Usuario, at.*, c.Nome_Categoria AS Categoria_Nome,
-                    EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = at.ID_Atividade
+                    EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = at.ID_Atividade AND s.Qtd_disponivel > 0
                         AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))) AS Tem_Sessao_Disponivel
                 FROM Favorito f
                 INNER JOIN Atividades at ON at.ID_Atividade = f.ID_Atividade

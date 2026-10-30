@@ -134,6 +134,11 @@
                                 Esta atividade não possui sessões disponíveis no momento.
                             </div>
                         <?php else: ?>
+                            <?php if (empty(array_filter($sessoes, fn($sessao) => (int) ($sessao['Qtd_disponivel'] ?? 0) > 0))): ?>
+                                <div class="alert alert-info mb-3" role="alert">
+                                    Esta atividade não possui sessões com vagas disponíveis no momento.
+                                </div>
+                            <?php endif; ?>
                             <?php if (!$usuarioPodeSeInscrever): ?>
                                 <div class="alert alert-info mb-3" role="alert">
                                     Apenas clientes autenticados podem se inscrever em sessões.
