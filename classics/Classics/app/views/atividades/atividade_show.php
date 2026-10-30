@@ -81,7 +81,7 @@
                     </div>
 
                     <div class="cl-meta mb-4">
-                        <i class="bi bi-geo-alt"></i>
+                        <i class="bi bi-geo-alt" title="Cidade" aria-label="Cidade"></i>
                         <span><?= htmlspecialchars($atividade['Localizacao'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span>
                     </div>
 

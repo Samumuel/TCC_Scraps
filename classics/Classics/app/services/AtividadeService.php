@@ -18,11 +18,12 @@ class AtividadeService {
         return $this->repository->getAtividades();
     }
 
-    public function filtrarAtividades(string $busca, string $categoria, string $data, int $empresaId = 0): array
+    public function filtrarAtividades(string $busca, string $cidade, string $categoria, string $data, int $empresaId = 0): array
     {
         $erros = [];
         $filtros = [
             'busca' => mb_substr(trim($busca), 0, 100),
+            'cidade' => mb_substr(trim($cidade), 0, 100),
             'categoria' => mb_substr(trim($categoria), 0, 100),
             'data' => trim($data)
         ];

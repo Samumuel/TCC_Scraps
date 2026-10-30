@@ -131,6 +131,11 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
                             </div>
 
                             <div class="mb-3">
+                                <label for="localizacao" class="form-label">Cidade</label>
+                                <input type="text" class="form-control" id="localizacao" name="localizacao" placeholder="Ex.: Foz do Iguaçu" value="<?= htmlspecialchars($atividade['Localizacao'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="valor" class="form-label">Valor</label>
                                 <input type="text" class="form-control <?= isset($erros['valor']) ? 'is-invalid' : '' ?>" id="valor" name="valor" value="<?= htmlspecialchars((string) ($atividade['Valor'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                                 <?php if (isset($erros['valor'])): ?>
@@ -172,7 +177,7 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
                                         <h5 class="card-title mb-3">Resumo da atividade</h5>
                                         <p class="mb-2"><strong>Nome:</strong> <?= htmlspecialchars($atividade['Nome'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
                                         <p class="mb-2"><strong>Categoria:</strong> <?= htmlspecialchars($atividade['Categoria_Nome'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
-                                        <p class="mb-0"><strong>Localização atual:</strong> <?= htmlspecialchars($atividade['Localizacao'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
+                                        <p class="mb-0"><strong>Cidade:</strong> <?= htmlspecialchars($atividade['Localizacao'] ?? '-', ENT_QUOTES, 'UTF-8') ?></p>
                                     </div>
                                 </div>
                             </div>

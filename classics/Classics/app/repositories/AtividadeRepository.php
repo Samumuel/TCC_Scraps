@@ -39,6 +39,13 @@ class AtividadeRepository {
             $parametros[':busca'] = '%' . $busca . '%';
         }
 
+        if (!empty($filtros['cidade'])) {
+            // A cidade fica na coluna Localizacao da atividade; busca por trecho, como o nome
+            $cidade = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], (string) $filtros['cidade']);
+            $condicoes[] = "a.Localizacao LIKE :cidade ESCAPE '!'";
+            $parametros[':cidade'] = '%' . $cidade . '%';
+        }
+
         if (!empty($filtros['categoria'])) {
             $condicoes[] = 'c.Nome_Categoria = :categoria';
             $parametros[':categoria'] = (string) $filtros['categoria'];

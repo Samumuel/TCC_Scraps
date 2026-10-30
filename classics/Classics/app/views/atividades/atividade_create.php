@@ -106,8 +106,8 @@ $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
                                 <?php endif; ?>
                             </div>
                             <div class="mb-3">
-                                <label for="localizacao" class="form-label">Localização</label>
-                                <input type="text" class="form-control" id="localizacao" name="localizacao" value="<?= htmlspecialchars($atividade['Localizacao'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                <label for="localizacao" class="form-label">Cidade</label>
+                                <input type="text" class="form-control" id="localizacao" name="localizacao" placeholder="Ex.: Foz do Iguaçu" value="<?= htmlspecialchars($atividade['Localizacao'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             </div>
                             <div class="mb-3">
                                 <label for="valor" class="form-label">Valor</label>

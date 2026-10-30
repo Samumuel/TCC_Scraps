@@ -86,7 +86,7 @@
                                     </div>
                                 <?php endif; ?>
                                 <div class="cl-meta mb-1">
-                                    <i class="bi bi-geo-alt"></i>
+                                    <i class="bi bi-geo-alt" title="Cidade" aria-label="Cidade"></i>
                                     <span><?= htmlspecialchars((string) ($atividade->getLocalizacao() ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </div>
                                 <div class="cl-meta mb-3">

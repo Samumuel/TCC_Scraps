@@ -12,10 +12,10 @@
 <?php require __DIR__ . '/../partials/navbar.php'; ?>
 	<?php
 	$empresaLogada = $_SESSION['empresa_logada'] ?? null;
-	$filtros = $filtros ?? ['busca' => '', 'categoria' => '', 'data' => ''];
+	$filtros = $filtros ?? ['busca' => '', 'cidade' => '', 'categoria' => '', 'data' => ''];
 	$categoriasFiltro = $categorias_filtro ?? [];
 	$erros = $erros ?? [];
-	$filtrando = ($filtros['busca'] ?? '') !== '' || ($filtros['categoria'] ?? '') !== '' || ($filtros['data'] ?? '') !== '';
+	$filtrando = ($filtros['busca'] ?? '') !== '' || ($filtros['cidade'] ?? '') !== '' || ($filtros['categoria'] ?? '') !== '' || ($filtros['data'] ?? '') !== '';
 	?>
 
 	<section class="cl-hero">
@@ -34,6 +34,10 @@
 				<div class="cl-input-icon cl-search-busca">
 					<i class="bi bi-search"></i>
 					<input type="search" class="form-control" name="busca" maxlength="100" placeholder="O que você quer fazer?" aria-label="Buscar atividade pelo nome" value="<?= htmlspecialchars($filtros['busca'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+				</div>
+				<div class="cl-input-icon cl-search-cidade">
+					<i class="bi bi-geo-alt"></i>
+					<input type="search" class="form-control" name="cidade" maxlength="100" placeholder="Onde?" aria-label="Filtrar por cidade" value="<?= htmlspecialchars($filtros['cidade'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
 				</div>
 				<select class="form-select cl-search-categoria" name="categoria" aria-label="Filtrar por categoria">
 					<option value="">Todas as categorias</option>
@@ -91,7 +95,7 @@
 								<?php endif; ?>
 								<h3 class="card-title mb-2"><?= htmlspecialchars($atividade['Nome'] ?? '-') ?></h3>
 								<div class="cl-meta mb-1">
-									<i class="bi bi-geo-alt"></i>
+									<i class="bi bi-geo-alt" title="Cidade" aria-label="Cidade"></i>
 									<span><?= htmlspecialchars($atividade['Localizacao'] ?? '-') ?></span>
 								</div>
 								<div class="cl-meta mb-3">
@@ -126,7 +130,7 @@
 					<?php if ($filtrando): ?>
 						<i class="bi bi-search text-muted" style="font-size: 56px;"></i>
 						<h3 class="mt-3 mb-2">Nenhuma atividade encontrada</h3>
-						<p class="text-muted mb-4">Tente outro nome, categoria ou data.</p>
+						<p class="text-muted mb-4">Tente outro nome, cidade, categoria ou data.</p>
 						<a href="<?= URL_BASE ?>/" class="btn btn-primary">Ver todas as atividades</a>
 					<?php else: ?>
 						<i class="bi bi-compass text-muted" style="font-size: 56px;"></i>

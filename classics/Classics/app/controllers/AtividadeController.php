@@ -34,6 +34,7 @@ class AtividadeController extends Controller {
 	public function listarTodos() {
 		$resultado = $this->service->filtrarAtividades(
 			(string) ($_GET['busca'] ?? ''),
+			(string) ($_GET['cidade'] ?? ''),
 			(string) ($_GET['categoria'] ?? ''),
 			(string) ($_GET['data'] ?? ''),
 			(int) ($this->getEmpresaLogadaId() ?? 0)
@@ -199,6 +200,7 @@ class AtividadeController extends Controller {
 		}
 
 		$nome = trim((string) ($_POST['nome'] ?? ''));
+		$localizacao = trim((string) ($_POST['localizacao'] ?? ''));
 		$duracaoHoras = trim((string) ($_POST['duracao_horas'] ?? ''));
 		$duracaoMinutos = trim((string) ($_POST['duracao_minutos'] ?? ''));
 		$descricao = trim((string) ($_POST['descricao'] ?? ''));
@@ -253,7 +255,7 @@ class AtividadeController extends Controller {
 				'Duracao_Horas' => $duracaoHoras,
 				'Duracao_Minutos' => $duracaoMinutos,
 				'Descricao' => $descricao,
-				'Localizacao' => $atividadeAtual['Localizacao'] ?? null,
+				'Localizacao' => $localizacao,
 				'Valor' => $valorInput,
 				'Fotos' => $atividadeAtual['Fotos'] ?? null,
 				'Categoria_ID' => $categoriaId ?? 0,
@@ -281,7 +283,7 @@ class AtividadeController extends Controller {
 				'Duracao_Horas' => $duracaoHoras,
 				'Duracao_Minutos' => $duracaoMinutos,
 				'Descricao' => $descricao,
-				'Localizacao' => $atividadeAtual['Localizacao'] ?? null,
+				'Localizacao' => $localizacao,
 				'Valor' => $valorInput,
 				'Fotos' => $fotoAtual,
 				'Categoria_ID' => $categoriaId ?? 0,
@@ -307,7 +309,7 @@ class AtividadeController extends Controller {
 			$nome,
 			$duracaoNormalizada,
 			$descricao,
-			$atividadeAtual['Localizacao'] ?? null,
+			$localizacao !== '' ? $localizacao : null,
 			$valor,
 			$fotos,
 			$categoriaId,
