@@ -21,6 +21,21 @@ class LocalizacaoService
 
     public function saveOrUpdateLocalizacao(Localizacao $localizacao): bool
     {
-        return $this->repository->saveOrUpdateLocalizacao($localizacao);
+        $localizacaoAnterior = $this->repository->getLocalizacaoPorAtividade((int) $localizacao->getIdAtividade());
+
+        if (!$this->repository->saveOrUpdateLocalizacao($localizacao)) {
+            return false;
+        }
+
+        // RN07: mudança de endereço (CEP ou complemento) avisa os clientes com reserva ativa
+        $mudou = $localizacaoAnterior !== null && (
+            trim((string) ($localizacaoAnterior['CEP'] ?? '')) !== trim((string) $localizacao->getCep())
+            || trim((string) ($localizacaoAnterior['Complemento'] ?? '')) !== trim((string) $localizacao->getComplemento())
+        );
+        if ($mudou) {
+            (new NotificacaoService())->notificarLocalAlterado((int) $localizacao->getIdAtividade());
+        }
+
+        return true;
     }
 }

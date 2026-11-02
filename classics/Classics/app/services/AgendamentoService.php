@@ -19,12 +19,14 @@ class AgendamentoService
     private AgendamentoRepository $repository;
     private SessaoService $sessaoService;
     private AvaliacaoRepository $avaliacaoRepository;
+    private NotificacaoService $notificacaoService;
 
     public function __construct()
     {
         $this->repository = new AgendamentoRepository();
         $this->sessaoService = new SessaoService();
         $this->avaliacaoRepository = new AvaliacaoRepository();
+        $this->notificacaoService = new NotificacaoService();
     }
 
     public function registrarInscricao(int $usuarioId, int $sessaoId, int $quantidadePessoas): array
@@ -46,7 +48,17 @@ class AgendamentoService
         $agendamento = new Agendamento();
         $agendamento->setIdUsuario($usuarioId);
 
-        return $this->repository->registrarInscricao($agendamento, $sessaoId, $quantidadePessoas);
+        $resultado = $this->repository->registrarInscricao($agendamento, $sessaoId, $quantidadePessoas);
+
+        if (!empty($resultado['sucesso'])) {
+            $atividadeId = (int) ($resultado['atividade_id'] ?? 0);
+            $dadosSessao = $this->sessaoService->getSessaoPorAtividade($sessaoId, $atividadeId);
+            if ($dadosSessao !== null) {
+                $this->notificacaoService->notificarNovaSolicitacao($atividadeId, Sessao::arrayParaObjeto($dadosSessao), $usuarioId, $quantidadePessoas);
+            }
+        }
+
+        return $resultado;
     }
 
     public function getAgendamentosPorUsuario(int $usuarioId): array
@@ -129,6 +141,10 @@ class AgendamentoService
             ];
         }
 
+        if ($voltaParaPendente) {
+            $this->notificacaoService->notificarReservaAlteradaPeloCliente($agendamento, $sessao);
+        }
+
         return [
             'sucesso' => true,
             'pendente' => $voltaParaPendente
@@ -148,6 +164,8 @@ class AgendamentoService
                 'erro' => 'falha'
             ];
         }
+
+        $this->notificacaoService->notificarCancelamentoPeloCliente($carregado['agendamento'], $carregado['sessao']);
 
         return [
             'sucesso' => true
@@ -176,13 +194,15 @@ class AgendamentoService
             return $carregado;
         }
 
-        // TODO RF08: notificar o cliente sobre o cancelamento feito pela empresa
         if (!$this->repository->cancelarAgendamento($carregado['agendamento'], self::STATUS_CANCELADO)) {
             return [
                 'sucesso' => false,
                 'erro' => 'falha'
             ];
         }
+
+        // RF08/RF13: o cliente é notificado pela plataforma
+        $this->notificacaoService->notificarReservaCanceladaPelaEmpresa($carregado['agendamento'], $carregado['sessao']);
 
         return [
             'sucesso' => true
@@ -203,6 +223,8 @@ class AgendamentoService
             ];
         }
 
+        $this->notificacaoService->notificarReservaAprovada($carregado['agendamento'], $carregado['sessao']);
+
         return [
             'sucesso' => true
         ];
@@ -222,6 +244,8 @@ class AgendamentoService
                 'erro' => 'falha'
             ];
         }
+
+        $this->notificacaoService->notificarReservaRecusada($carregado['agendamento'], $carregado['sessao']);
 
         return [
             'sucesso' => true

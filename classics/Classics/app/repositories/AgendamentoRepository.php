@@ -221,6 +221,42 @@ class AgendamentoRepository
         return $agendamento ? Agendamento::arrayParaObjeto($agendamento) : null;
     }
 
+    // Clientes com reserva ativa (pendente ou aprovada) em uma sessão que ainda não aconteceu
+    public function getUsuariosComReservaAtivaNaSessao(int $sessaoId, string $hoje, string $agora): array
+    {
+        $sql = "SELECT DISTINCT a.ID_Usuario
+                FROM Agendamento a
+                INNER JOIN Sessao s ON s.ID_Sessao = a.ID_Sessao
+                WHERE a.ID_Sessao = :id_sessao AND a.Status IN ('pendente', 'aprovado')
+                AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id_sessao', $sessaoId, PDO::PARAM_INT);
+        $stmt->bindValue(':hoje', $hoje);
+        $stmt->bindValue(':hoje_hora', $hoje);
+        $stmt->bindValue(':agora', $agora);
+        $stmt->execute();
+
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+    }
+
+    // Clientes com reserva ativa (pendente ou aprovada) em qualquer sessão futura da atividade
+    public function getUsuariosComReservaAtivaNaAtividade(int $atividadeId, string $hoje, string $agora): array
+    {
+        $sql = "SELECT DISTINCT a.ID_Usuario
+                FROM Agendamento a
+                INNER JOIN Sessao s ON s.ID_Sessao = a.ID_Sessao
+                WHERE a.ID_Atividade = :id_atividade AND a.Status IN ('pendente', 'aprovado')
+                AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id_atividade', $atividadeId, PDO::PARAM_INT);
+        $stmt->bindValue(':hoje', $hoje);
+        $stmt->bindValue(':hoje_hora', $hoje);
+        $stmt->bindValue(':agora', $agora);
+        $stmt->execute();
+
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+    }
+
     public function getAgendamentoPorUsuario(int $idAgendamento, int $usuarioId): ?Agendamento
     {
         $sql = 'SELECT * FROM Agendamento WHERE ID_Agendamento = :id_agendamento AND ID_Usuario = :id_usuario LIMIT 1';

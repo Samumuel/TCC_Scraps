@@ -80,7 +80,18 @@ class AtividadeService {
     }
 
     public function updateAtividade(Atividade $atividade){
-        return $this->repository->updateAtividade($atividade);
+        $atividadeAnterior = $this->repository->getAtividade($atividade->getIdAtividade());
+
+        if (!$this->repository->updateAtividade($atividade)) {
+            return false;
+        }
+
+        // RN07: mudança de cidade avisa os clientes com reserva ativa
+        if ($atividadeAnterior && trim((string) ($atividadeAnterior['Localizacao'] ?? '')) !== trim((string) $atividade->getLocalizacao())) {
+            (new NotificacaoService())->notificarLocalAlterado($atividade->getIdAtividade());
+        }
+
+        return true;
     }
 
     public function deleteAtividade(int $id, int $empresaId){

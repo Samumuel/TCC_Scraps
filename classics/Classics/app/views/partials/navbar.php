@@ -50,6 +50,46 @@ if ($navUsuario !== null) {
 
             <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
                 <?php if ($navPerfilUrl !== null): ?>
+                    <?php
+                    $navNotificacoes = $notificacoes ?? ['nao_lidas' => 0, 'recentes' => []];
+                    $navNaoLidas = (int) $navNotificacoes['nao_lidas'];
+                    ?>
+                    <div class="dropdown">
+                        <button type="button" class="cl-icon-btn position-relative" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-display="static" aria-expanded="false"
+                            title="Notificações" aria-label="Notificações<?= $navNaoLidas > 0 ? ' (' . $navNaoLidas . ' não lidas)' : '' ?>">
+                            <i class="bi bi-bell"></i>
+                            <?php if ($navNaoLidas > 0): ?>
+                                <span class="cl-sino-contador"><?= $navNaoLidas > 9 ? '9+' : $navNaoLidas ?></span>
+                            <?php endif; ?>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-start dropdown-menu-md-end cl-notificacoes p-0">
+                            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                <strong>Notificações</strong>
+                                <?php if ($navNaoLidas > 0): ?>
+                                    <form action="<?= URL_BASE ?>/notificacao/lidas" method="POST" class="m-0">
+                                        <input type="hidden" name="retorno" value="<?= htmlspecialchars((string) ($_SERVER['REQUEST_URI'] ?? '/'), ENT_QUOTES, 'UTF-8') ?>">
+                                        <button type="submit" class="btn btn-link btn-sm p-0">Marcar todas como lidas</button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (empty($navNotificacoes['recentes'])): ?>
+                                <p class="text-muted small text-center mb-0 py-4">Você não tem notificações.</p>
+                            <?php else: ?>
+                                <?php foreach ($navNotificacoes['recentes'] as $navNotificacao): ?>
+                                    <?php
+                                    $navDataHora = DateTime::createFromFormat('Y-m-d H:i:s', (string) $navNotificacao->getDataHora());
+                                    ?>
+                                    <a href="<?= URL_BASE ?>/notificacao/abrir?id=<?= (int) $navNotificacao->getIdNotificacao() ?>" class="cl-notificacao <?= $navNotificacao->isLida() ? '' : 'nao-lida' ?>">
+                                        <span class="cl-notificacao-ponto" aria-hidden="true"></span>
+                                        <span>
+                                            <span class="d-block"><?= htmlspecialchars((string) $navNotificacao->getMensagem(), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <small class="text-muted"><?= $navDataHora ? $navDataHora->format('d/m/Y \à\s H:i') : '' ?></small>
+                                        </span>
+                                    </a>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                     <a href="<?= htmlspecialchars($navPerfilUrl, ENT_QUOTES, 'UTF-8') ?>" class="cl-icon-btn" title="<?= htmlspecialchars($navPerfilNome, ENT_QUOTES, 'UTF-8') ?>">
                         <i class="bi bi-person"></i>
                     </a>

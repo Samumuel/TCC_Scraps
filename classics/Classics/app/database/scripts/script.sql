@@ -96,5 +96,17 @@ CREATE TABLE Agendamento (
     FOREIGN KEY (ID_Sessao) REFERENCES Sessao(ID_Sessao)
 );
 
+CREATE TABLE Notificacao (
+    ID_Notificacao INT PRIMARY KEY AUTO_INCREMENT,
+    Mensagem VARCHAR(255) NOT NULL,
+    Link VARCHAR(255),
+    Lida TINYINT(1) NOT NULL DEFAULT 0,
+    Data_hora DATETIME NOT NULL,
+    ID_Usuario INT NULL,
+    ID_Empresa INT NULL,
+    FOREIGN KEY (ID_Usuario) REFERENCES Usuario(ID_Usuario),
+    FOREIGN KEY (ID_Empresa) REFERENCES Empresa(ID_Empresa)
+);
+
 ALTER TABLE `categorias` ADD `Empresa_ID` INT NOT NULL AFTER `Nome_Categoria`;
 
