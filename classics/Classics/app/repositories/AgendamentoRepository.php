@@ -221,6 +221,20 @@ class AgendamentoRepository
         return $agendamento ? Agendamento::arrayParaObjeto($agendamento) : null;
     }
 
+    // Total de pessoas com reserva ativa (pendente ou aprovada) na sessão
+    public function getTotalReservadoNaSessao(int $sessaoId): int
+    {
+        $sql = "SELECT COALESCE(SUM(Quantidade_Pessoas), 0) AS total FROM Agendamento
+                WHERE ID_Sessao = :id_sessao AND Status IN ('pendente', 'aprovado')";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id_sessao', $sessaoId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return (int) ($resultado['total'] ?? 0);
+    }
+
     // Clientes com reserva ativa (pendente ou aprovada) em uma sessão que ainda não aconteceu
     public function getUsuariosComReservaAtivaNaSessao(int $sessaoId, string $hoje, string $agora): array
     {

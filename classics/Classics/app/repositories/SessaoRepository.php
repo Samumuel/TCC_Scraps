@@ -17,7 +17,10 @@ class SessaoRepository
 
     public function getSessoesPorAtividade(int $atividadeId): array
     {
-        $sql = 'SELECT * FROM Sessao WHERE ID_Atividade = :id_atividade ORDER BY Data ASC, Hora ASC';
+        $sql = "SELECT s.*,
+                    (SELECT COALESCE(SUM(a.Quantidade_Pessoas), 0) FROM Agendamento a
+                        WHERE a.ID_Sessao = s.ID_Sessao AND a.Status IN ('pendente', 'aprovado')) AS Qtd_reservada
+                FROM Sessao s WHERE s.ID_Atividade = :id_atividade ORDER BY s.Data ASC, s.Hora ASC";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':id_atividade', $atividadeId);
         $stmt->execute();

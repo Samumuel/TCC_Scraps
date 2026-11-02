@@ -3,6 +3,7 @@
 namespace app\services;
 
 use app\models\Sessao;
+use app\repositories\AgendamentoRepository;
 use app\repositories\SessaoRepository;
 use DateTime;
 
@@ -44,8 +45,31 @@ class SessaoService
         return $this->repository->getSessaoPorAtividade($idSessao, $atividadeId);
     }
 
+    public function getTotalReservadoNaSessao(int $idSessao): int
+    {
+        return (new AgendamentoRepository())->getTotalReservadoNaSessao($idSessao);
+    }
+
+    // RN07: o limite de vagas não pode ficar abaixo das reservas ativas (pendentes e confirmadas)
+    public function validarLimiteReservas(int $idSessao, int $qtdMax): ?string
+    {
+        $reservadas = $this->getTotalReservadoNaSessao($idSessao);
+        if ($qtdMax < $reservadas) {
+            return 'Esta sessao ja tem ' . $reservadas . ' pessoa(s) reservada(s). A quantidade maxima nao pode ser menor que ' . $reservadas . '.';
+        }
+
+        return null;
+    }
+
     public function updateSessao(Sessao $sessao): bool
     {
+        if ($this->validarLimiteReservas($sessao->getIdSessao(), (int) $sessao->getQtdMax()) !== null) {
+            return false;
+        }
+
+        // Vagas disponíveis são sempre o limite menos as reservas ativas
+        $sessao->setQtdDisponivel((int) $sessao->getQtdMax() - $this->getTotalReservadoNaSessao($sessao->getIdSessao()));
+
         $dadosAnteriores = $this->repository->getSessaoPorAtividade($sessao->getIdSessao(), (int) $sessao->getIdAtividade());
         $sessaoAnterior = $dadosAnteriores !== null ? Sessao::arrayParaObjeto($dadosAnteriores) : null;
 

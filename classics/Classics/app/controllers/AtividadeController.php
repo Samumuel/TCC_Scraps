@@ -493,7 +493,13 @@ class AtividadeController extends Controller {
 			$this->redirect(URL_BASE . '/atividade/editar?id=' . $idAtividade . '&tab=sessoes');
 		}
 
-		$validacao = $this->validarCamposSessao($_POST);
+		$validacao = $this->validarCamposSessao($_POST, true);
+		if (empty($validacao['erros']['qtd_max']) && $validacao['qtdMax'] !== null) {
+			$erroLimite = $this->sessaoService->validarLimiteReservas($idSessao, $validacao['qtdMax']);
+			if ($erroLimite !== null) {
+				$validacao['erros']['qtd_max'] = $erroLimite;
+			}
+		}
 		if (!empty($validacao['erros'])) {
 			$data['atividade'] = $atividade;
 			$data['categorias'] = $this->categoriaService->getCategorias($empresaId);
@@ -848,7 +854,8 @@ class AtividadeController extends Controller {
 		return null;
 	}
 
-	private function validarCamposSessao(array $input): array
+	// Na edição ($edicao = true) a quantidade disponível é calculada pelo sistema e não é validada aqui
+	private function validarCamposSessao(array $input, bool $edicao = false): array
 	{
 		$dataSessao = trim((string) ($input['data'] ?? ''));
 		$hora = trim((string) ($input['hora'] ?? ''));
@@ -884,10 +891,12 @@ class AtividadeController extends Controller {
 			$erros['qtd_max'] = 'A quantidade maxima deve conter apenas numeros.';
 		}
 
-		if ($qtdDisponivelInput === '') {
-			$erros['qtd_disponivel'] = 'Informe a quantidade disponivel.';
-		} elseif (!$this->isDigitsOnly($qtdDisponivelInput)) {
-			$erros['qtd_disponivel'] = 'A quantidade disponivel deve conter apenas numeros.';
+		if (!$edicao) {
+			if ($qtdDisponivelInput === '') {
+				$erros['qtd_disponivel'] = 'Informe a quantidade disponivel.';
+			} elseif (!$this->isDigitsOnly($qtdDisponivelInput)) {
+				$erros['qtd_disponivel'] = 'A quantidade disponivel deve conter apenas numeros.';
+			}
 		}
 
 		$qtdMin = $qtdMinInput !== '' && $this->isDigitsOnly($qtdMinInput) ? (int) $qtdMinInput : null;
@@ -897,7 +906,7 @@ class AtividadeController extends Controller {
 		if ($qtdMin !== null && $qtdMax !== null && $qtdMin > $qtdMax) {
 			$erros['qtd_min'] = 'A quantidade minima nao pode ser maior que a maxima.';
 		}
-		if ($qtdMax !== null && $qtdDisponivel !== null && $qtdDisponivel > $qtdMax) {
+		if (!$edicao && $qtdMax !== null && $qtdDisponivel !== null && $qtdDisponivel > $qtdMax) {
 			$erros['qtd_disponivel'] = 'A quantidade disponivel nao pode ser maior que a maxima.';
 		}
 
