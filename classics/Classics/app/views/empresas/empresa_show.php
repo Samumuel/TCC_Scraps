@@ -28,11 +28,11 @@
 
                         <!-- INFO -->
                         <div class="col-md-8">
-                            <h3 class="card-title mb-3"><?= $empresa['Nome'] ?? $empresa['nome'] ?></h3>
-                            <p class="mb-2"><strong>Email:</strong> <?= $empresa['Email'] ?? $empresa['email'] ?></p>
-                            <p class="mb-2"><strong>CNPJ:</strong> <?= $empresa['CNPJ'] ?? $empresa['cnpj'] ?></p>
-                            <p class="mb-2"><strong>Localização:</strong> <?= $empresa['Localizacao'] ?? $empresa['localizacao'] ?></p>
-                            <p class="mb-2"><strong>Telefone:</strong> <?= $empresa['Telefone'] ?? $empresa['telefone'] ?></p>
+                            <h3 class="card-title mb-3"><?= htmlspecialchars((string) ($empresa['Name'] ?? $empresa['nome'] ?? ''), ENT_QUOTES, 'UTF-8') ?></h3>
+                            <p class="mb-2"><strong>Email:</strong> <?= htmlspecialchars((string) ($empresa['Email'] ?? $empresa['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                            <p class="mb-2"><strong>CNPJ:</strong> <?= htmlspecialchars((string) ($empresa['CNPJ'] ?? $empresa['cnpj'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                            <p class="mb-2"><strong>Localização:</strong> <?= htmlspecialchars((string) ($empresa['Localizacao'] ?? $empresa['localizacao'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                            <p class="mb-2"><strong>Telefone:</strong> <?= htmlspecialchars((string) ($empresa['Telefone'] ?? $empresa['telefone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
                         </div>
                     </div>
                 </div>

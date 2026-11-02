@@ -45,11 +45,11 @@
                         <tbody>
                             <?php foreach ($lista as $empresa): ?>
                             <tr>
-                                <td class="px-4 py-3 align-middle"><?= $empresa['Nome'] ?></td>
-                                <td class="px-4 py-3 align-middle"><?= $empresa['Email'] ?></td>
-                                <td class="px-4 py-3 align-middle"><?= $empresa['CNPJ'] ?></td>
-                                <td class="px-4 py-3 align-middle"><?= $empresa['Localizacao'] ?></td>
-                                <td class="px-4 py-3 align-middle"><?= $empresa['Telefone'] ?></td>
+                                <td class="px-4 py-3 align-middle"><?= htmlspecialchars((string) ($empresa['Name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="px-4 py-3 align-middle"><?= htmlspecialchars((string) ($empresa['Email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="px-4 py-3 align-middle"><?= htmlspecialchars((string) ($empresa['CNPJ'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="px-4 py-3 align-middle"><?= htmlspecialchars((string) ($empresa['Localizacao'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="px-4 py-3 align-middle"><?= htmlspecialchars((string) ($empresa['Telefone'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td class="px-4 py-3 align-middle text-end">
                                     <a href="<?= URL_BASE ?>/empresa/editar?id=<?= $empresa['ID_Empresa'] ?>"
                                         class="btn btn-sm btn-outline-primary">
@@ -64,6 +64,7 @@
                                         onclick="return confirm('Deseja excluir esta empresa?')">
                                         <i class="bi bi-trash"></i> Excluir
                                     </a>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
