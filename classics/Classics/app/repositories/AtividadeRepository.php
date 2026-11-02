@@ -88,6 +88,11 @@ class AtividadeRepository {
             $sql .= ' WHERE ' . implode(' AND ', $condicoes);
         }
 
+        if (!empty($filtros['ordenar_por_avaliacao'])) {
+            // Atividades sem avaliação têm média NULL, que fica por último na ordem decrescente
+            $sql .= ' ORDER BY Media_Avaliacao DESC, Total_Avaliacoes DESC, a.Nome ASC';
+        }
+
         $stmt = $this->connection->prepare($sql);
         foreach ($parametros as $parametro => $valor) {
             $stmt->bindValue($parametro, $valor);

@@ -45,6 +45,8 @@ class AtividadeService {
         $agora = new DateTime();
         $consulta = $filtros + [
             'somente_disponiveis' => true,
+            // RF06: atividades mais bem avaliadas primeiro
+            'ordenar_por_avaliacao' => true,
             'hoje' => $agora->format('Y-m-d'),
             'agora' => $agora->format('H:i:s'),
             'empresa_id' => $empresaId

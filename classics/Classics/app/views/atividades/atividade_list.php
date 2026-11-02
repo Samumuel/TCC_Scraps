@@ -63,7 +63,10 @@
 
 	<div class="container cl-page">
 		<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-			<h2 class="mb-0"><?= $filtrando ? 'Resultados da busca' : 'Atividades' ?></h2>
+			<div>
+				<h2 class="mb-0"><?= $filtrando ? 'Resultados da busca' : 'Mais bem avaliadas' ?></h2>
+				<p class="text-muted small mb-0">Ordenadas pela média das avaliações dos clientes</p>
+			</div>
 			<div class="d-flex align-items-center gap-3">
 				<span class="text-muted small"><?= count($lista ?? []) ?> atividade(s)<?= $filtrando ? ' encontrada(s)' : '' ?></span>
 				<?php if ($filtrando): ?>
