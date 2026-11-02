@@ -7,6 +7,7 @@ use app\models\Atividade;
 use app\models\Localizacao;
 use app\models\Sessao;
 use app\services\AtividadeService;
+use app\services\AvaliacaoService;
 use app\services\CategoriaService;
 use app\services\FavoritoService;
 use app\services\LocalizacaoService;
@@ -21,6 +22,7 @@ class AtividadeController extends Controller {
 	private LocalizacaoService $localizacaoService;
 	private SessaoService $sessaoService;
 	private FavoritoService $favoritoService;
+	private AvaliacaoService $avaliacaoService;
 
 	public function __construct()
 	{
@@ -29,6 +31,7 @@ class AtividadeController extends Controller {
 		$this->localizacaoService = new LocalizacaoService();
 		$this->sessaoService = new SessaoService();
 		$this->favoritoService = new FavoritoService();
+		$this->avaliacaoService = new AvaliacaoService();
 	}
 
 	public function listarTodos() {
@@ -712,6 +715,8 @@ class AtividadeController extends Controller {
 		$id = (int) $_GET['id'];
 		$data['atividade'] = $this->service->getAtividade($id);
 		$data['sessoes'] = $this->sessaoService->getSessoesDisponiveisPorAtividade($id);
+		$data['avaliacoes'] = $this->avaliacaoService->getAvaliacoesPorAtividade($id);
+		$data['resumo_avaliacoes'] = $this->avaliacaoService->getResumoPorAtividade($id);
 		$data['aba_ativa'] = $_GET['tab'] ?? 'dados';
 
 		$usuarioLogado = $_SESSION['usuario_logado'] ?? null;

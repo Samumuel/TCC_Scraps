@@ -45,6 +45,8 @@ $router ->post('/agendamento/empresa/recusar', 'AgendamentoController@recusarRes
 
 $router->get('/favorito/meus', 'FavoritoController@meusFavoritos');
 $router->post('/favorito/alternar', 'FavoritoController@alternar');
+
+$router->post('/avaliacao/salvar', 'AvaliacaoController@salvar');
 $router ->get('/atividade/localizacao/cadastrar', 'AtividadeController@localizacaoCadastrar');
 $router ->post('/atividade/localizacao/salvar', 'AtividadeController@salvarLocalizacao');
 $router ->get('/atividade/sessao/cadastrar', 'AtividadeController@sessaoCadastrar');

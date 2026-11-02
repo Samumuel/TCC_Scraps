@@ -23,7 +23,9 @@ class AtividadeRepository {
                 c.Nome_Categoria AS Categoria_Nome,
                 l.ID_Localizacao AS Localizacao_ID,
                 l.CEP AS Localizacao_CEP,
-                l.Complemento AS Localizacao_Complemento
+                l.Complemento AS Localizacao_Complemento,
+                (SELECT AVG(av.Nota) FROM Avaliacao av WHERE av.ID_Atividade = a.ID_Atividade) AS Media_Avaliacao,
+                (SELECT COUNT(*) FROM Avaliacao av WHERE av.ID_Atividade = a.ID_Atividade) AS Total_Avaliacoes
             FROM Atividades a
             LEFT JOIN Categorias c ON c.ID_Categoria = a.Categoria_ID
             LEFT JOIN Localizacao l ON l.ID_Atividade = a.ID_Atividade
@@ -172,6 +174,11 @@ class AtividadeRepository {
             $stmtAgendamento = $this->connection->prepare($sqlAgendamento);
             $stmtAgendamento->bindValue(':id_atividade', $id);
             $stmtAgendamento->execute();
+
+            $sqlAvaliacao = 'DELETE FROM Avaliacao WHERE ID_Atividade = :id_atividade';
+            $stmtAvaliacao = $this->connection->prepare($sqlAvaliacao);
+            $stmtAvaliacao->bindValue(':id_atividade', $id);
+            $stmtAvaliacao->execute();
 
             $sqlFavorito = 'DELETE FROM Favorito WHERE ID_Atividade = :id_atividade';
             $stmtFavorito = $this->connection->prepare($sqlFavorito);

@@ -94,6 +94,13 @@
 									</div>
 								<?php endif; ?>
 								<h3 class="card-title mb-2"><?= htmlspecialchars($atividade['Nome'] ?? '-') ?></h3>
+								<?php if ((int) ($atividade['Total_Avaliacoes'] ?? 0) > 0): ?>
+									<div class="cl-nota-media mb-2">
+										<i class="bi bi-star-fill"></i>
+										<?= \app\helpers\Formatador::media((float) $atividade['Media_Avaliacao']) ?>
+										<small>(<?= (int) $atividade['Total_Avaliacoes'] ?>)</small>
+									</div>
+								<?php endif; ?>
 								<div class="cl-meta mb-1">
 									<i class="bi bi-geo-alt" title="Cidade" aria-label="Cidade"></i>
 									<span><?= htmlspecialchars($atividade['Localizacao'] ?? '-') ?></span>

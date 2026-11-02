@@ -80,9 +80,22 @@
                         <?php endif; ?>
                     </div>
 
-                    <div class="cl-meta mb-4">
-                        <i class="bi bi-geo-alt" title="Cidade" aria-label="Cidade"></i>
-                        <span><?= htmlspecialchars($atividade['Localizacao'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span>
+                    <?php
+                    $avaliacoes = $avaliacoes ?? [];
+                    $resumoAvaliacoes = $resumo_avaliacoes ?? ['media' => 0.0, 'total' => 0];
+                    ?>
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                        <?php if ($resumoAvaliacoes['total'] > 0): ?>
+                            <a href="#avaliacoes" class="cl-nota-media text-reset text-decoration-none">
+                                <i class="bi bi-star-fill"></i>
+                                <?= \app\helpers\Formatador::media($resumoAvaliacoes['media']) ?>
+                                <small>(<?= $resumoAvaliacoes['total'] ?> <?= $resumoAvaliacoes['total'] > 1 ? 'avaliações' : 'avaliação' ?>)</small>
+                            </a>
+                        <?php endif; ?>
+                        <div class="cl-meta">
+                            <i class="bi bi-geo-alt" title="Cidade" aria-label="Cidade"></i>
+                            <span><?= htmlspecialchars($atividade['Localizacao'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span>
+                        </div>
                     </div>
 
                     <?php if (!empty($atividade['Fotos'])): ?>
@@ -194,6 +207,42 @@
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </section>
+
+                    <section id="avaliacoes" class="mt-5">
+                        <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                            <h2 class="mb-0">Avaliações</h2>
+                            <?php if ($resumoAvaliacoes['total'] > 0): ?>
+                                <span class="cl-nota-media fs-6">
+                                    <i class="bi bi-star-fill"></i>
+                                    <?= \app\helpers\Formatador::media($resumoAvaliacoes['media']) ?>
+                                    <small>· <?= $resumoAvaliacoes['total'] ?> <?= $resumoAvaliacoes['total'] > 1 ? 'avaliações' : 'avaliação' ?></small>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if (empty($avaliacoes)): ?>
+                            <div class="alert alert-info mb-0" role="alert">
+                                Esta atividade ainda não recebeu avaliações.
+                            </div>
+                        <?php else: ?>
+                            <div class="card">
+                                <div class="card-body py-1 px-4">
+                                    <?php foreach ($avaliacoes as $itemAvaliacao): ?>
+                                        <?php $avaliacaoAtual = $itemAvaliacao['avaliacao']; ?>
+                                        <div class="cl-avaliacao-item py-3">
+                                            <div class="d-flex justify-content-between align-items-start gap-3 mb-1">
+                                                <strong><?= htmlspecialchars($itemAvaliacao['usuario_nome'] !== '' ? $itemAvaliacao['usuario_nome'] : 'Usuário', ENT_QUOTES, 'UTF-8') ?></strong>
+                                                <?php $notaEstrelas = (int) $avaliacaoAtual->getNota(); require __DIR__ . '/../partials/estrelas.php'; ?>
+                                            </div>
+                                            <?php if (trim((string) $avaliacaoAtual->getComentario()) !== ''): ?>
+                                                <p class="text-muted mb-0"><?= nl2br(htmlspecialchars((string) $avaliacaoAtual->getComentario(), ENT_QUOTES, 'UTF-8')) ?></p>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
                         <?php endif; ?>

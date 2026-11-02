@@ -659,3 +659,67 @@ h2, .h2 {
         flex: 1 1 30%;
     }
 }
+
+/* Avaliações */
+.cl-estrelas {
+    display: inline-flex;
+    gap: 0.15rem;
+    color: var(--cl-accent);
+}
+
+.cl-estrelas .bi-star {
+    color: #d1d5db;
+}
+
+.cl-nota-media {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.cl-nota-media .bi-star-fill {
+    color: var(--cl-accent);
+}
+
+.cl-nota-media small {
+    color: var(--cl-muted-foreground);
+    font-weight: 400;
+}
+
+/* Seleção de estrelas: os radios ficam em ordem inversa para o :hover/:checked pintar as anteriores */
+.cl-estrelas-input {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0.25rem;
+}
+
+.cl-estrelas-input input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cl-estrelas-input label {
+    color: #d1d5db;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.cl-estrelas-input input:checked ~ label,
+.cl-estrelas-input label:hover,
+.cl-estrelas-input label:hover ~ label {
+    color: var(--cl-accent);
+}
+
+.cl-estrelas-input input:focus-visible + label {
+    outline: 2px solid var(--cl-primary);
+    border-radius: 0.25rem;
+}
+
+.cl-avaliacao-item + .cl-avaliacao-item {
+    border-top: 1px solid var(--cl-border);
+}

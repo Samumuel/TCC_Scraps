@@ -80,6 +80,13 @@
                                     </div>
                                 <?php endif; ?>
                                 <h3 class="card-title mb-2"><?= htmlspecialchars((string) ($atividade->getNome() ?? '-'), ENT_QUOTES, 'UTF-8') ?></h3>
+                                <?php if ($item['total_avaliacoes'] > 0): ?>
+                                    <div class="cl-nota-media mb-2">
+                                        <i class="bi bi-star-fill"></i>
+                                        <?= \app\helpers\Formatador::media($item['media_avaliacao']) ?>
+                                        <small>(<?= $item['total_avaliacoes'] ?>)</small>
+                                    </div>
+                                <?php endif; ?>
                                 <?php if (empty($item['disponivel'])): ?>
                                     <div class="mb-2">
                                         <span class="cl-badge cl-badge-neutral"><i class="bi bi-calendar-x"></i> Sem sessões disponíveis</span>

@@ -139,7 +139,7 @@ class AgendamentoRepository
     public function getAgendamentosPorUsuario(int $usuarioId): array
     {
         $sql = 'SELECT a.*, s.Data, s.Hora, s.Qtd_min, s.Qtd_max, s.Qtd_disponivel, s.ID_Atividade AS Sessao_ID_Atividade,
-                    at.Nome AS Atividade_Nome, at.Fotos AS Atividade_Fotos
+                    at.Nome AS Atividade_Nome, at.Fotos AS Atividade_Fotos, at.Duracao AS Atividade_Duracao
                 FROM Agendamento a
                 INNER JOIN Sessao s ON s.ID_Sessao = a.ID_Sessao
                 LEFT JOIN Atividades at ON at.ID_Atividade = a.ID_Atividade
@@ -158,7 +158,8 @@ class AgendamentoRepository
                 'agendamento' => Agendamento::arrayParaObjeto($linha),
                 'sessao' => Sessao::arrayParaObjeto($sessao),
                 'atividade_nome' => (string) ($linha['Atividade_Nome'] ?? ''),
-                'atividade_foto' => (string) ($linha['Atividade_Fotos'] ?? '')
+                'atividade_foto' => (string) ($linha['Atividade_Fotos'] ?? ''),
+                'atividade_duracao' => (string) ($linha['Atividade_Duracao'] ?? '')
             ];
         }
 

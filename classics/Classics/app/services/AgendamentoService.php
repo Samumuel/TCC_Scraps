@@ -5,6 +5,7 @@ namespace app\services;
 use app\models\Agendamento;
 use app\models\Sessao;
 use app\repositories\AgendamentoRepository;
+use app\repositories\AvaliacaoRepository;
 use DateTime;
 use Throwable;
 
@@ -17,11 +18,13 @@ class AgendamentoService
 
     private AgendamentoRepository $repository;
     private SessaoService $sessaoService;
+    private AvaliacaoRepository $avaliacaoRepository;
 
     public function __construct()
     {
         $this->repository = new AgendamentoRepository();
         $this->sessaoService = new SessaoService();
+        $this->avaliacaoRepository = new AvaliacaoRepository();
     }
 
     public function registrarInscricao(int $usuarioId, int $sessaoId, int $quantidadePessoas): array
@@ -53,9 +56,12 @@ class AgendamentoService
         }
 
         $agendamentos = $this->repository->getAgendamentosPorUsuario($usuarioId);
+        $avaliacoes = $this->avaliacaoRepository->getAvaliacoesPorUsuario($usuarioId);
 
         foreach ($agendamentos as $indice => $item) {
             $agendamentos[$indice]['pode_alterar'] = $this->podeAlterar($item['agendamento'], $item['sessao']);
+            $agendamentos[$indice]['pode_avaliar'] = $this->podeAvaliar($item['agendamento'], $item['sessao'], $item['atividade_duracao']);
+            $agendamentos[$indice]['avaliacao'] = $avaliacoes[(int) $item['agendamento']->getIdAtividade()] ?? null;
         }
 
         return $agendamentos;
@@ -297,6 +303,32 @@ class AgendamentoService
             'agendamento' => $agendamento,
             'sessao' => $sessao
         ];
+    }
+
+    // RF12: só avalia quem teve o agendamento aprovado e cuja sessão já terminou (início + duração)
+    private function podeAvaliar(Agendamento $agendamento, Sessao $sessao, string $duracao): bool
+    {
+        if ($agendamento->getStatus() !== self::STATUS_ATIVO) {
+            return false;
+        }
+
+        $data = trim((string) $sessao->getData());
+        $hora = substr(trim((string) $sessao->getHora()), 0, 8);
+        if ($data === '' || $hora === '') {
+            return false;
+        }
+
+        try {
+            $fimSessao = new DateTime($data . ' ' . $hora);
+        } catch (Throwable $e) {
+            return false;
+        }
+
+        if (preg_match('/^(\d+):([0-5]\d)/', trim($duracao), $partes) === 1) {
+            $fimSessao->modify('+' . (int) $partes[1] . ' hours +' . (int) $partes[2] . ' minutes');
+        }
+
+        return $fimSessao <= new DateTime();
     }
 
     private function podeAlterar(Agendamento $agendamento, Sessao $sessao): bool

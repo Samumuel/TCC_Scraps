@@ -26,4 +26,10 @@ class Formatador
 
         return $minutos . 'min';
     }
+
+    // Formata a média de avaliações com uma casa decimal, ex: "4,5"
+    public static function media(float $media): string
+    {
+        return number_format($media, 1, ',', '');
+    }
 }

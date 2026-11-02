@@ -53,7 +53,9 @@ class FavoritoRepository
     {
         $sql = 'SELECT f.ID_Favorito, f.ID_Usuario, at.*, c.Nome_Categoria AS Categoria_Nome,
                     EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = at.ID_Atividade AND s.Qtd_disponivel > 0
-                        AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))) AS Tem_Sessao_Disponivel
+                        AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))) AS Tem_Sessao_Disponivel,
+                    (SELECT AVG(av.Nota) FROM Avaliacao av WHERE av.ID_Atividade = at.ID_Atividade) AS Media_Avaliacao,
+                    (SELECT COUNT(*) FROM Avaliacao av WHERE av.ID_Atividade = at.ID_Atividade) AS Total_Avaliacoes
                 FROM Favorito f
                 INNER JOIN Atividades at ON at.ID_Atividade = f.ID_Atividade
                 LEFT JOIN Categorias c ON c.ID_Categoria = at.Categoria_ID
@@ -72,7 +74,9 @@ class FavoritoRepository
                 'favorito' => Favorito::arrayParaObjeto($linha),
                 'atividade' => Atividade::arrayParaObjeto($linha),
                 'categoria_nome' => (string) ($linha['Categoria_Nome'] ?? ''),
-                'disponivel' => (bool) ($linha['Tem_Sessao_Disponivel'] ?? false)
+                'disponivel' => (bool) ($linha['Tem_Sessao_Disponivel'] ?? false),
+                'media_avaliacao' => (float) ($linha['Media_Avaliacao'] ?? 0),
+                'total_avaliacoes' => (int) ($linha['Total_Avaliacoes'] ?? 0)
             ];
         }
 
