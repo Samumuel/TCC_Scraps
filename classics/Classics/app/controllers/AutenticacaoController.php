@@ -37,7 +37,7 @@ class AutenticacaoController extends Controller
         $resultado = $this->autenticacaoService->logar($email, $senha);
 
         if ($resultado && isset($_SESSION['usuario_logado'])) {
-            $this->redirect(URL_BASE . '/usuarios');
+            $this->redirect(URL_BASE . '/');
         } else if (!isset($_SESSION['usuario_logado']) && $resultado && isset($_SESSION['empresa_logada'])) {
             $this->redirect(URL_BASE . '/atividade/listar');
         } else {

@@ -13,7 +13,7 @@
     <div class="container cl-page">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0"><?= isset($usuario['id']) ? 'Editar' : 'Novo' ?> Usuário</h2>
-            <a href="<?= URL_BASE ?>/usuarios" class="btn btn-outline-secondary">
+            <a href="<?= URL_BASE ?>/usuarios/ver?id=<?= (int) ($usuario['id'] ?? 0) ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Voltar
             </a>
         </div>

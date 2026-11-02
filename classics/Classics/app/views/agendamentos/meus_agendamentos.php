@@ -93,9 +93,13 @@
                         <div class="card cl-card-hover">
                             <div class="card-body p-4">
                                 <div class="d-flex flex-column flex-md-row gap-4">
-                                    <div class="cl-placeholder-img rounded-3 flex-shrink-0 d-none d-md-flex" style="width: 100%; max-width: 10rem; height: 8rem;">
-                                        <i class="bi bi-calendar-event" style="font-size: 40px;"></i>
-                                    </div>
+                                    <?php if ($item['atividade_foto'] !== ''): ?>
+                                        <img src="<?= htmlspecialchars(URL_BASE . '/' . ltrim($item['atividade_foto'], '/'), ENT_QUOTES, 'UTF-8') ?>" alt="Foto da atividade" class="rounded-3 flex-shrink-0 d-none d-md-block" style="width: 10rem; height: 8rem; object-fit: cover;">
+                                    <?php else: ?>
+                                        <div class="cl-placeholder-img rounded-3 flex-shrink-0 d-none d-md-flex" style="width: 100%; max-width: 10rem; height: 8rem;">
+                                            <i class="bi bi-calendar-event" style="font-size: 40px;"></i>
+                                        </div>
+                                    <?php endif; ?>
 
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
@@ -184,9 +188,13 @@
                         ?>
                         <div class="card">
                             <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-md-center">
-                                <div class="cl-placeholder-img rounded-3 flex-shrink-0 d-none d-md-flex" style="width: 5rem; height: 5rem;">
-                                    <i class="bi bi-calendar-event" style="font-size: 28px;"></i>
-                                </div>
+                                <?php if ($item['atividade_foto'] !== ''): ?>
+                                    <img src="<?= htmlspecialchars(URL_BASE . '/' . ltrim($item['atividade_foto'], '/'), ENT_QUOTES, 'UTF-8') ?>" alt="Foto da atividade" class="rounded-3 flex-shrink-0 d-none d-md-block" style="width: 5rem; height: 5rem; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="cl-placeholder-img rounded-3 flex-shrink-0 d-none d-md-flex" style="width: 5rem; height: 5rem;">
+                                        <i class="bi bi-calendar-event" style="font-size: 28px;"></i>
+                                    </div>
+                                <?php endif; ?>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
                                         <h3 class="h6 mb-0">

@@ -124,7 +124,7 @@
                         <label for="senha" class="form-label">Senha</label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="senha" name="senha">
-                            <button class="btn btn-outline-secondary" type="button" id="toggleSenha">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleSenha" data-alternar-senha="senha" aria-label="Mostrar senha">
                                 <i class="bi bi-eye" id="iconSenha"></i>
                             </button>
                         </div>
@@ -183,8 +183,13 @@
                         <?php endif; ?>
                     </div>
                     <div class="mb-3">
-                        <label for="senha" class="form-label">Senha</label>
-                        <input type="password" class="form-control" id="senha" name="senha" required>
+                        <label for="senhaEmpresa" class="form-label">Senha</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="senhaEmpresa" name="senha" required>
+                            <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senhaEmpresa" aria-label="Mostrar senha">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary py-2">
@@ -207,20 +212,19 @@
     <script src="<?= URL_BASE ?>/js/validacao-numerica.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-email.js"></script>
     <script>
-    const toggleSenha = document.querySelector('#toggleSenha');
-    const senhaInput = document.querySelector('#senha');
-    const iconSenha = document.querySelector('#iconSenha');
+    // Botões de mostrar/ocultar senha: data-alternar-senha indica o id do campo
+    document.querySelectorAll('[data-alternar-senha]').forEach(function(botao) {
+        const campo = document.getElementById(botao.dataset.alternarSenha);
+        const icone = botao.querySelector('i');
 
-    if (toggleSenha) {
-        toggleSenha.addEventListener('click', function() {
-            const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            senhaInput.setAttribute('type', type);
+        botao.addEventListener('click', function() {
+            const tipo = campo.getAttribute('type') === 'password' ? 'text' : 'password';
+            campo.setAttribute('type', tipo);
 
-            iconSenha.classList.toggle('bi-eye');
-            iconSenha.classList.toggle('bi-eye-slash');
+            icone.classList.toggle('bi-eye');
+            icone.classList.toggle('bi-eye-slash');
         });
-    }
-
+    });
     </script>
 </body>
 

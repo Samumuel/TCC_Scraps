@@ -381,10 +381,12 @@ class AtividadeController extends Controller {
 
 		if (!empty($erros)) {
 			$data['atividade'] = $atividade;
+			// Valores digitados voltam para o formulário; a mensagem depende do que existe no banco
 			$data['localizacao'] = [
 				'CEP' => $cep,
 				'Complemento' => $complemento
 			];
+			$data['possui_localizacao'] = !empty($this->localizacaoService->getLocalizacaoPorAtividade($idAtividade));
 			$data['erros'] = $erros;
 
 			if ($origem === 'editar') {

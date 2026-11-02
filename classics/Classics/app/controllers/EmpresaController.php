@@ -16,13 +16,13 @@ class EmpresaController extends Controller {
         $this->service = new EmpresaService();
     }
 
+    // Lista e cadastro pelo painel ficam restritos ao administrador (ainda não implementado)
     public function listarTodos() {
-        $data['lista'] = $this->service->getEmpresas();
-        $this->view('empresas/empresa_list', $data);
+        $this->redirect(URL_BASE);
     }
 
     public function criar() {
-        $this->view('empresas/empresa_create', []);
+        $this->redirect(URL_BASE);
     }
 
     public function salvar() {
@@ -33,6 +33,11 @@ class EmpresaController extends Controller {
         $telefone = $_POST['telefone'] ?? null;
         $senha = $_POST['senha'];
         $cadastroPublico = isset($_POST['cadastro_publico']);
+
+        // Somente o cadastro público está disponível
+        if (!$cadastroPublico) {
+            $this->redirect(URL_BASE);
+        }
 
         $validador = new Validador();
         $validador->obrigatorio('email', $email, 'O e-mail da empresa é obrigatório.');
@@ -46,7 +51,7 @@ class EmpresaController extends Controller {
                 'cnpj' => $cnpj,
                 'localizacao' => $localizacao,
                 'telefone' => $telefone,
-                'status' => $_POST['status'] ?? 'pendente'
+                'status' => 'pendente'
             ];
             $data['erros'] = $validador->getErros();
             $data['tipo_cadastro'] = 'empresa';
@@ -61,11 +66,11 @@ class EmpresaController extends Controller {
         $empresa->setLocalizacao($localizacao);
         $empresa->setTelefone($telefone);
         $empresa->setSenha($senha);
-        // Garantir que status seja 'pendente' por padrão ao cadastrar
-        $empresa->setStatus($_POST['status'] ?? 'pendente');
+        // RN02: toda empresa nova começa pendente de aprovação
+        $empresa->setStatus('pendente');
 
         if ($this->service->saveEmpresa($empresa)) {
-            $this->redirect(URL_BASE . '/empresa');
+            $this->redirect(URL_BASE);
         } else {
             $data['empresa'] = [
                 'nome' => $nome,
@@ -73,7 +78,7 @@ class EmpresaController extends Controller {
                 'cnpj' => $cnpj,
                 'localizacao' => $localizacao,
                 'telefone' => $telefone,
-                'status' => $_POST['status'] ?? 'pendente'
+                'status' => 'pendente'
             ];
             $data['erros']['email'] = "Este e-mail já está cadastrado.";
             $data['tipo_cadastro'] = 'empresa';
@@ -82,12 +87,25 @@ class EmpresaController extends Controller {
     }
 
     public function editar() {
-        $id = $_GET['id'];
-        $data['empresa'] = $this->service->getEmpresa($id);
+        $empresaId = $this->getEmpresaLogadaId();
+        if ($empresaId === null) {
+            $this->redirect(URL_BASE);
+        }
+
+        // A empresa só pode editar o próprio cadastro
+        $data['empresa'] = $this->service->getEmpresa($empresaId);
+        if (!$data['empresa']) {
+            $this->redirect(URL_BASE);
+        }
+
         $this->view('empresas/empresa_edit', $data);
     }
 
     public function atualizar() {
+        $empresaId = $this->getEmpresaLogadaId();
+        if ($empresaId === null) {
+            $this->redirect(URL_BASE);
+        }
 
         $validador = new Validador();
         $email = trim((string) ($_POST['email'] ?? ''));
@@ -96,64 +114,70 @@ class EmpresaController extends Controller {
         $validador->cnpj('cnpj', $_POST['cnpj'] ?? '');
         $validador->telefone('telefone', $_POST['telefone'] ?? '');
         if ($validador->temErros()) {
-            $data['empresa'] = [
-                'ID_Empresa' => (int) ($_POST['id'] ?? 0),
-                'nome' => $_POST['nome'] ?? '',
-                'email' => trim((string) ($_POST['email'] ?? '')),
-                'cnpj' => $_POST['cnpj'] ?? '',
-                'localizacao' => $_POST['localizacao'] ?? '',
-                'telefone' => $_POST['telefone'] ?? '',
-                'status' => $_POST['status'] ?? 'pendente'
-            ];
+            $data['empresa'] = $this->montarDadosEmpresaFormulario($empresaId);
             $data['erros'] = $validador->getErros();
             $this->view('empresas/empresa_edit', $data);
             return;
         }
 
+        // O id vem da sessão; status e senha vazia são mantidos pelo service
         $empresa = new Empresa(
-            $_POST['id'],
-            $_POST['nome'],
-            trim((string) ($_POST['email'] ?? '')),
-            $_POST['cnpj'],
-            $_POST['localizacao'],
-            $_POST['telefone'],
-            $_POST['senha'],
-            $_POST['status'] ?? 'pendente'
+            $empresaId,
+            (string) ($_POST['nome'] ?? ''),
+            $email,
+            $_POST['cnpj'] ?? '',
+            $_POST['localizacao'] ?? '',
+            $_POST['telefone'] ?? '',
+            (string) ($_POST['senha'] ?? '')
         );
 
         if ($this->service->updateEmpresa($empresa)) {
-            $this->redirect(URL_BASE . '/empresa');
+            $empresaAtualizada = $this->service->getEmpresa($empresaId);
+            if ($empresaAtualizada) {
+                $_SESSION['empresa_logada'] = Empresa::arrayParaObjeto($empresaAtualizada);
+            }
+            $this->redirect(URL_BASE . '/empresa/ver?id=' . $empresaId);
         } else {
-            $data['empresa'] = [
-                'ID_Empresa' => (int) ($_POST['id'] ?? 0),
-                'nome' => $_POST['nome'] ?? '',
-                'email' => trim((string) ($_POST['email'] ?? '')),
-                'cnpj' => $_POST['cnpj'] ?? '',
-                'localizacao' => $_POST['localizacao'] ?? '',
-                'telefone' => $_POST['telefone'] ?? '',
-                'status' => $_POST['status'] ?? 'pendente'
-            ];
+            $data['empresa'] = $this->montarDadosEmpresaFormulario($empresaId);
             $data['erros']['email'] = "Este e-mail já está cadastrado.";
             $this->view('empresas/empresa_edit', $data);
         }
     }
 
     public function verEmpresa() {
-        if (!isset($_GET['id'])) {
-            $this->redirect(URL_BASE . '/empresa');
+        $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        if ($id <= 0) {
+            $this->redirect(URL_BASE);
         }
 
-        $id = $_GET['id'];
         $data['empresa'] = $this->service->getEmpresa($id);
+        $data['empresa_propria'] = $id === $this->getEmpresaLogadaId();
         $this->view('empresas/empresa_show', $data);
     }
-    
+
+    // Exclusão de empresas ficará restrita ao administrador (ainda não implementado)
     public function excluir() {
-        $id = $_GET['id'];
-        if ($this->service->deleteEmpresa($id)) {
-            $this->redirect(URL_BASE . '/empresa');
-        } else {
-            echo "Erro ao excluir a empresa.";
+        $this->redirect(URL_BASE);
+    }
+
+    private function montarDadosEmpresaFormulario(int $empresaId): array
+    {
+        return [
+            'ID_Empresa' => $empresaId,
+            'nome' => $_POST['nome'] ?? '',
+            'email' => trim((string) ($_POST['email'] ?? '')),
+            'cnpj' => $_POST['cnpj'] ?? '',
+            'localizacao' => $_POST['localizacao'] ?? '',
+            'telefone' => $_POST['telefone'] ?? ''
+        ];
+    }
+
+    private function getEmpresaLogadaId(): ?int
+    {
+        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada'])) {
+            return null;
         }
+
+        return (int) $_SESSION['empresa_logada']->getIdEmpresa();
     }
 }

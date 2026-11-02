@@ -13,7 +13,7 @@
     <div class="container cl-page">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0"><?= isset($empresa['ID_Empresa']) ? 'Editar' : 'Nova' ?> Empresa</h2>
-            <a href="<?= URL_BASE ?>/empresa" class="btn btn-outline-secondary">
+            <a href="<?= URL_BASE ?>/empresa/ver?id=<?= (int) ($empresa['ID_Empresa'] ?? 0) ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Voltar
             </a>
         </div>
@@ -70,7 +70,12 @@
 
                     <div class="mb-3">
                         <label for="senha" class="form-label">Senha <?= isset($empresa['ID_Empresa']) ? '(Preencha apenas se quiser alterar)' : '' ?></label>
-                        <input type="password" class="form-control" id="senha" name="senha">
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="senha" name="senha">
+                            <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senha" aria-label="Mostrar senha">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                         <?php if (isset($erros['senha'])): ?>
                             <div class="text-danger small"><?= $erros['senha'] ?></div>
                         <?php endif; ?>
@@ -88,6 +93,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-numerica.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-email.js"></script>
+    <script>
+    // Botões de mostrar/ocultar senha: data-alternar-senha indica o id do campo
+    document.querySelectorAll('[data-alternar-senha]').forEach(function(botao) {
+        const campo = document.getElementById(botao.dataset.alternarSenha);
+        const icone = botao.querySelector('i');
+
+        botao.addEventListener('click', function() {
+            const tipo = campo.getAttribute('type') === 'password' ? 'text' : 'password';
+            campo.setAttribute('type', tipo);
+
+            icone.classList.toggle('bi-eye');
+            icone.classList.toggle('bi-eye-slash');
+        });
+    });
+    </script>
 </body>
 
 </html>

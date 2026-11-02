@@ -17,19 +17,15 @@ class UsuarioController extends Controller
         $this->service = new UsuarioService();
     }
 
+    // Lista e cadastro pelo painel ficam restritos ao administrador (ainda não implementado)
     public function index()
     {
-        if ($this->getUsuarioLogadoId() === null) {
-            $this->redirect(URL_BASE);
-        }
-
-        $data['usuarios'] = $this->service->getUsuarios();
-        $this->view('usuarios/usuario_list', $data);
+        $this->redirect(URL_BASE);
     }
 
     public function cadastrar()
     {
-        $this->view('usuarios/usuario_create');
+        $this->redirect(URL_BASE);
     }
 
     public function salvar()
@@ -42,9 +38,14 @@ class UsuarioController extends Controller
         $cpf   = $_POST['cpf'] ?? '';
         $telefone = $_POST['telefone'] ?? '';
         $idade = $_POST['idade'] ?? '';
-        $tipo_usuario = $_POST['tipo_usuario'] ?? 'user';
         $senha  = $_POST['senha'];
         $cadastroPublico = isset($_POST['cadastro_publico']);
+
+        // Somente o cadastro público está disponível; o perfil é sempre de cliente
+        if (!$cadastroPublico) {
+            $this->redirect(URL_BASE);
+        }
+        $tipo_usuario = 'user';
 
         //Validar
         $validador->obrigatorio('nomeUsuario', $nomeUsuario);
@@ -88,12 +89,12 @@ class UsuarioController extends Controller
 
         $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         if ($id !== $usuarioLogadoId) {
-            $this->redirect(URL_BASE . '/usuarios');
+            $this->redirect($this->urlPerfil($usuarioLogadoId));
         }
 
         $data['usuario'] = $this->service->getUsuarioById($id);
         if (!$data['usuario']) {
-            $this->redirect(URL_BASE . '/usuarios');
+            $this->redirect(URL_BASE);
         }
 
         $this->view('usuarios/usuario_edit', $data);
@@ -108,12 +109,12 @@ class UsuarioController extends Controller
 
         $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
         if ($id !== $usuarioLogadoId) {
-            $this->redirect(URL_BASE . '/usuarios');
+            $this->redirect($this->urlPerfil($usuarioLogadoId));
         }
 
         $usuarioAtual = $this->service->getUsuarioById($id);
         if (!$usuarioAtual) {
-            $this->redirect(URL_BASE . '/usuarios');
+            $this->redirect(URL_BASE);
         }
 
         $fotoAtual = (string) ($usuarioAtual['foto'] ?? '');
@@ -151,7 +152,8 @@ class UsuarioController extends Controller
             $_POST['cpf'] ?? '',
             $_POST['telefone'] ?? '',
             $_POST['idade'] ?? 0,
-            $_POST['tipo_usuario'] ?? 'user',
+            // O tipo de usuário não pode ser alterado pelo próprio usuário
+            (string) ($usuarioAtual['tipo_usuario'] ?? 'user'),
             $fotoParaSalvar,
             $_POST['senha']
         );
@@ -160,7 +162,7 @@ class UsuarioController extends Controller
             if ($novaFoto !== null) {
                 $this->removerFotoLocal($fotoAtual);
             }
-            $this->redirect(URL_BASE . '/usuarios');
+            $this->redirect($this->urlPerfil($id));
         } else {
             if ($novaFoto !== null) {
                 $this->removerFotoLocal($novaFoto);
@@ -173,15 +175,17 @@ class UsuarioController extends Controller
     }
 
     public function verUsuario() {
-        if ($this->getUsuarioLogadoId() === null) {
+        $usuarioLogadoId = $this->getUsuarioLogadoId();
+        if ($usuarioLogadoId === null) {
             $this->redirect(URL_BASE);
         }
 
-        if (!isset($_GET['id'])) {
-            $this->redirect(URL_BASE . '/usuarios');
+        // O usuário só pode ver o próprio perfil
+        $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        if ($id !== $usuarioLogadoId) {
+            $this->redirect($this->urlPerfil($usuarioLogadoId));
         }
 
-        $id = (int) $_GET['id'];
         $data['usuario'] = $this->service->getUsuarioById($id);
         $this->view('usuarios/usuario_show', $data);
     }
@@ -195,7 +199,7 @@ class UsuarioController extends Controller
 
         $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         if ($id !== $usuarioLogadoId) {
-            $this->redirect(URL_BASE . '/usuarios');
+            $this->redirect($this->urlPerfil($usuarioLogadoId));
         }
 
         if ($this->service->deleteUsuario($id)) {
@@ -204,7 +208,12 @@ class UsuarioController extends Controller
             $this->redirect(URL_BASE);
         }
 
-        $this->redirect(URL_BASE . '/usuarios');
+        $this->redirect($this->urlPerfil($id));
+    }
+
+    private function urlPerfil(int $usuarioId): string
+    {
+        return URL_BASE . '/usuarios/ver?id=' . $usuarioId;
     }
 
     private function getUsuarioLogadoId(): ?int

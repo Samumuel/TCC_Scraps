@@ -16,10 +16,16 @@
         <?php if (isset($empresa)): ?>
             <!-- TÍTULO + VOLTAR -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Detalhes da Empresa</h2>
-                <a href="<?= URL_BASE ?>/empresa" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Voltar para Lista
-                </a>
+                <h2 class="mb-0"><?= !empty($empresa_propria) ? 'Minha empresa' : 'Detalhes da Empresa' ?></h2>
+                <?php if (!empty($empresa_propria)): ?>
+                    <a href="<?= URL_BASE ?>/empresa/editar" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar perfil
+                    </a>
+                <?php else: ?>
+                    <a href="<?= URL_BASE ?>/" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                <?php endif; ?>
             </div>
 
             <div class="card shadow-sm">
@@ -41,7 +47,7 @@
             <div class="alert alert-warning shadow-sm" role="alert">
                 <i class="bi bi-exclamation-triangle-fill"></i> Empresa não encontrada.
                 <div class="mt-3">
-                    <a href="<?= URL_BASE ?>/empresa" class="btn btn-warning">Voltar para Lista</a>
+                    <a href="<?= URL_BASE ?>/" class="btn btn-warning">Voltar para o início</a>
                 </div>
             </div>
         <?php endif; ?>

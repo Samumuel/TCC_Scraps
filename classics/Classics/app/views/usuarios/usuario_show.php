@@ -15,8 +15,8 @@
 
         <?php if (isset($usuario)): ?>
             <?php $usuarioLogado = $_SESSION['usuario_logado'] ?? null; ?>
-            <a href="<?= URL_BASE ?>/usuarios" class="cl-back-link">
-                <i class="bi bi-arrow-left"></i> Voltar para Lista
+            <a href="<?= URL_BASE ?>/" class="cl-back-link">
+                <i class="bi bi-arrow-left"></i> Voltar para o início
             </a>
 
             <div class="row g-4">
@@ -93,7 +93,7 @@
             <div class="alert alert-warning shadow-sm" role="alert">
                 <i class="bi bi-exclamation-triangle-fill"></i> Usuário não encontrado.
                 <div class="mt-3">
-                    <a href="<?= URL_BASE ?>/usuarios" class="btn btn-warning">Voltar para Lista</a>
+                    <a href="<?= URL_BASE ?>/" class="btn btn-warning">Voltar para o início</a>
                 </div>
             </div>
         <?php endif; ?>

@@ -214,7 +214,7 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
                                             <div class="d-flex justify-content-end gap-2">
                                                 <a href="<?= URL_BASE ?>/atividade/listar" class="btn btn-outline-secondary">Cancelar</a>
                                                 <button type="submit" class="btn btn-primary">
-                                                    <?= !empty($localizacao) ? 'Salvar alterações' : 'Cadastrar localização' ?>
+                                                    <?= ($possui_localizacao ?? !empty($localizacao)) ? 'Salvar alterações' : 'Cadastrar localização' ?>
                                                 </button>
                                             </div>
                                         </form>

@@ -46,7 +46,7 @@ $erros = $erros ?? [];
             <div class="col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
-                        <?php if (!empty($localizacao)): ?>
+                        <?php if ($possui_localizacao ?? !empty($localizacao)): ?>
                             <div class="alert alert-info" role="alert">
                                 Esta atividade já possui uma localização cadastrada. Os dados abaixo podem ser alterados.
                             </div>
