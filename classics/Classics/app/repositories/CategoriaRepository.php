@@ -60,6 +60,15 @@ class CategoriaRepository
         return $stmt->execute();
     }
 
+    public function saveCategoriaRetornandoId(string $nomeCategoria, int $empresaId): ?int
+    {
+        $stmt = $this->connection->prepare('INSERT INTO Categorias (Nome_Categoria, Empresa_ID) VALUES (:nome_categoria, :empresa_id)');
+        $stmt->bindValue(':nome_categoria', $nomeCategoria);
+        $stmt->bindValue(':empresa_id', $empresaId, PDO::PARAM_INT);
+
+        return $stmt->execute() ? (int) $this->connection->lastInsertId() : null;
+    }
+
     public function updateCategoria(Categoria $categoria, int $empresaId): bool
     {
         $sql = 'UPDATE Categorias SET Nome_Categoria = :nome_categoria WHERE ID_Categoria = :id AND Empresa_ID = :empresa_id';

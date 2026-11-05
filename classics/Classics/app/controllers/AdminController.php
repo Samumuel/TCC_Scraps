@@ -125,7 +125,117 @@ class AdminController extends Controller
         $this->redirect(URL_BASE . '/admin?aba=' . $aba . '&erro=excluir');
     }
 
+    public function criarEmpresa()
+    {
+        $this->view('admin/empresa_create', ['empresa' => []]);
+    }
+
+    // Empresa cadastrada pelo admin entra como pendente, igual ao cadastro público
+    public function salvarEmpresa()
+    {
+        $dados = $this->dadosEmpresaDoFormulario(0);
+        $senha = (string) ($_POST['senha'] ?? '');
+
+        $validador = new Validador();
+        $validador->obrigatorio('nome', trim($dados['nome']), 'O nome da empresa é obrigatório.');
+        $validador->obrigatorio('email', $dados['email'], 'O e-mail da empresa é obrigatório.');
+        $validador->email('email', $dados['email']);
+        $validador->cnpj('cnpj', $dados['cnpj']);
+        $validador->telefone('telefone', $dados['telefone']);
+        $validador->obrigatorio('senha', trim($senha), 'Informe uma senha.');
+
+        if ($validador->temErros()) {
+            $this->view('admin/empresa_create', ['empresa' => $dados, 'erros' => $validador->getErros()]);
+            return;
+        }
+
+        $empresa = new Empresa(0, trim($dados['nome']), $dados['email'], $dados['cnpj'], $dados['localizacao'], $dados['telefone'], $senha, EmpresaService::STATUS_PENDENTE);
+
+        if ($this->empresaService->saveEmpresa($empresa, false)) {
+            $this->redirect(URL_BASE . '/admin?aba=pendente&sucesso=criada');
+        }
+
+        $this->view('admin/empresa_create', [
+            'empresa' => $dados,
+            'erros' => ['email' => 'Este e-mail já está cadastrado.']
+        ]);
+    }
+
+    // Botão "Criar atividade": guarda a empresa escolhida e abre o cadastro de atividade (RN02: só aprovadas)
+    public function criarAtividade()
+    {
+        $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        $empresa = $this->empresaService->getEmpresa($id);
+        if (!$empresa) {
+            $this->redirect(URL_BASE . '/admin?erro=empresa');
+        }
+
+        if (!$this->empresaService->isAprovada($id)) {
+            $this->redirect(URL_BASE . '/admin?erro=nao_aprovada');
+        }
+
+        $_SESSION['admin_empresa_alvo'] = ['id' => $id, 'nome' => (string) ($empresa['Name'] ?? '')];
+        $this->redirect(URL_BASE . '/atividade/cadastrar');
+    }
+
     // ---- Usuários ----
+
+    public function criarUsuario()
+    {
+        $this->view('admin/usuario_create', ['usuario' => ['tipo_usuario' => 'user']]);
+    }
+
+    public function salvarUsuario()
+    {
+        $dados = [
+            'nomeUsuario' => trim((string) ($_POST['nomeUsuario'] ?? '')),
+            'email' => trim((string) ($_POST['email'] ?? '')),
+            'cpf' => trim((string) ($_POST['cpf'] ?? '')),
+            'telefone' => trim((string) ($_POST['telefone'] ?? '')),
+            'idade' => trim((string) ($_POST['idade'] ?? '')),
+            // Só o administrador escolhe o tipo: cliente ou outro administrador
+            'tipo_usuario' => (string) ($_POST['tipo_usuario'] ?? 'user') === 'admin' ? 'admin' : 'user'
+        ];
+        $senha = (string) ($_POST['senha'] ?? '');
+
+        $validador = new Validador();
+        $validador->obrigatorio('nomeUsuario', $dados['nomeUsuario'], 'O nome é obrigatório.');
+        $validador->obrigatorio('email', $dados['email'], 'O e-mail é obrigatório.');
+        $validador->email('email', $dados['email']);
+        $validador->cpf('cpf', $dados['cpf']);
+        $validador->telefone('telefone', $dados['telefone']);
+        if ($dados['idade'] !== '' && (!ctype_digit($dados['idade']) || (int) $dados['idade'] > 120)) {
+            $validador->obrigatorio('idade', '', 'Informe uma idade válida.');
+        }
+        $validador->obrigatorio('senha', trim($senha), 'Informe uma senha.');
+
+        if ($validador->temErros()) {
+            $this->view('admin/usuario_create', ['usuario' => $dados, 'erros' => $validador->getErros()]);
+            return;
+        }
+
+        // Ordem do construtor: id, nome, email, cpf, telefone, idade, tipo_usuario, foto, senha
+        $usuario = new Usuario(
+            0,
+            $dados['nomeUsuario'],
+            $dados['email'],
+            $dados['cpf'],
+            $dados['telefone'],
+            $dados['idade'] !== '' ? $dados['idade'] : '0',
+            $dados['tipo_usuario'],
+            '',
+            $senha
+        );
+
+        if ($this->usuarioService->saveUsuario($usuario)) {
+            $this->redirect(URL_BASE . '/admin/usuarios?sucesso=criado');
+        }
+
+        $this->view('admin/usuario_create', [
+            'usuario' => $dados,
+            'erros' => ['email' => 'Este e-mail já está cadastrado.']
+        ]);
+    }
 
     public function usuarios()
     {

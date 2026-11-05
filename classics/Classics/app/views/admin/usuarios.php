@@ -19,6 +19,7 @@
         $tipoMensagem = null;
         $mensagensSucesso = [
             'editado' => 'Dados do usuário atualizados.',
+            'criado' => 'Usuário cadastrado com sucesso.',
             'excluido' => 'Usuário excluído com todos os seus dados.'
         ];
         $mensagensErro = [
@@ -35,9 +36,14 @@
         }
         ?>
 
-        <div class="cl-page-header">
-            <h1 class="mb-1">Usuários</h1>
-            <p><?= count($usuarios) ?> usuário(s) cadastrado(s) na plataforma</p>
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 cl-page-header">
+            <div>
+                <h1 class="mb-1">Usuários</h1>
+                <p class="mb-0"><?= count($usuarios) ?> usuário(s) cadastrado(s) na plataforma</p>
+            </div>
+            <a href="<?= URL_BASE ?>/admin/usuario/cadastrar" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> Novo usuário
+            </a>
         </div>
 
         <?php if (!empty($mensagem)): ?>

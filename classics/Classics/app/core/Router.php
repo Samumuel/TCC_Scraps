@@ -73,9 +73,20 @@ class Router
 
     private function rotaPermitidaAoAdmin(string $uri): bool
     {
+        // Cadastro, edição, exclusão e lista de atividades da empresa escolhida no painel
+        $rotasAtividades = [
+            '/empresa/atividades', '/atividade/ver',
+            '/atividade/cadastrar', '/atividade/salvar',
+            '/atividade/localizacao/cadastrar', '/atividade/localizacao/salvar',
+            '/atividade/sessao/cadastrar', '/atividade/sessao/salvar', '/atividade/cadastro/concluir',
+            '/atividade/editar', '/atividade/atualizar', '/atividade/excluir',
+            '/atividade/sessao/edicao/salvar', '/atividade/sessao/edicao/atualizar', '/atividade/sessao/edicao/excluir'
+        ];
+
         return $uri === '/admin'
             || str_starts_with($uri, '/admin/')
-            || in_array($uri, ['/logout', '/notificacao/abrir', '/notificacao/lidas'], true);
+            || in_array($uri, ['/logout', '/notificacao/abrir', '/notificacao/lidas'], true)
+            || in_array($uri, $rotasAtividades, true);
     }
 
     public function getAllRoutes(){

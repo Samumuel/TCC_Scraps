@@ -128,6 +128,29 @@ class AtividadeRepository {
         return $stmt->fetch();
     }
 
+    // Atividades de uma empresa com categoria, sessões futuras e sessões futuras com vaga
+    public function getAtividadesDaEmpresaComResumo(int $empresaId, string $hoje, string $agora): array
+    {
+        $sessaoFutura = 's.ID_Atividade = a.ID_Atividade AND (s.Data > :hoje%1$s OR (s.Data = :hoje_hora%1$s AND s.Hora > :agora%1$s))';
+        $sql = 'SELECT a.*, c.Nome_Categoria AS Categoria_Nome,
+                    (SELECT COUNT(*) FROM Sessao s WHERE ' . sprintf($sessaoFutura, '1') . ') AS Sessoes_Futuras,
+                    (SELECT COUNT(*) FROM Sessao s WHERE ' . sprintf($sessaoFutura, '2') . ' AND s.Qtd_disponivel > 0) AS Sessoes_Com_Vaga
+                FROM Atividades a
+                LEFT JOIN Categorias c ON c.ID_Categoria = a.Categoria_ID
+                WHERE a.Empresa_ID = :empresa_id
+                ORDER BY a.Nome ASC';
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':empresa_id', $empresaId, PDO::PARAM_INT);
+        foreach (['1', '2'] as $sufixo) {
+            $stmt->bindValue(':hoje' . $sufixo, $hoje);
+            $stmt->bindValue(':hoje_hora' . $sufixo, $hoje);
+            $stmt->bindValue(':agora' . $sufixo, $agora);
+        }
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
     public function countAtividades(): int
     {
         $stmt = $this->connection->prepare('SELECT COUNT(*) FROM Atividades');

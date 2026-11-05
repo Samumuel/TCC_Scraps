@@ -34,6 +34,14 @@ class CategoriaService
         return $this->repository->saveCategoria($categoria, $empresaId);
     }
 
+    // Categoria criada pelo administrador no cadastro de atividade; devolve o id gerado
+    public function saveCategoriaRetornandoId(string $nomeCategoria, int $empresaId): ?int
+    {
+        $nomeCategoria = trim($nomeCategoria);
+
+        return $nomeCategoria !== '' && $empresaId > 0 ? $this->repository->saveCategoriaRetornandoId($nomeCategoria, $empresaId) : null;
+    }
+
     public function updateCategoria(Categoria $categoria, int $empresaId): bool
     {
         return $this->repository->updateCategoria($categoria, $empresaId);

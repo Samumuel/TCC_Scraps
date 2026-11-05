@@ -9,6 +9,7 @@ use app\models\Sessao;
 use app\services\AtividadeService;
 use app\services\AvaliacaoService;
 use app\services\CategoriaService;
+use app\services\EmpresaService;
 use app\services\FavoritoService;
 use app\services\LocalizacaoService;
 use app\services\SessaoService;
@@ -51,7 +52,7 @@ class AtividadeController extends Controller {
 	}
 
 	public function criar() {
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaParaNovaAtividade();
 
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
@@ -62,7 +63,7 @@ class AtividadeController extends Controller {
 	}
 
 	public function salvar() {
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaParaNovaAtividade();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -75,6 +76,8 @@ class AtividadeController extends Controller {
 		$valorInput = trim((string) ($_POST['valor'] ?? ''));
 		$categoriaInput = trim((string) ($_POST['categoria_id'] ?? ($_POST['categoria'] ?? '')));
 		$categorias = $this->categoriaService->getCategorias($empresaId);
+		// O administrador pode criar uma categoria nova para a empresa no próprio formulário
+		$novaCategoria = $this->isAdminLogado() ? mb_substr(trim((string) ($_POST['nova_categoria'] ?? '')), 0, 100) : '';
 
 		$erros = [];
 		$duracaoNormalizada = null;
@@ -95,8 +98,11 @@ class AtividadeController extends Controller {
 		} elseif (!$this->isValidDecimalInput($valorInput)) {
 			$erros['valor'] = 'Informe um valor valido usando apenas numeros e ponto (ex: 10.50).';
 		}
-		if ($categoriaInput === '') {
-			$erros['categoria_id'] = 'Selecione uma categoria.';
+		if ($novaCategoria !== '') {
+			// A categoria nova tem prioridade sobre a selecionada
+			$categoriaInput = '';
+		} elseif ($categoriaInput === '') {
+			$erros['categoria_id'] = $this->isAdminLogado() ? 'Selecione uma categoria ou informe uma nova.' : 'Selecione uma categoria.';
 		}
 
 		$categoriaId = null;
@@ -124,7 +130,8 @@ class AtividadeController extends Controller {
 				'Descricao' => $descricao,
 				'Localizacao' => $localizacao,
 				'Valor' => $valorInput,
-				'Categoria_ID' => $categoriaId ?? 0
+				'Categoria_ID' => $categoriaId ?? 0,
+				'Nova_Categoria' => $novaCategoria
 			];
 			$data['categorias'] = $categorias;
 			$data['erros'] = $erros;
@@ -142,12 +149,22 @@ class AtividadeController extends Controller {
 				'Descricao' => $descricao,
 				'Localizacao' => $localizacao,
 				'Valor' => $valorInput,
-				'Categoria_ID' => $categoriaId
+				'Categoria_ID' => $categoriaId,
+				'Nova_Categoria' => $novaCategoria
 			];
 			$data['categorias'] = $categorias;
 			$data['erros'] = ['fotos' => $resultadoUpload['erro']];
 			$this->view('atividades/atividade_create', $data);
 			return;
+		}
+
+		if ($novaCategoria !== '') {
+			$categoriaId = $this->categoriaService->saveCategoriaRetornandoId($novaCategoria, $empresaId);
+			if ($categoriaId === null) {
+				$this->removerFotoLocal((string) ($resultadoUpload['foto'] ?? ''));
+				echo 'Erro ao salvar a categoria.';
+				return;
+			}
 		}
 
 		$atividade = new Atividade();
@@ -177,7 +194,7 @@ class AtividadeController extends Controller {
 		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 		$data['atividade'] = $this->service->getAtividade($id);
 		if (!$data['atividade'] || (int) ($data['atividade']['Empresa_ID'] ?? 0) !== $empresaId) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$data['categorias'] = $this->categoriaService->getCategorias($empresaId);
@@ -199,7 +216,7 @@ class AtividadeController extends Controller {
 		$id = isset($_POST['id']) ? (int) $_POST['id'] : (int) ($_POST['id_atividade'] ?? 0);
 		$atividadeAtual = $this->service->getAtividade($id);
 		if (!$atividadeAtual || (int) ($atividadeAtual['Empresa_ID'] ?? 0) !== $empresaId) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$nome = trim((string) ($_POST['nome'] ?? ''));
@@ -331,7 +348,7 @@ class AtividadeController extends Controller {
 			$this->removerFotoLocal($fotoAtual);
 		}
 
-		$this->redirect(URL_BASE . '/atividade/listar');
+		$this->redirect($this->urlListaAtividades('sucesso=editada'));
 	}
 
 	public function localizacaoCadastrar()
@@ -344,7 +361,7 @@ class AtividadeController extends Controller {
 		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($id, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$data['atividade'] = $atividade;
@@ -363,7 +380,7 @@ class AtividadeController extends Controller {
 		$idAtividade = isset($_POST['id_atividade']) ? (int) $_POST['id_atividade'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($idAtividade, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$origem = $_POST['origem'] ?? 'create';
@@ -431,7 +448,7 @@ class AtividadeController extends Controller {
 		$idAtividade = isset($_POST['id_atividade']) ? (int) $_POST['id_atividade'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($idAtividade, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$validacao = $this->validarCamposSessao($_POST);
@@ -485,7 +502,7 @@ class AtividadeController extends Controller {
 		$idSessao = isset($_POST['id_sessao']) ? (int) $_POST['id_sessao'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($idAtividade, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$sessaoAtual = $this->sessaoService->getSessaoPorAtividade($idSessao, $idAtividade);
@@ -551,7 +568,7 @@ class AtividadeController extends Controller {
 		$idSessao = isset($_POST['id_sessao']) ? (int) $_POST['id_sessao'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($idAtividade, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$this->sessaoService->deleteSessao($idSessao, $idAtividade);
@@ -569,7 +586,7 @@ class AtividadeController extends Controller {
 		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($id, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$data['atividade'] = $atividade;
@@ -589,7 +606,7 @@ class AtividadeController extends Controller {
 		$idAtividade = isset($_POST['id_atividade']) ? (int) $_POST['id_atividade'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($idAtividade, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$dataSessao = trim((string) ($_POST['data'] ?? ''));
@@ -696,7 +713,7 @@ class AtividadeController extends Controller {
 		$idAtividade = isset($_POST['id_atividade']) ? (int) $_POST['id_atividade'] : 0;
 		$atividade = $this->getAtividadeDaEmpresa($idAtividade, $empresaId);
 		if (!$atividade) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect($this->urlListaAtividades());
 		}
 
 		$totalSessoes = $this->sessaoService->countSessoesPorAtividade($idAtividade);
@@ -710,7 +727,7 @@ class AtividadeController extends Controller {
 			return;
 		}
 
-		$this->redirect(URL_BASE . '/atividade/listar');
+		$this->redirect($this->urlListaAtividades('sucesso=criada'));
 	}
 
 	public function verAtividade() {
@@ -721,11 +738,11 @@ class AtividadeController extends Controller {
 		$id = (int) $_GET['id'];
 		$data['atividade'] = $this->service->getAtividade($id);
 
-		// RN02: atividade de empresa não aprovada só é visível para a própria empresa
+		// RN02: atividade de empresa não aprovada só é visível para a própria empresa e para o administrador
 		if ($data['atividade'] && strtolower(trim((string) ($data['atividade']['Empresa_Status'] ?? ''))) !== 'aprovada') {
 			$empresaLogada = $_SESSION['empresa_logada'] ?? null;
 			$propria = is_object($empresaLogada) && (int) $empresaLogada->getIdEmpresa() === (int) ($data['atividade']['Empresa_ID'] ?? 0);
-			if (!$propria) {
+			if (!$propria && !$this->isAdminLogado()) {
 				$this->redirect(URL_BASE . '/');
 			}
 		}
@@ -743,33 +760,92 @@ class AtividadeController extends Controller {
 		$this->view('atividades/atividade_show', $data);
 	}
 
+	// Exclusão por POST (o formulário pede confirmação); vale para a empresa e para o administrador
 	public function excluir() {
 		$empresaId = $this->getEmpresaLogadaId();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
 
-		$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 		$atividade = $this->service->getAtividade($id);
 		if (!$atividade || (int) ($atividade['Empresa_ID'] ?? 0) !== $empresaId) {
-			$this->redirect(URL_BASE);
+			$this->redirect($this->urlListaAtividades('erro=atividade'));
 		}
 
 		if ($this->service->deleteAtividade($id, $empresaId)) {
-			$this->redirect(URL_BASE . '/atividade/listar');
-		} else {
-			echo 'Erro ao excluir a atividade.';
+			$this->redirect($this->urlListaAtividades('sucesso=excluida'));
 		}
+
+		$this->redirect($this->urlListaAtividades('erro=excluir'));
 	}
 
-	// RN02: só a empresa aprovada pelo administrador gerencia atividades
+	// Lista de atividades de uma empresa: a própria empresa aprovada ou o administrador (?empresa=ID)
+	public function listarDaEmpresa() {
+		if ($this->isAdminLogado() && isset($_GET['empresa'])) {
+			$empresa = (new EmpresaService())->getEmpresa((int) $_GET['empresa']);
+			if (!$empresa) {
+				$this->redirect(URL_BASE . '/admin?erro=empresa');
+			}
+			$_SESSION['admin_empresa_alvo'] = ['id' => (int) $empresa['ID_Empresa'], 'nome' => (string) ($empresa['Name'] ?? '')];
+		}
+
+		$empresaId = $this->getEmpresaLogadaId();
+		if ($empresaId === null) {
+			$this->redirect($this->isAdminLogado() ? URL_BASE . '/admin' : URL_BASE);
+		}
+
+		$empresa = (new EmpresaService())->getEmpresa($empresaId);
+		if (!$empresa) {
+			unset($_SESSION['admin_empresa_alvo']);
+			$this->redirect($this->isAdminLogado() ? URL_BASE . '/admin?erro=empresa' : URL_BASE);
+		}
+
+		$agora = new DateTime();
+		$data['empresa_lista'] = $empresa;
+		$data['pode_criar'] = strtolower(trim((string) ($empresa['Status'] ?? ''))) === EmpresaService::STATUS_APROVADA;
+		$data['atividades'] = $this->service->getAtividadesDaEmpresaComResumo($empresaId, $agora->format('Y-m-d'), $agora->format('H:i:s'));
+		$this->view('atividades/atividades_empresa', $data);
+	}
+
+	// Empresa dona das atividades nesta tela:
+	// - empresa logada: a própria, se aprovada (RN02)
+	// - administrador: a empresa escolhida no painel (botão "Atividades" ou "Criar atividade")
 	private function getEmpresaLogadaId(): ?int
 	{
+		if ($this->isAdminLogado()) {
+			$alvo = (int) ($_SESSION['admin_empresa_alvo']['id'] ?? 0);
+
+			return $alvo > 0 ? $alvo : null;
+		}
+
 		if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada']) || !$this->empresaLogadaAprovada()) {
 			return null;
 		}
 
 		return (int) $_SESSION['empresa_logada']->getIdEmpresa();
+	}
+
+	// RN02: o administrador só cria atividade para empresa aprovada
+	private function getEmpresaParaNovaAtividade(): ?int
+	{
+		$empresaId = $this->getEmpresaLogadaId();
+		if ($empresaId !== null && $this->isAdminLogado() && !(new EmpresaService())->isAprovada($empresaId)) {
+			return null;
+		}
+
+		return $empresaId;
+	}
+
+	private function isAdminLogado(): bool
+	{
+		return isset($_SESSION['admin_logado']) && is_object($_SESSION['admin_logado']);
+	}
+
+	// Volta para a lista de atividades da empresa (do administrador, a da empresa escolhida)
+	private function urlListaAtividades(string $query = ''): string
+	{
+		return URL_BASE . '/empresa/atividades' . ($query !== '' ? '?' . $query : '');
 	}
 
 	private function getAtividadeDaEmpresa(int $id, int $empresaId): ?array

@@ -3,6 +3,7 @@
 namespace app\services;
 
 use app\models\Atividade;
+use app\repositories\AgendamentoRepository;
 use app\repositories\AtividadeRepository;
 use DateTime;
 
@@ -101,7 +102,23 @@ class AtividadeService {
         return true;
     }
 
+    public function getAtividadesDaEmpresaComResumo(int $empresaId, string $hoje, string $agora): array
+    {
+        return $this->repository->getAtividadesDaEmpresaComResumo($empresaId, $hoje, $agora);
+    }
+
     public function deleteAtividade(int $id, int $empresaId){
-        return $this->repository->deleteAtividade($id, $empresaId);
+        $atividade = $this->repository->getAtividade($id);
+        $agora = new DateTime();
+        $clientes = (new AgendamentoRepository())->getUsuariosComReservaAtivaNaAtividade($id, $agora->format('Y-m-d'), $agora->format('H:i:s'));
+
+        if (!$this->repository->deleteAtividade($id, $empresaId)) {
+            return false;
+        }
+
+        // Clientes com reserva futura são avisados de que a atividade deixou de existir
+        (new NotificacaoService())->notificarAtividadeExcluida($clientes, (string) ($atividade['Nome'] ?? ''));
+
+        return true;
     }
 }

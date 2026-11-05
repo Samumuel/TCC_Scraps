@@ -9,8 +9,8 @@ $navUri = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 if ($navAdmin !== null) {
     // O administrador não tem os acessos comuns (Explorar, Reservas, Nova Atividade, Categorias)
     $navLinks = [
-        ['Empresas', '/admin', ['/admin', '/admin/empresa/editar']],
-        ['Usuários', '/admin/usuarios', ['/admin/usuarios', '/admin/usuario/editar']]
+        ['Empresas', '/admin', ['/admin', '/admin/empresa/editar', '/admin/empresa/cadastrar', '/empresa/atividades', '/atividade/cadastrar', '/atividade/editar', '/atividade/localizacao/cadastrar', '/atividade/sessao/cadastrar']],
+        ['Usuários', '/admin/usuarios', ['/admin/usuarios', '/admin/usuario/editar', '/admin/usuario/cadastrar']]
     ];
 } else {
     $navLinks = [
@@ -22,6 +22,7 @@ if ($navUsuario !== null) {
     $navLinks[] = ['Meus Agendamentos', '/agendamento/meus', ['/agendamento/meus']];
     $navLinks[] = ['Favoritos', '/favorito/meus', ['/favorito/meus']];
 } elseif ($navEmpresaAprovada) {
+    $navLinks[] = ['Minhas Atividades', '/empresa/atividades', ['/empresa/atividades', '/atividade/editar']];
     $navLinks[] = ['Reservas', '/agendamento/empresa', ['/agendamento/empresa']];
     $navLinks[] = ['Nova Atividade', '/atividade/cadastrar', ['/atividade/cadastrar', '/atividade/localizacao/cadastrar', '/atividade/sessao/cadastrar']];
     $navLinks[] = ['Categorias', '/categoria', ['/categoria', '/categoria/listar', '/categoria/cadastrar', '/categoria/editar']];

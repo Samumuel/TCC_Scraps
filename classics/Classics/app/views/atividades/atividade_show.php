@@ -75,7 +75,7 @@
                                     <i class="bi <?= $favoritado ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
                                 </button>
                             </form>
-                        <?php elseif (!isset($usuario_logado) && !isset($empresa_logada)): ?>
+                        <?php elseif (!isset($usuario_logado) && !isset($empresa_logada) && !isset($admin_logado)): ?>
                             <a href="<?= URL_BASE ?>/login" class="cl-heart-btn" title="Entre para favoritar" aria-label="Entre para favoritar">
                                 <i class="bi bi-heart"></i>
                             </a>
@@ -202,7 +202,11 @@
                                                                 <span class="cl-badge cl-badge-neutral">Esgotada</span>
                                                             <?php endif; ?>
                                                         <?php else: ?>
-                                                            <a href="<?= URL_BASE ?>/login" class="small fw-semibold">Entre para reservar</a>
+                                                            <?php if (isset($admin_logado) || isset($empresa_logada)): ?>
+                                                                <span class="text-muted small">-</span>
+                                                            <?php else: ?>
+                                                                <a href="<?= URL_BASE ?>/login" class="small fw-semibold">Entre para reservar</a>
+                                                            <?php endif; ?>
                                                         <?php endif; ?>
                                                     </td>
                                                 </tr>

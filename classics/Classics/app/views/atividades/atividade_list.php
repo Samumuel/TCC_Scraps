@@ -124,9 +124,12 @@
 										<a href="<?= URL_BASE ?>/atividade/editar?id=<?= $atividadeId ?>" class="btn btn-sm btn-outline-primary flex-fill">
 											<i class="bi bi-pencil"></i> Editar
 										</a>
-										<a href="<?= URL_BASE ?>/atividade/excluir?id=<?= $atividadeId ?>" class="btn btn-sm btn-outline-danger flex-fill" onclick="return confirm('Deseja excluir esta atividade?')">
-											<i class="bi bi-trash"></i> Excluir
-										</a>
+										<form action="<?= URL_BASE ?>/atividade/excluir" method="POST" class="m-0 flex-fill" onsubmit="return confirm('Deseja excluir esta atividade? Os clientes com reserva serão avisados.')">
+											<input type="hidden" name="id" value="<?= $atividadeId ?>">
+											<button type="submit" class="btn btn-sm btn-outline-danger w-100">
+												<i class="bi bi-trash"></i> Excluir
+											</button>
+										</form>
 									</div>
 								<?php endif; ?>
 							</div>

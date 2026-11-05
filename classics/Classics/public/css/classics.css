@@ -827,3 +827,12 @@ h2, .h2 {
 .min-w-0 {
     min-width: 0;
 }
+
+/* Faixa do administrador nas telas de atividade */
+.cl-faixa-admin {
+    background: rgba(var(--cl-secondary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--cl-secondary-rgb), 0.15);
+    color: var(--cl-secondary);
+    font-size: 0.9rem;
+    padding: 0.6rem 0;
+}

@@ -60,7 +60,8 @@ $router ->post('/atividade/sessao/edicao/excluir', 'AtividadeController@excluirS
 $router ->post('/atividade/cadastro/concluir', 'AtividadeController@concluirCadastro');
 $router ->get('/atividade/editar', 'AtividadeController@editar'); 
 $router ->post('/atividade/atualizar', 'AtividadeController@atualizar'); 
-$router ->get('/atividade/excluir', 'AtividadeController@excluir');
+$router ->post('/atividade/excluir', 'AtividadeController@excluir');
+$router ->get('/empresa/atividades', 'AtividadeController@listarDaEmpresa');
 $router ->get('/atividade/ver', 'AtividadeController@verAtividade');
 
 // Painel do administrador (RF02 e manutenção de usuários)
@@ -73,6 +74,11 @@ $router->get('/admin/usuarios', 'AdminController@usuarios');
 $router->get('/admin/usuario/editar', 'AdminController@editarUsuario');
 $router->post('/admin/usuario/atualizar', 'AdminController@atualizarUsuario');
 $router->post('/admin/usuario/excluir', 'AdminController@excluirUsuario');
+$router->get('/admin/usuario/cadastrar', 'AdminController@criarUsuario');
+$router->post('/admin/usuario/salvar', 'AdminController@salvarUsuario');
+$router->get('/admin/empresa/cadastrar', 'AdminController@criarEmpresa');
+$router->post('/admin/empresa/salvar', 'AdminController@salvarEmpresa');
+$router->get('/admin/empresa/atividade', 'AdminController@criarAtividade');
 
 $router->get('/categoria', 'CategoriaController@listarTodos');
 $router->get('/categoria/listar', 'CategoriaController@listarTodos');

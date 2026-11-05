@@ -44,7 +44,8 @@ class EmpresaService {
         return $this->repository->getEmpresa($id);
     }
 
-    public function saveEmpresa(Empresa $empresa){
+    // $notificarAdmin = false quando é o próprio administrador que cadastra a empresa
+    public function saveEmpresa(Empresa $empresa, bool $notificarAdmin = true){
         $emailNormalizado = $this->normalizarEmail((string) $empresa->getEmail());
         $empresa->setEmail($emailNormalizado);
 
@@ -57,7 +58,9 @@ class EmpresaService {
         }
 
         // O administrador é avisado de que há um cadastro aguardando aprovação
-        (new NotificacaoService())->notificarNovaEmpresa((string) $empresa->getNome());
+        if ($notificarAdmin) {
+            (new NotificacaoService())->notificarNovaEmpresa((string) $empresa->getNome());
+        }
 
         return true;
     }

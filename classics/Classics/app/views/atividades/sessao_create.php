@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['empresa_logada'])) {
+if (!isset($_SESSION['empresa_logada']) && !isset($_SESSION['admin_logado'])) {
     header('Location: ' . URL_BASE);
     exit();
 }
@@ -22,13 +22,14 @@ $erros = $erros ?? [];
 
 <body>
 <?php require __DIR__ . '/../partials/navbar.php'; ?>
+<?php require __DIR__ . '/_faixa_empresa_admin.php'; ?>
     <div class="container cl-page">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-1">Configurar sessões</h2>
                 <p class="text-muted mb-0">Etapa 3 de 3 para a atividade <?= htmlspecialchars($atividade['Nome'] ?? '', ENT_QUOTES, 'UTF-8') ?>.</p>
             </div>
-            <a href="<?= URL_BASE ?>/atividade/listar" class="btn btn-outline-secondary">
+            <a href="<?= URL_BASE ?>/empresa/atividades" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Voltar
             </a>
         </div>

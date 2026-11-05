@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['empresa_logada'])) {
+if (!isset($_SESSION['empresa_logada']) && !isset($_SESSION['admin_logado'])) {
     header('Location: ' . URL_BASE);
     exit();
 }
@@ -32,10 +32,11 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
 
 <body>
 <?php require __DIR__ . '/../partials/navbar.php'; ?>
+<?php require __DIR__ . '/_faixa_empresa_admin.php'; ?>
     <div class="container cl-page">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">Editar Atividade</h2>
-            <a href="<?= URL_BASE ?>/atividade/listar" class="btn btn-outline-secondary">
+            <a href="<?= URL_BASE ?>/empresa/atividades" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Voltar
             </a>
         </div>
@@ -163,7 +164,7 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
-                                <a href="<?= URL_BASE ?>/atividade/listar" class="btn btn-outline-secondary">Cancelar</a>
+                                <a href="<?= URL_BASE ?>/empresa/atividades" class="btn btn-outline-secondary">Cancelar</a>
                                 <button type="submit" class="btn btn-primary" <?= empty($categorias) ? 'disabled' : '' ?>>Atualizar</button>
                             </div>
                         </form>
@@ -212,7 +213,7 @@ $paneSessoes = $abaAtiva === 'sessoes' ? 'show active' : '';
                                             </div>
 
                                             <div class="d-flex justify-content-end gap-2">
-                                                <a href="<?= URL_BASE ?>/atividade/listar" class="btn btn-outline-secondary">Cancelar</a>
+                                                <a href="<?= URL_BASE ?>/empresa/atividades" class="btn btn-outline-secondary">Cancelar</a>
                                                 <button type="submit" class="btn btn-primary">
                                                     <?= ($possui_localizacao ?? !empty($localizacao)) ? 'Salvar alterações' : 'Cadastrar localização' ?>
                                                 </button>

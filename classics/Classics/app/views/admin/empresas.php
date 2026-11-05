@@ -37,11 +37,13 @@
             'suspender' => 'Empresa suspensa. As atividades dela saíram do catálogo.',
             'reativar' => 'Empresa reativada. As atividades dela voltaram ao catálogo.',
             'editada' => 'Dados da empresa atualizados.',
+            'criada' => 'Empresa cadastrada! Ela está pendente; aprove-a para liberar as atividades.',
             'excluida' => 'Empresa excluída com todos os seus dados.'
         ];
         $mensagensErro = [
             'empresa' => 'Empresa não encontrada.',
             'status' => 'Esta ação não é permitida para a situação atual da empresa.',
+            'nao_aprovada' => 'Só é possível criar atividades para empresas aprovadas.',
             'excluir' => 'Não foi possível excluir a empresa. Tente novamente.'
         ];
         if (isset($_GET['sucesso']) && isset($mensagensSucesso[(string) $_GET['sucesso']])) {
@@ -53,9 +55,14 @@
         }
         ?>
 
-        <div class="cl-page-header">
-            <h1 class="mb-1">Painel Administrativo</h1>
-            <p>Gerencie as empresas cadastradas na plataforma</p>
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 cl-page-header">
+            <div>
+                <h1 class="mb-1">Painel Administrativo</h1>
+                <p class="mb-0">Gerencie as empresas cadastradas na plataforma</p>
+            </div>
+            <a href="<?= URL_BASE ?>/admin/empresa/cadastrar" class="btn btn-primary">
+                <i class="bi bi-building-add"></i> Nova empresa
+            </a>
         </div>
 
         <?php if (!empty($mensagem)): ?>
@@ -192,6 +199,14 @@
                                 <a href="<?= URL_BASE ?>/admin/empresa/editar?id=<?= $empresaId ?>" class="btn btn-outline-secondary">
                                     <i class="bi bi-pencil"></i> Editar
                                 </a>
+                                <a href="<?= URL_BASE ?>/empresa/atividades?empresa=<?= $empresaId ?>" class="btn btn-outline-secondary">
+                                    <i class="bi bi-grid"></i> Atividades
+                                </a>
+                                <?php if ($status === 'aprovada'): ?>
+                                    <a href="<?= URL_BASE ?>/admin/empresa/atividade?id=<?= $empresaId ?>" class="btn btn-outline-secondary">
+                                        <i class="bi bi-plus-circle"></i> Criar atividade
+                                    </a>
+                                <?php endif; ?>
                                 <form action="<?= URL_BASE ?>/admin/empresa/excluir" method="POST" class="m-0 ms-md-auto"
                                     onsubmit="return confirm('Excluir esta empresa? Todas as atividades, sessões, reservas, avaliações e categorias dela também serão apagadas. Esta ação não pode ser desfeita.')">
                                     <input type="hidden" name="empresa_id" value="<?= $empresaId ?>">

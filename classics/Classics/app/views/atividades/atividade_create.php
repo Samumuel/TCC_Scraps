@@ -1,5 +1,5 @@
 <?php 
-if(!isset($_SESSION['empresa_logada'])){
+if (!isset($_SESSION['empresa_logada']) && !isset($_SESSION['admin_logado'])) {
     header('Location: ' . URL_BASE);
     exit();
 }
@@ -8,6 +8,9 @@ $categorias = $categorias ?? [];
 $atividade = $atividade ?? [];
 $erros = $erros ?? [];
 $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
+// O administrador pode criar uma categoria nova para a empresa no próprio formulário
+$adminCadastrando = isset($_SESSION['admin_logado']);
+$bloquearSemCategoria = empty($categorias) && !$adminCadastrando;
 ?>
 
 <!DOCTYPE html>
@@ -22,6 +25,7 @@ $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
 
 <body>
 <?php require __DIR__ . '/../partials/navbar.php'; ?>
+<?php require __DIR__ . '/_faixa_empresa_admin.php'; ?>
 
     <div class="container cl-page">
 
@@ -35,7 +39,7 @@ $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
                 <!-- TÍTULO + VOLTAR -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="mb-0">Nova Atividade</h2>
-                    <a href="<?= URL_BASE ?>/atividade" class="btn btn-outline-secondary">
+                    <a href="<?= URL_BASE ?>/empresa/atividades" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Voltar
                     </a>
                 </div>
@@ -66,7 +70,7 @@ $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
                             </div>
                             <div class="mb-3">
                                 <label for="categoria_id" class="form-label">Categoria</label>
-                                <select class="form-select <?= isset($erros['categoria_id']) ? 'is-invalid' : '' ?>" id="categoria_id" name="categoria_id" required <?= empty($categorias) ? 'disabled' : '' ?>>
+                                <select class="form-select <?= isset($erros['categoria_id']) ? 'is-invalid' : '' ?>" id="categoria_id" name="categoria_id" <?= $adminCadastrando ? '' : 'required' ?> <?= empty($categorias) ? 'disabled' : '' ?>>
                                     <option value="">Selecione uma categoria</option>
                                     <?php foreach ($categorias as $categoria): ?>
                                         <option value="<?= (int) $categoria['ID_Categoria'] ?>" <?= (int) $categoria['ID_Categoria'] === $atividadeCategoriaId ? 'selected' : '' ?>>
@@ -79,7 +83,13 @@ $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
                                 <?php endif; ?>
                             </div>
 
-                            <?php if (empty($categorias)): ?>
+                            <?php if ($adminCadastrando): ?>
+                                <div class="mb-3">
+                                    <label for="nova_categoria" class="form-label">Ou crie uma nova categoria</label>
+                                    <input type="text" class="form-control" id="nova_categoria" name="nova_categoria" maxlength="100" placeholder="Ex.: Aventura" value="<?= htmlspecialchars((string) ($atividade['Nova_Categoria'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                    <div class="form-text">Se preenchido, a categoria é criada para a empresa e usada nesta atividade.</div>
+                                </div>
+                            <?php elseif (empty($categorias)): ?>
                                 <div class="alert alert-warning" role="alert">
                                     Nao ha categorias cadastradas. <a href="<?= URL_BASE ?>/categoria/cadastrar" class="alert-link">Cadastre uma categoria</a> para criar atividades.
                                 </div>
@@ -127,7 +137,7 @@ $atividadeCategoriaId = (int) ($atividade['Categoria_ID'] ?? 0);
                             <div class="alert alert-info mb-3" role="alert">
                                 A localização será cadastrada na próxima etapa e, em seguida, será necessário cadastrar pelo menos 1 sessão.
                             </div>
-                            <button type="submit" class="btn btn-primary" <?= empty($categorias) ? 'disabled' : '' ?>>Confirmar</button>
+                            <button type="submit" class="btn btn-primary" <?= $bloquearSemCategoria ? 'disabled' : '' ?>>Confirmar</button>
                         </form>
                     </div>
                 </div>

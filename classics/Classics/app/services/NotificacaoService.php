@@ -198,6 +198,16 @@ class NotificacaoService
         $this->criar(null, $empresaId, $mensagem, $link);
     }
 
+    public function notificarAtividadeExcluida(array $usuariosIds, string $nomeAtividade): void
+    {
+        $nome = trim($nomeAtividade) !== '' ? trim($nomeAtividade) : 'uma atividade';
+        $mensagem = 'A atividade ' . $nome . ' foi removida da plataforma. Sua reserva foi cancelada.';
+
+        foreach ($usuariosIds as $usuarioId) {
+            $this->criar((int) $usuarioId, null, $mensagem, '/');
+        }
+    }
+
     // Avisa os clientes com reservas futuras quando o administrador exclui a empresa
     public function notificarEmpresaExcluida(array $reservasAtivas): void
     {
