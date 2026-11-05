@@ -40,8 +40,7 @@ class AtividadeController extends Controller {
 			(string) ($_GET['busca'] ?? ''),
 			(string) ($_GET['cidade'] ?? ''),
 			(string) ($_GET['categoria'] ?? ''),
-			(string) ($_GET['data'] ?? ''),
-			(int) ($this->getEmpresaLogadaId() ?? 0)
+			(string) ($_GET['data'] ?? '')
 		);
 
 		$data['lista'] = $resultado['atividades'];

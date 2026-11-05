@@ -68,18 +68,7 @@ class AtividadeRepository {
             $parametros[':hoje_hora'] = (string) $filtros['hoje'];
             $parametros[':agora'] = (string) $filtros['agora'];
 
-            if (!empty($filtros['empresa_id'])) {
-                // A empresa logada continua vendo as próprias atividades, mesmo sem sessão disponível
-                $propriaEmpresa = 'a.Empresa_ID = :empresa_id'
-                    . (!empty($filtros['data']) ? ' AND EXISTS (SELECT 1 FROM Sessao s2 WHERE s2.ID_Atividade = a.ID_Atividade AND s2.Data = :data_empresa)' : '');
-                $condicoes[] = '(' . $sessaoDisponivel . ' OR (' . $propriaEmpresa . '))';
-                $parametros[':empresa_id'] = (int) $filtros['empresa_id'];
-                if (!empty($filtros['data'])) {
-                    $parametros[':data_empresa'] = (string) $filtros['data'];
-                }
-            } else {
-                $condicoes[] = $sessaoDisponivel;
-            }
+            $condicoes[] = $sessaoDisponivel;
 
             if (!empty($filtros['data'])) {
                 $parametros[':data'] = (string) $filtros['data'];

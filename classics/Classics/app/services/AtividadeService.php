@@ -19,7 +19,7 @@ class AtividadeService {
         return $this->repository->getAtividades();
     }
 
-    public function filtrarAtividades(string $busca, string $cidade, string $categoria, string $data, int $empresaId = 0): array
+    public function filtrarAtividades(string $busca, string $cidade, string $categoria, string $data): array
     {
         $erros = [];
         $filtros = [
@@ -42,7 +42,8 @@ class AtividadeService {
             }
         }
 
-        // RN03: listar apenas atividades com sessão que ainda não começou
+        // RN03: o Explorar lista só atividades que podem ser agendadas (sessão futura com vaga), para todos.
+        // As atividades indisponíveis da empresa aparecem em "Minhas Atividades".
         $agora = new DateTime();
         $consulta = $filtros + [
             'somente_disponiveis' => true,
@@ -51,8 +52,7 @@ class AtividadeService {
             // RF06: atividades mais bem avaliadas primeiro
             'ordenar_por_avaliacao' => true,
             'hoje' => $agora->format('Y-m-d'),
-            'agora' => $agora->format('H:i:s'),
-            'empresa_id' => $empresaId
+            'agora' => $agora->format('H:i:s')
         ];
 
         return [

@@ -11,7 +11,6 @@
 <body>
 <?php require __DIR__ . '/../partials/navbar.php'; ?>
 	<?php
-	$empresaLogada = $_SESSION['empresa_logada'] ?? null;
 	$filtros = $filtros ?? ['busca' => '', 'cidade' => '', 'categoria' => '', 'data' => ''];
 	$categoriasFiltro = $categorias_filtro ?? [];
 	$erros = $erros ?? [];
@@ -23,11 +22,6 @@
 			<div class="col-lg-7">
 				<h1 class="mb-3">Descubra atividades de lazer incríveis</h1>
 				<p class="mb-0">Conecte-se com as melhores empresas de entretenimento e lazer</p>
-				<?php if ($empresaLogada): ?>
-					<a href="<?= URL_BASE ?>/atividade/cadastrar" class="btn btn-primary mt-4">
-						<i class="bi bi-plus-circle"></i> Nova Atividade
-					</a>
-				<?php endif; ?>
 			</div>
 
 			<form action="<?= URL_BASE ?>/" method="GET" class="cl-search-bar mt-4" role="search">
@@ -119,19 +113,6 @@
 								<a href="<?= URL_BASE ?>/atividade/ver?id=<?= $atividadeId ?>" class="btn btn-primary btn-sm w-100">
 									Ver detalhes
 								</a>
-								<?php if ($empresaLogada && (int) ($atividade['Empresa_ID'] ?? 0) === (int) $empresaLogada->getIdEmpresa()): ?>
-									<div class="d-flex gap-2 mt-2">
-										<a href="<?= URL_BASE ?>/atividade/editar?id=<?= $atividadeId ?>" class="btn btn-sm btn-outline-primary flex-fill">
-											<i class="bi bi-pencil"></i> Editar
-										</a>
-										<form action="<?= URL_BASE ?>/atividade/excluir" method="POST" class="m-0 flex-fill" onsubmit="return confirm('Deseja excluir esta atividade? Os clientes com reserva serão avisados.')">
-											<input type="hidden" name="id" value="<?= $atividadeId ?>">
-											<button type="submit" class="btn btn-sm btn-outline-danger w-100">
-												<i class="bi bi-trash"></i> Excluir
-											</button>
-										</form>
-									</div>
-								<?php endif; ?>
 							</div>
 						</div>
 					</div>
