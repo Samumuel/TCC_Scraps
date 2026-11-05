@@ -45,6 +45,8 @@ class AtividadeService {
         $agora = new DateTime();
         $consulta = $filtros + [
             'somente_disponiveis' => true,
+            // RN02: somente atividades de empresas aprovadas
+            'somente_empresas_aprovadas' => true,
             // RF06: atividades mais bem avaliadas primeiro
             'ordenar_por_avaliacao' => true,
             'hoje' => $agora->format('Y-m-d'),
@@ -69,6 +71,11 @@ class AtividadeService {
         }
 
         return $atividades;
+    }
+
+    public function countAtividades(): int
+    {
+        return $this->repository->countAtividades();
     }
 
     public function getAtividade(int $id){

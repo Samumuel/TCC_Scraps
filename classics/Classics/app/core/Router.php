@@ -32,6 +32,12 @@ class Router
         $uri  = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $method = strtolower($_SERVER['REQUEST_METHOD']);
 
+        // O administrador só acessa o próprio painel, as notificações e o logout
+        if (isset($_SESSION['admin_logado']) && !$this->rotaPermitidaAoAdmin((string) $uri)) {
+            header('location: ' . URL_BASE . '/admin');
+            exit();
+        }
+
         foreach ($this->routes as $route) {
         
             if ($route['route'] == $uri && $route['method'] == $method) {
@@ -63,6 +69,13 @@ class Router
         $controller = new $controllerClass;
         $controller->$method();
 
+    }
+
+    private function rotaPermitidaAoAdmin(string $uri): bool
+    {
+        return $uri === '/admin'
+            || str_starts_with($uri, '/admin/')
+            || in_array($uri, ['/logout', '/notificacao/abrir', '/notificacao/lidas'], true);
     }
 
     public function getAllRoutes(){

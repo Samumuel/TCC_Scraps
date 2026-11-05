@@ -36,10 +36,16 @@ class AutenticacaoController extends Controller
 
         $resultado = $this->autenticacaoService->logar($email, $senha);
 
-        if ($resultado && isset($_SESSION['usuario_logado'])) {
+        if ($resultado && isset($_SESSION['admin_logado'])) {
+            $this->redirect(URL_BASE . '/admin');
+        } else if ($resultado && isset($_SESSION['usuario_logado'])) {
             $this->redirect(URL_BASE . '/');
         } else if (!isset($_SESSION['usuario_logado']) && $resultado && isset($_SESSION['empresa_logada'])) {
-            $this->redirect(URL_BASE . '/atividade/listar');
+            // RN02: empresa ainda não aprovada vai para o perfil, onde vê a situação do cadastro
+            if ($this->empresaLogadaAprovada()) {
+                $this->redirect(URL_BASE . '/atividade/listar');
+            }
+            $this->redirect(URL_BASE . '/empresa/ver?id=' . (int) $_SESSION['empresa_logada']->getIdEmpresa());
         } else {
 
             $dados['erros'] = "Uma linda mensagem de erro";

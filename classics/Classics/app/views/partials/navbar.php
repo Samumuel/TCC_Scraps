@@ -1,16 +1,27 @@
 <?php
 $navUsuario = isset($_SESSION['usuario_logado']) && is_object($_SESSION['usuario_logado']) ? $_SESSION['usuario_logado'] : null;
 $navEmpresa = isset($_SESSION['empresa_logada']) && is_object($_SESSION['empresa_logada']) ? $_SESSION['empresa_logada'] : null;
+$navAdmin = isset($_SESSION['admin_logado']) && is_object($_SESSION['admin_logado']) ? $_SESSION['admin_logado'] : null;
+// RN02: só a empresa aprovada vê os menus de gestão
+$navEmpresaAprovada = $navEmpresa !== null && ($status_empresa_logada ?? null) === 'aprovada';
 $navUri = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
-$navLinks = [
-    ['Explorar', '/', ['/', '/atividade', '/atividade/listar', '/atividade/ver']]
-];
+if ($navAdmin !== null) {
+    // O administrador não tem os acessos comuns (Explorar, Reservas, Nova Atividade, Categorias)
+    $navLinks = [
+        ['Empresas', '/admin', ['/admin', '/admin/empresa/editar']],
+        ['Usuários', '/admin/usuarios', ['/admin/usuarios', '/admin/usuario/editar']]
+    ];
+} else {
+    $navLinks = [
+        ['Explorar', '/', ['/', '/atividade', '/atividade/listar', '/atividade/ver']]
+    ];
+}
 
 if ($navUsuario !== null) {
     $navLinks[] = ['Meus Agendamentos', '/agendamento/meus', ['/agendamento/meus']];
     $navLinks[] = ['Favoritos', '/favorito/meus', ['/favorito/meus']];
-} elseif ($navEmpresa !== null) {
+} elseif ($navEmpresaAprovada) {
     $navLinks[] = ['Reservas', '/agendamento/empresa', ['/agendamento/empresa']];
     $navLinks[] = ['Nova Atividade', '/atividade/cadastrar', ['/atividade/cadastrar', '/atividade/localizacao/cadastrar', '/atividade/sessao/cadastrar']];
     $navLinks[] = ['Categorias', '/categoria', ['/categoria', '/categoria/listar', '/categoria/cadastrar', '/categoria/editar']];
@@ -28,7 +39,7 @@ if ($navUsuario !== null) {
 ?>
 <nav class="navbar navbar-expand-md cl-navbar sticky-top py-3">
     <div class="container">
-        <a class="cl-brand me-4" href="<?= URL_BASE ?>/">
+        <a class="cl-brand me-4" href="<?= URL_BASE ?><?= $navAdmin !== null ? '/admin' : '/' ?>">
             <span class="cl-logo">C</span>
             <span class="cl-brand-name">Classics</span>
         </a>
@@ -49,7 +60,7 @@ if ($navUsuario !== null) {
             </ul>
 
             <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
-                <?php if ($navPerfilUrl !== null): ?>
+                <?php if ($navPerfilUrl !== null || $navAdmin !== null): ?>
                     <?php
                     $navNotificacoes = $notificacoes ?? ['nao_lidas' => 0, 'recentes' => []];
                     $navNaoLidas = (int) $navNotificacoes['nao_lidas'];
@@ -90,9 +101,15 @@ if ($navUsuario !== null) {
                             <?php endif; ?>
                         </div>
                     </div>
-                    <a href="<?= htmlspecialchars($navPerfilUrl, ENT_QUOTES, 'UTF-8') ?>" class="cl-icon-btn" title="<?= htmlspecialchars($navPerfilNome, ENT_QUOTES, 'UTF-8') ?>">
-                        <i class="bi bi-person"></i>
-                    </a>
+                    <?php if ($navPerfilUrl !== null): ?>
+                        <a href="<?= htmlspecialchars($navPerfilUrl, ENT_QUOTES, 'UTF-8') ?>" class="cl-icon-btn" title="<?= htmlspecialchars($navPerfilNome, ENT_QUOTES, 'UTF-8') ?>">
+                            <i class="bi bi-person"></i>
+                        </a>
+                    <?php else: ?>
+                        <span class="cl-badge cl-badge-info" title="<?= htmlspecialchars((string) $navAdmin->getNome(), ENT_QUOTES, 'UTF-8') ?>">
+                            <i class="bi bi-shield-lock"></i> Admin
+                        </span>
+                    <?php endif; ?>
                     <form action="<?= URL_BASE ?>/logout" method="POST" class="m-0">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-box-arrow-right"></i> Sair

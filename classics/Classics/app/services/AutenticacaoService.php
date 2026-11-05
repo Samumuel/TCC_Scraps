@@ -18,13 +18,18 @@ class AutenticacaoService {
 
     public function logar(string $email, string $senha) : bool {
 
-        unset($_SESSION['usuario_logado'], $_SESSION['empresa_logada']);
+        unset($_SESSION['usuario_logado'], $_SESSION['empresa_logada'], $_SESSION['admin_logado']);
 
         $usuario = $this->usuarioRepository->getUsuarioByEmail($email);
 
         if ($usuario && password_verify($senha, $usuario->getSenha())) {
 
-            $_SESSION['usuario_logado'] = $usuario;
+            // O administrador fica separado do cliente: não acessa as funções comuns
+            if (strtolower(trim($usuario->getTipoUsuario())) === 'admin') {
+                $_SESSION['admin_logado'] = $usuario;
+            } else {
+                $_SESSION['usuario_logado'] = $usuario;
+            }
             return true;
             
         } else if (!$usuario) {

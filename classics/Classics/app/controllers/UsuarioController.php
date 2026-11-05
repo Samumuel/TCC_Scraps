@@ -17,7 +17,7 @@ class UsuarioController extends Controller
         $this->service = new UsuarioService();
     }
 
-    // Lista e cadastro pelo painel ficam restritos ao administrador (ainda não implementado)
+    // A lista de usuários fica no painel do administrador (/admin/usuarios); o cadastro é feito pela página pública
     public function index()
     {
         $this->redirect(URL_BASE);

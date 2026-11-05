@@ -2,6 +2,7 @@
 
 namespace app\core;
 
+use app\services\EmpresaService;
 use app\services\NotificacaoService;
 
 class Controller
@@ -12,6 +13,8 @@ class Controller
         $data = $data ?? [];
         $data['usuario_logado'] = $data['usuario_logado'] ?? ($_SESSION['usuario_logado'] ?? null);
         $data['empresa_logada'] = $data['empresa_logada'] ?? ($_SESSION['empresa_logada'] ?? null);
+        $data['admin_logado'] = $data['admin_logado'] ?? ($_SESSION['admin_logado'] ?? null);
+        $data['status_empresa_logada'] = $data['status_empresa_logada'] ?? $this->getStatusEmpresaLogada();
         $data['notificacoes'] = $data['notificacoes'] ?? $this->getResumoNotificacoes();
         extract($data);
 
@@ -31,6 +34,11 @@ class Controller
 
         if (isset($_SESSION['usuario_logado']) && is_object($_SESSION['usuario_logado'])) {
             return (new NotificacaoService())->getResumo(NotificacaoService::DESTINATARIO_USUARIO, (int) $_SESSION['usuario_logado']->getIdUsuario());
+        }
+
+        // O administrador também é um registro da tabela Usuario
+        if (isset($_SESSION['admin_logado']) && is_object($_SESSION['admin_logado'])) {
+            return (new NotificacaoService())->getResumo(NotificacaoService::DESTINATARIO_USUARIO, (int) $_SESSION['admin_logado']->getIdUsuario());
         }
 
         if (isset($_SESSION['empresa_logada']) && is_object($_SESSION['empresa_logada'])) {
@@ -57,10 +65,28 @@ class Controller
 
     public function adminRequired()
     {
-        if (!isset($_SESSION['usuario_logado']) || $_SESSION['usuario_logado']->getPerfil() !== 'admin') {
-            $this->redirect(URL_BASE . '/login');
+        if (!isset($_SESSION['admin_logado']) || !is_object($_SESSION['admin_logado'])) {
+            // Cliente ou empresa logados voltam para o início; visitante vai para o login
+            $logado = isset($_SESSION['usuario_logado']) || isset($_SESSION['empresa_logada']);
+            $this->redirect(URL_BASE . ($logado ? '/' : '/login'));
         }
 
         return true;
+    }
+
+    // Status atual da empresa logada, lido do banco (o administrador pode alterá-lo a qualquer momento)
+    protected function getStatusEmpresaLogada(): ?string
+    {
+        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada'])) {
+            return null;
+        }
+
+        return (new EmpresaService())->getStatus((int) $_SESSION['empresa_logada']->getIdEmpresa());
+    }
+
+    // RN02: apenas empresa aprovada cadastra atividades e categorias e gerencia reservas
+    protected function empresaLogadaAprovada(): bool
+    {
+        return $this->getStatusEmpresaLogada() === EmpresaService::STATUS_APROVADA;
     }
 }

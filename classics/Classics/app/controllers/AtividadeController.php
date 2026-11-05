@@ -720,6 +720,16 @@ class AtividadeController extends Controller {
 
 		$id = (int) $_GET['id'];
 		$data['atividade'] = $this->service->getAtividade($id);
+
+		// RN02: atividade de empresa não aprovada só é visível para a própria empresa
+		if ($data['atividade'] && strtolower(trim((string) ($data['atividade']['Empresa_Status'] ?? ''))) !== 'aprovada') {
+			$empresaLogada = $_SESSION['empresa_logada'] ?? null;
+			$propria = is_object($empresaLogada) && (int) $empresaLogada->getIdEmpresa() === (int) ($data['atividade']['Empresa_ID'] ?? 0);
+			if (!$propria) {
+				$this->redirect(URL_BASE . '/');
+			}
+		}
+
 		$data['sessoes'] = $this->sessaoService->getSessoesDisponiveisPorAtividade($id);
 		$data['avaliacoes'] = $this->avaliacaoService->getAvaliacoesPorAtividade($id);
 		$data['resumo_avaliacoes'] = $this->avaliacaoService->getResumoPorAtividade($id);
@@ -752,9 +762,10 @@ class AtividadeController extends Controller {
 		}
 	}
 
+	// RN02: só a empresa aprovada pelo administrador gerencia atividades
 	private function getEmpresaLogadaId(): ?int
 	{
-		if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada'])) {
+		if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada']) || !$this->empresaLogadaAprovada()) {
 			return null;
 		}
 

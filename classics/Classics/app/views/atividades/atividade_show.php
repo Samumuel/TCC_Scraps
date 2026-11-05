@@ -34,6 +34,8 @@
                 $mensagemInscricao = 'Esta sessão não está mais disponível para inscrição.';
             } elseif ($erroInscricao === 'lotacao') {
                 $mensagemInscricao = 'Não há disponibilidade suficiente para esta inscrição.';
+            } elseif ($erroInscricao === 'indisponivel') {
+                $mensagemInscricao = 'Esta atividade não está recebendo agendamentos no momento.';
             } else {
                 $mensagemInscricao = 'Não foi possível realizar a inscrição. Tente novamente.';
             }

@@ -785,3 +785,45 @@ h2, .h2 {
 .cl-notificacao.nao-lida .cl-notificacao-ponto {
     background: var(--cl-primary);
 }
+
+/* Painel do administrador */
+.cl-admin-abas {
+    border-bottom: 1px solid var(--cl-border);
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.cl-admin-abas .nav-link {
+    color: var(--cl-muted-foreground);
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.cl-admin-abas .nav-link:hover {
+    color: var(--cl-foreground);
+}
+
+.cl-admin-abas .nav-link.active {
+    color: var(--cl-primary);
+    border-bottom-color: var(--cl-primary);
+}
+
+.cl-admin-icone {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--cl-radius);
+    background: linear-gradient(135deg, rgba(var(--cl-primary-rgb), 0.12), rgba(var(--cl-secondary-rgb), 0.12));
+    color: var(--cl-primary);
+    font-size: 26px;
+}
+
+.min-w-0 {
+    min-width: 0;
+}

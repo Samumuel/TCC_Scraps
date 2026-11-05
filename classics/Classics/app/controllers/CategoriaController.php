@@ -113,9 +113,10 @@ class CategoriaController extends Controller
 		}
 	}
 
+	// RN02: só a empresa aprovada pelo administrador gerencia categorias
 	private function getEmpresaLogadaId(): int
 	{
-		if (!isset($_SESSION['empresa_logada'])) {
+		if (!isset($_SESSION['empresa_logada']) || !$this->empresaLogadaAprovada()) {
 			return 0;
 		}
 

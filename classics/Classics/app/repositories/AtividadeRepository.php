@@ -34,6 +34,11 @@ class AtividadeRepository {
         $condicoes = [];
         $parametros = [];
 
+        if (!empty($filtros['somente_empresas_aprovadas'])) {
+            // RN02: só aparecem no catálogo atividades de empresas aprovadas pelo administrador
+            $condicoes[] = "EXISTS (SELECT 1 FROM Empresa e WHERE e.ID_Empresa = a.Empresa_ID AND LOWER(TRIM(e.Status)) = 'aprovada')";
+        }
+
         if (!empty($filtros['busca'])) {
             // Escapa os curingas do LIKE para que "%" e "_" digitados sejam tratados como texto
             $busca = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], (string) $filtros['busca']);
@@ -109,16 +114,26 @@ class AtividadeRepository {
                 c.Nome_Categoria AS Categoria_Nome,
                 l.ID_Localizacao AS Localizacao_ID,
                 l.CEP AS Localizacao_CEP,
-                l.Complemento AS Localizacao_Complemento
+                l.Complemento AS Localizacao_Complemento,
+                e.Status AS Empresa_Status
             FROM Atividades a
             LEFT JOIN Categorias c ON c.ID_Categoria = a.Categoria_ID
             LEFT JOIN Localizacao l ON l.ID_Atividade = a.ID_Atividade
+            LEFT JOIN Empresa e ON e.ID_Empresa = a.Empresa_ID
             WHERE a.ID_Atividade = :id
         ";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':id', $id);
         $stmt->execute();
         return $stmt->fetch();
+    }
+
+    public function countAtividades(): int
+    {
+        $stmt = $this->connection->prepare('SELECT COUNT(*) FROM Atividades');
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
     }
 
     public function saveAtividade(Atividade $atividade) {

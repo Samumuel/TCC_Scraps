@@ -51,6 +51,10 @@ class NotificacaoController extends Controller
             return ['tipo' => NotificacaoService::DESTINATARIO_USUARIO, 'id' => (int) $_SESSION['usuario_logado']->getIdUsuario()];
         }
 
+        if (isset($_SESSION['admin_logado']) && is_object($_SESSION['admin_logado'])) {
+            return ['tipo' => NotificacaoService::DESTINATARIO_USUARIO, 'id' => (int) $_SESSION['admin_logado']->getIdUsuario()];
+        }
+
         if (isset($_SESSION['empresa_logada']) && is_object($_SESSION['empresa_logada'])) {
             return ['tipo' => NotificacaoService::DESTINATARIO_EMPRESA, 'id' => (int) $_SESSION['empresa_logada']->getIdEmpresa()];
         }

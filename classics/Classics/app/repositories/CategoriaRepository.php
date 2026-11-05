@@ -30,6 +30,8 @@ class CategoriaRepository
         $sql = 'SELECT DISTINCT c.Nome_Categoria
                 FROM Categorias c
                 INNER JOIN Atividades a ON a.Categoria_ID = c.ID_Categoria
+                INNER JOIN Empresa e ON e.ID_Empresa = a.Empresa_ID
+                WHERE LOWER(TRIM(e.Status)) = \'aprovada\'
                 ORDER BY c.Nome_Categoria ASC';
         $stmt = $this->connection->prepare($sql);
         $stmt->execute();

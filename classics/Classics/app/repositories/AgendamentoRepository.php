@@ -68,6 +68,21 @@ class AgendamentoRepository
                 ];
             }
 
+            // RN02: só recebe agendamentos a empresa aprovada pelo administrador
+            $sqlEmpresa = "SELECT 1 FROM Atividades a INNER JOIN Empresa e ON e.ID_Empresa = a.Empresa_ID
+                WHERE a.ID_Atividade = :id_atividade AND LOWER(TRIM(e.Status)) = 'aprovada'";
+            $stmtEmpresa = $this->connection->prepare($sqlEmpresa);
+            $stmtEmpresa->bindValue(':id_atividade', (int) ($sessao['ID_Atividade'] ?? 0), PDO::PARAM_INT);
+            $stmtEmpresa->execute();
+            if (!$stmtEmpresa->fetchColumn()) {
+                $this->connection->rollBack();
+
+                return [
+                    'sucesso' => false,
+                    'erro' => 'indisponivel'
+                ];
+            }
+
             $dataSessao = trim((string) ($sessao['Data'] ?? ''));
             $horaSessao = substr(trim((string) ($sessao['Hora'] ?? '')), 0, 8);
             if ($dataSessao === '' || $horaSessao === '') {
@@ -269,6 +284,25 @@ class AgendamentoRepository
         $stmt->execute();
 
         return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+    }
+
+    // Reservas ativas em sessões futuras das atividades de uma empresa (cliente e nome da atividade)
+    public function getReservasAtivasDaEmpresa(int $empresaId, string $hoje, string $agora): array
+    {
+        $sql = "SELECT DISTINCT a.ID_Usuario, at.Nome
+                FROM Agendamento a
+                INNER JOIN Sessao s ON s.ID_Sessao = a.ID_Sessao
+                INNER JOIN Atividades at ON at.ID_Atividade = a.ID_Atividade
+                WHERE at.Empresa_ID = :empresa_id AND a.Status IN ('pendente', 'aprovado')
+                AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':empresa_id', $empresaId, PDO::PARAM_INT);
+        $stmt->bindValue(':hoje', $hoje);
+        $stmt->bindValue(':hoje_hora', $hoje);
+        $stmt->bindValue(':agora', $agora);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     public function getAgendamentoPorUsuario(int $idAgendamento, int $usuarioId): ?Agendamento

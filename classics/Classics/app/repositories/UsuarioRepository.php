@@ -5,6 +5,7 @@ namespace app\repositories;
 use app\database\ConnectionFactory;
 use app\models\Usuario;
 use PDO;
+use Throwable;
 
 class UsuarioRepository
 {
@@ -18,7 +19,8 @@ class UsuarioRepository
 
     public function getUsuarios(): array
     {
-        $sql = "SELECT * FROM Usuario";
+        // A senha não é carregada na listagem
+        $sql = "SELECT ID_Usuario, Nome, Email, CPF, Telefone, Idade, Tipo_usuario, Foto FROM Usuario ORDER BY Nome";
         $stmt = $this->connection->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -126,11 +128,59 @@ class UsuarioRepository
         return $stmt->execute();
     }
 
+    // Exclui o usuário com agendamentos, avaliações, favoritos e notificações.
+    // As vagas das reservas ativas (pendentes ou aprovadas) voltam para as sessões.
     public function deleteUsuario(int $id): bool
     {
-        $sql = "DELETE FROM Usuario WHERE ID_Usuario = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id);
-        return $stmt->execute();
+        $this->connection->beginTransaction();
+
+        try {
+            $sqlReservas = "SELECT ID_Sessao, SUM(Quantidade_Pessoas) AS Total FROM Agendamento
+                WHERE ID_Usuario = :id AND Status IN ('pendente', 'aprovado') AND ID_Sessao IS NOT NULL
+                GROUP BY ID_Sessao";
+            $stmtReservas = $this->connection->prepare($sqlReservas);
+            $stmtReservas->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmtReservas->execute();
+
+            $stmtVagas = $this->connection->prepare('UPDATE Sessao SET Qtd_disponivel = Qtd_disponivel + :quantidade WHERE ID_Sessao = :id_sessao');
+            foreach ($stmtReservas->fetchAll(PDO::FETCH_ASSOC) ?: [] as $reserva) {
+                $stmtVagas->bindValue(':quantidade', (int) $reserva['Total'], PDO::PARAM_INT);
+                $stmtVagas->bindValue(':id_sessao', (int) $reserva['ID_Sessao'], PDO::PARAM_INT);
+                $stmtVagas->execute();
+            }
+
+            foreach (['Agendamento', 'Avaliacao', 'Favorito', 'Notificacao'] as $tabela) {
+                $stmt = $this->connection->prepare('DELETE FROM ' . $tabela . ' WHERE ID_Usuario = :id');
+                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+
+            $stmt = $this->connection->prepare('DELETE FROM Usuario WHERE ID_Usuario = :id');
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            if ($stmt->rowCount() === 0) {
+                $this->connection->rollBack();
+                return false;
+            }
+
+            $this->connection->commit();
+
+            return true;
+        } catch (Throwable $e) {
+            if ($this->connection->inTransaction()) {
+                $this->connection->rollBack();
+            }
+
+            return false;
+        }
+    }
+
+    public function getIdsAdministradores(): array
+    {
+        $stmt = $this->connection->prepare("SELECT ID_Usuario FROM Usuario WHERE LOWER(TRIM(Tipo_usuario)) = 'admin'");
+        $stmt->execute();
+
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
     }
 }

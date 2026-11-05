@@ -16,7 +16,7 @@ class EmpresaController extends Controller {
         $this->service = new EmpresaService();
     }
 
-    // Lista e cadastro pelo painel ficam restritos ao administrador (ainda não implementado)
+    // A lista de empresas fica no painel do administrador (/admin); o cadastro é feito pela página pública
     public function listarTodos() {
         $this->redirect(URL_BASE);
     }
@@ -152,10 +152,17 @@ class EmpresaController extends Controller {
 
         $data['empresa'] = $this->service->getEmpresa($id);
         $data['empresa_propria'] = $id === $this->getEmpresaLogadaId();
+
+        // RN02: o perfil de empresa não aprovada só é visível para ela mesma
+        $statusEmpresa = strtolower(trim((string) ($data['empresa']['Status'] ?? '')));
+        if ($data['empresa'] && !$data['empresa_propria'] && $statusEmpresa !== EmpresaService::STATUS_APROVADA) {
+            $this->redirect(URL_BASE);
+        }
+
         $this->view('empresas/empresa_show', $data);
     }
 
-    // Exclusão de empresas ficará restrita ao administrador (ainda não implementado)
+    // A exclusão de empresas é feita pelo painel do administrador (/admin)
     public function excluir() {
         $this->redirect(URL_BASE);
     }

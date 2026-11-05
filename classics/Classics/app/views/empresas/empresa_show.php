@@ -28,6 +28,26 @@
                 <?php endif; ?>
             </div>
 
+            <?php
+            // RN02: a própria empresa vê a situação do cadastro enquanto não estiver aprovada
+            $statusCadastro = strtolower(trim((string) ($empresa['Status'] ?? '')));
+            $avisosStatus = [
+                'pendente' => ['warning', 'bi-hourglass-split', 'Seu cadastro está em análise.', 'Assim que o administrador aprovar, você poderá cadastrar atividades e receber agendamentos.'],
+                'rejeitada' => ['danger', 'bi-x-circle', 'Seu cadastro foi rejeitado.', 'Sua empresa não pode publicar atividades na plataforma.'],
+                'suspensa' => ['danger', 'bi-pause-circle', 'Sua empresa está suspensa.', 'Suas atividades não aparecem no catálogo e não recebem agendamentos enquanto a suspensão durar.']
+            ];
+            ?>
+            <?php if (!empty($empresa_propria) && isset($avisosStatus[$statusCadastro])): ?>
+                <?php $aviso = $avisosStatus[$statusCadastro]; ?>
+                <div class="alert alert-<?= $aviso[0] ?> d-flex gap-3 align-items-start" role="alert">
+                    <i class="bi <?= $aviso[1] ?> fs-4"></i>
+                    <div>
+                        <strong><?= htmlspecialchars($aviso[2], ENT_QUOTES, 'UTF-8') ?></strong>
+                        <div class="small"><?= htmlspecialchars($aviso[3], ENT_QUOTES, 'UTF-8') ?></div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <div class="row g-4">

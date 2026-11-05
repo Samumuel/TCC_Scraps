@@ -53,7 +53,8 @@ class FavoritoRepository
     {
         $sql = 'SELECT f.ID_Favorito, f.ID_Usuario, at.*, c.Nome_Categoria AS Categoria_Nome,
                     EXISTS (SELECT 1 FROM Sessao s WHERE s.ID_Atividade = at.ID_Atividade AND s.Qtd_disponivel > 0
-                        AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))) AS Tem_Sessao_Disponivel,
+                        AND (s.Data > :hoje OR (s.Data = :hoje_hora AND s.Hora > :agora))
+                        AND EXISTS (SELECT 1 FROM Empresa e WHERE e.ID_Empresa = at.Empresa_ID AND LOWER(TRIM(e.Status)) = \'aprovada\')) AS Tem_Sessao_Disponivel,
                     (SELECT AVG(av.Nota) FROM Avaliacao av WHERE av.ID_Atividade = at.ID_Atividade) AS Media_Avaliacao,
                     (SELECT COUNT(*) FROM Avaliacao av WHERE av.ID_Atividade = at.ID_Atividade) AS Total_Avaliacoes
                 FROM Favorito f

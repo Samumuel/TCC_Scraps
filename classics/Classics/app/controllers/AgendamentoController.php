@@ -190,9 +190,10 @@ class AgendamentoController extends Controller
         return (int) $_SESSION['usuario_logado']->getIdUsuario();
     }
 
+    // RN02: só a empresa aprovada pelo administrador gerencia reservas
     private function getEmpresaLogadaId(): ?int
     {
-        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada'])) {
+        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada']) || !$this->empresaLogadaAprovada()) {
             return null;
         }
 

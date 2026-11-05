@@ -32,4 +32,40 @@ class Formatador
     {
         return number_format($media, 1, ',', '');
     }
+
+    // 12345678909 => 123.456.789-09
+    public static function cpf(?string $cpf): string
+    {
+        $numeros = preg_replace('/\D/', '', (string) $cpf);
+
+        return strlen($numeros) === 11
+            ? preg_replace('/^(\d{3})(\d{3})(\d{3})(\d{2})$/', '$1.$2.$3-$4', $numeros)
+            : ($numeros !== '' ? $numeros : '-');
+    }
+
+    // 11222333000181 => 11.222.333/0001-81
+    public static function cnpj(?string $cnpj): string
+    {
+        $numeros = preg_replace('/\D/', '', (string) $cnpj);
+
+        return strlen($numeros) === 14
+            ? preg_replace('/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/', '$1.$2.$3/$4-$5', $numeros)
+            : ($numeros !== '' ? $numeros : '-');
+    }
+
+    // 11987654321 => (11) 98765-4321 | 1134567890 => (11) 3456-7890
+    public static function telefone(?string $telefone): string
+    {
+        $numeros = preg_replace('/\D/', '', (string) $telefone);
+
+        if (strlen($numeros) === 11) {
+            return preg_replace('/^(\d{2})(\d{5})(\d{4})$/', '($1) $2-$3', $numeros);
+        }
+
+        if (strlen($numeros) === 10) {
+            return preg_replace('/^(\d{2})(\d{4})(\d{4})$/', '($1) $2-$3', $numeros);
+        }
+
+        return $numeros !== '' ? $numeros : '-';
+    }
 }

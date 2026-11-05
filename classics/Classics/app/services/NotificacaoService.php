@@ -163,6 +163,51 @@ class NotificacaoService
         }
     }
 
+    // ---- Notificações do painel do administrador (RF02) ----
+
+    public function notificarNovaEmpresa(string $nomeEmpresa): void
+    {
+        $nome = trim($nomeEmpresa) !== '' ? trim($nomeEmpresa) : 'Uma nova empresa';
+        $mensagem = $nome . ' se cadastrou na plataforma e aguarda aprovação.';
+
+        foreach ($this->usuarioRepository->getIdsAdministradores() as $adminId) {
+            $this->criar($adminId, null, $mensagem, '/admin?aba=pendente');
+        }
+    }
+
+    public function notificarStatusEmpresa(int $empresaId, string $statusAnterior, string $novoStatus): void
+    {
+        $linkPerfil = '/empresa/ver?id=' . $empresaId;
+
+        if ($novoStatus === 'aprovada') {
+            $mensagem = $statusAnterior === 'suspensa'
+                ? 'Sua empresa foi reativada pelo administrador. Suas atividades voltaram ao catálogo.'
+                : 'Seu cadastro foi aprovado! Agora você já pode cadastrar atividades e receber agendamentos.';
+            $link = $statusAnterior === 'suspensa' ? '/agendamento/empresa' : '/atividade/cadastrar';
+        } elseif ($novoStatus === 'rejeitada') {
+            $mensagem = 'Seu cadastro foi rejeitado pelo administrador da plataforma.';
+            $link = $linkPerfil;
+        } elseif ($novoStatus === 'suspensa') {
+            $mensagem = 'Sua empresa foi suspensa pelo administrador. Suas atividades não aparecem no catálogo enquanto a suspensão durar.';
+            $link = $linkPerfil;
+        } else {
+            $mensagem = 'Seu cadastro voltou para análise do administrador.';
+            $link = $linkPerfil;
+        }
+
+        $this->criar(null, $empresaId, $mensagem, $link);
+    }
+
+    // Avisa os clientes com reservas futuras quando o administrador exclui a empresa
+    public function notificarEmpresaExcluida(array $reservasAtivas): void
+    {
+        foreach ($reservasAtivas as $reserva) {
+            $mensagem = 'Sua reserva em ' . (string) ($reserva['Nome'] ?? 'uma atividade')
+                . ' foi cancelada porque a empresa responsável foi removida da plataforma.';
+            $this->criar((int) ($reserva['ID_Usuario'] ?? 0), null, $mensagem, '/');
+        }
+    }
+
     private function notificarClienteSobreReserva(Agendamento $agendamento, Sessao $sessao, string $complemento): void
     {
         $mensagem = 'Sua reserva em ' . $this->nomeAtividade((int) $agendamento->getIdAtividade())
