@@ -32,22 +32,28 @@
                 <h2 class="h3 mb-1">Bem-vindo de volta</h2>
                 <p class="text-muted small mb-4">Entre na sua conta para continuar explorando</p>
 
-                <?php if (isset($erros)): ?>
+                <?php
+                $erros = isset($erros) ? (is_array($erros) ? $erros : ['geral' => (string) $erros]) : [];
+                $emailDigitado = (string) ($email ?? '');
+                ?>
+                <?php if (isset($erros['geral'])): ?>
                     <div class="alert alert-danger d-flex align-items-center" role="alert">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <div>
-                            <?= is_array($erros) ? implode('<br>', $erros) : $erros ?>
-                        </div>
+                        <div><?= htmlspecialchars($erros['geral'], ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                 <?php endif; ?>
 
-                <form action="<?= URL_BASE ?>/logar" method="post">
+                <form action="<?= URL_BASE ?>/logar" method="post" novalidate>
                     <div class="mb-3">
                         <label for="email" class="form-label">E-mail</label>
                         <div class="cl-input-icon">
                             <i class="bi bi-envelope"></i>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="seu@email.com" required>
+                            <input type="email" class="form-control email-validacao<?= isset($erros['email']) ? ' is-invalid' : '' ?>" id="email" name="email" placeholder="seu@email.com" required
+                                data-mensagem="Informe um e-mail válido, no formato nome@dominio.com." value="<?= htmlspecialchars($emailDigitado, ENT_QUOTES, 'UTF-8') ?>">
                         </div>
+                        <?php if (isset($erros['email'])): ?>
+                            <div class="text-danger small mt-1" data-erro-servidor="email"><?= htmlspecialchars($erros['email'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="mb-4">
@@ -55,12 +61,15 @@
                         <div class="input-group">
                             <div class="cl-input-icon flex-grow-1">
                                 <i class="bi bi-lock"></i>
-                                <input type="password" class="form-control rounded-end-0" id="senha" name="senha" placeholder="Sua senha" required>
+                                <input type="password" class="form-control rounded-end-0<?= isset($erros['senha']) ? ' is-invalid' : '' ?>" id="senha" name="senha" placeholder="Sua senha" required>
                             </div>
                             <button class="btn btn-outline-secondary" type="button" id="toggleSenha" aria-label="Mostrar senha">
                                 <i class="bi bi-eye" id="iconSenha"></i>
                             </button>
                         </div>
+                        <?php if (isset($erros['senha'])): ?>
+                            <div class="text-danger small mt-1" data-erro-servidor="senha"><?= htmlspecialchars($erros['senha'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="d-grid">
@@ -79,7 +88,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= URL_BASE ?>/js/validacao-email.js"></script>
     <script>
+        // Ao corrigir um campo, some o aviso que veio do servidor para ele
+        document.querySelectorAll('[data-erro-servidor]').forEach(function(aviso) {
+            const campo = document.getElementById(aviso.dataset.erroServidor);
+            campo.addEventListener('input', function() {
+                aviso.remove();
+                campo.classList.remove('is-invalid');
+            }, { once: true });
+        });
+
         const toggleSenha = document.querySelector('#toggleSenha');
         const senhaInput = document.querySelector('#senha');
         const iconSenha = document.querySelector('#iconSenha');

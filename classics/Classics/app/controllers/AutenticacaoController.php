@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\core\Controller;
+use app\helpers\Validador;
 use app\services\AutenticacaoService;
 
 class AutenticacaoController extends Controller
@@ -31,8 +32,21 @@ class AutenticacaoController extends Controller
     public function logar()
     { 
 
-        $email = $_POST['email'];
-        $senha = $_POST['senha'];
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $senha = (string) ($_POST['senha'] ?? '');
+
+        // Campos em branco ou e-mail fora do formato: avisa no próprio campo, sem consultar o banco
+        $validador = new Validador();
+        $validador->obrigatorio('email', $email, 'Informe o e-mail.');
+        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            $validador->obrigatorio('email', '', 'Informe um e-mail válido, no formato nome@dominio.com.');
+        }
+        $validador->obrigatorio('senha', $senha, 'Informe a senha.');
+
+        if ($validador->temErros()) {
+            $this->view('autenticacao/login', ['erros' => $validador->getErros(), 'email' => $email]);
+            return;
+        }
 
         $resultado = $this->autenticacaoService->logar($email, $senha);
 
@@ -48,9 +62,11 @@ class AutenticacaoController extends Controller
             $this->redirect(URL_BASE . '/empresa/ver?id=' . (int) $_SESSION['empresa_logada']->getIdEmpresa());
         } else {
 
-            $dados['erros'] = "Algo deu errado no login";
-
-            $this->view('autenticacao/login', $dados);
+            // Mensagem única para e-mail não cadastrado ou senha errada, para não revelar quais e-mails têm conta
+            $this->view('autenticacao/login', [
+                'erros' => ['geral' => 'E-mail ou senha incorretos.'],
+                'email' => $email
+            ]);
         }
     }
 
