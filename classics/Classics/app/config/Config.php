@@ -18,7 +18,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 //Configuração do Sistema
 define('APP_NAME', 'Projeto Integrador');
-define('URL_BASE', 'http://localhost:8080');
+// O endereço do site acompanha o que foi digitado no navegador (localhost ou o IP da rede)
+$protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+define('URL_BASE', $protocolo . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost:8080'));
 
 //Configurações do Banco de dados
 define('DB_HOST', 'localhost');
