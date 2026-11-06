@@ -48,7 +48,7 @@ class AutenticacaoController extends Controller
             $this->redirect(URL_BASE . '/empresa/ver?id=' . (int) $_SESSION['empresa_logada']->getIdEmpresa());
         } else {
 
-            $dados['erros'] = "Uma linda mensagem de erro";
+            $dados['erros'] = "Algo deu errado no login";
 
             $this->view('autenticacao/login', $dados);
         }
