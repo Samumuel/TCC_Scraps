@@ -53,9 +53,12 @@ class AgendamentoRepository
             if ($qtdDisponivel <= 0 || $quantidadePessoas > $qtdDisponivel) {
                 $this->connection->rollBack();
 
+                // FE01: informa ao cliente quantas vagas ainda restam na sessão
                 return [
                     'sucesso' => false,
-                    'erro' => 'lotacao'
+                    'erro' => 'lotacao',
+                    'vagas' => max(0, $qtdDisponivel),
+                    'atividade_id' => (int) ($sessao['ID_Atividade'] ?? 0)
                 ];
             }
 
@@ -64,7 +67,9 @@ class AgendamentoRepository
 
                 return [
                     'sucesso' => false,
-                    'erro' => 'lotacao'
+                    'erro' => 'lotacao',
+                    'vagas' => min($qtdMaxima, max(0, $qtdDisponivel)),
+                    'atividade_id' => (int) ($sessao['ID_Atividade'] ?? 0)
                 ];
             }
 
@@ -370,6 +375,80 @@ class AgendamentoRepository
             }
 
             return false;
+        }
+    }
+
+    // UC07 FA02: troca a sessão da reserva, devolvendo as vagas da antiga e reservando na nova (mesma trava da RN06)
+    public function trocarSessao(Agendamento $agendamento, int $novaSessaoId, string $novaDataHora, string $novoStatus): array
+    {
+        $quantidade = (int) $agendamento->getQuantidadePessoas();
+
+        $this->connection->beginTransaction();
+
+        try {
+            $stmtSessao = $this->connection->prepare('SELECT Qtd_disponivel FROM Sessao WHERE ID_Sessao = :id_sessao FOR UPDATE');
+            $stmtSessao->bindValue(':id_sessao', $novaSessaoId, PDO::PARAM_INT);
+            $stmtSessao->execute();
+            $vagasNovaSessao = $stmtSessao->fetchColumn();
+
+            if ($vagasNovaSessao === false) {
+                $this->connection->rollBack();
+                return ['sucesso' => false, 'erro' => 'sessao'];
+            }
+
+            if ((int) $vagasNovaSessao < $quantidade) {
+                $this->connection->rollBack();
+                return ['sucesso' => false, 'erro' => 'lotacao', 'vagas' => max(0, (int) $vagasNovaSessao)];
+            }
+
+            $sqlAgendamento = 'UPDATE Agendamento SET ID_Sessao = :nova_sessao, Data_hora = :data_hora, Status = :novo_status
+                WHERE ID_Agendamento = :id_agendamento AND ID_Usuario = :id_usuario
+                AND ID_Sessao = :sessao_atual AND Status = :status_atual';
+            $stmtAgendamento = $this->connection->prepare($sqlAgendamento);
+            $stmtAgendamento->bindValue(':nova_sessao', $novaSessaoId, PDO::PARAM_INT);
+            $stmtAgendamento->bindValue(':data_hora', $novaDataHora);
+            $stmtAgendamento->bindValue(':novo_status', $novoStatus);
+            $stmtAgendamento->bindValue(':id_agendamento', $agendamento->getIdAgendamento(), PDO::PARAM_INT);
+            $stmtAgendamento->bindValue(':id_usuario', $agendamento->getIdUsuario(), PDO::PARAM_INT);
+            $stmtAgendamento->bindValue(':sessao_atual', $agendamento->getIdSessao(), PDO::PARAM_INT);
+            $stmtAgendamento->bindValue(':status_atual', $agendamento->getStatus());
+            $stmtAgendamento->execute();
+
+            if ($stmtAgendamento->rowCount() === 0) {
+                $this->connection->rollBack();
+                return ['sucesso' => false, 'erro' => 'falha'];
+            }
+
+            $stmtReservar = $this->connection->prepare('UPDATE Sessao SET Qtd_disponivel = Qtd_disponivel - :quantidade
+                WHERE ID_Sessao = :id_sessao AND Qtd_disponivel >= :quantidade_minima');
+            $stmtReservar->bindValue(':quantidade', $quantidade, PDO::PARAM_INT);
+            $stmtReservar->bindValue(':quantidade_minima', $quantidade, PDO::PARAM_INT);
+            $stmtReservar->bindValue(':id_sessao', $novaSessaoId, PDO::PARAM_INT);
+            $stmtReservar->execute();
+
+            if ($stmtReservar->rowCount() === 0) {
+                $this->connection->rollBack();
+                return ['sucesso' => false, 'erro' => 'lotacao', 'vagas' => max(0, (int) $vagasNovaSessao)];
+            }
+
+            $stmtLiberar = $this->connection->prepare('UPDATE Sessao SET Qtd_disponivel = Qtd_disponivel + :quantidade WHERE ID_Sessao = :id_sessao');
+            $stmtLiberar->bindValue(':quantidade', $quantidade, PDO::PARAM_INT);
+            $stmtLiberar->bindValue(':id_sessao', $agendamento->getIdSessao(), PDO::PARAM_INT);
+            $stmtLiberar->execute();
+
+            $this->connection->commit();
+
+            $agendamento->setIdSessao($novaSessaoId);
+            $agendamento->setDataHora($novaDataHora);
+            $agendamento->setStatus($novoStatus);
+
+            return ['sucesso' => true];
+        } catch (Throwable $e) {
+            if ($this->connection->inTransaction()) {
+                $this->connection->rollBack();
+            }
+
+            return ['sucesso' => false, 'erro' => 'falha'];
         }
     }
 

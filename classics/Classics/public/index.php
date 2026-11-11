@@ -38,6 +38,7 @@ $router ->post('/agendamento/salvar', 'AgendamentoController@salvar');
 $router ->get('/agendamento/meus', 'AgendamentoController@meusAgendamentos');
 $router ->post('/agendamento/atualizar', 'AgendamentoController@atualizar');
 $router ->post('/agendamento/cancelar', 'AgendamentoController@cancelar');
+$router ->post('/agendamento/trocar-sessao', 'AgendamentoController@trocarSessao');
 $router ->get('/agendamento/empresa', 'AgendamentoController@reservasEmpresa');
 $router ->post('/agendamento/empresa/cancelar', 'AgendamentoController@cancelarReservaEmpresa');
 $router ->post('/agendamento/empresa/aprovar', 'AgendamentoController@aprovarReservaEmpresa');
@@ -47,6 +48,7 @@ $router->get('/favorito/meus', 'FavoritoController@meusFavoritos');
 $router->post('/favorito/alternar', 'FavoritoController@alternar');
 
 $router->post('/avaliacao/salvar', 'AvaliacaoController@salvar');
+$router->post('/avaliacao/excluir', 'AvaliacaoController@excluir');
 
 $router->get('/notificacao/abrir', 'NotificacaoController@abrir');
 $router->post('/notificacao/lidas', 'NotificacaoController@marcarTodasLidas');

@@ -94,6 +94,20 @@ class NotificacaoService
         $this->criar(null, (int) $atividade['Empresa_ID'], $mensagem, self::LINK_RESERVAS_EMPRESA . '?atividade=' . (int) $agendamento->getIdAtividade());
     }
 
+    public function notificarSessaoTrocadaPeloCliente(Agendamento $agendamento, Sessao $sessaoAnterior, Sessao $sessaoNova): void
+    {
+        $atividade = $this->atividadeRepository->getAtividade((int) $agendamento->getIdAtividade());
+        if (!$atividade) {
+            return;
+        }
+
+        $mensagem = $this->nomeCliente((int) $agendamento->getIdUsuario()) . ' trocou a reserva em ' . $atividade['Nome']
+            . ' de ' . $this->formatarSessao($sessaoAnterior) . ' para ' . $this->formatarSessao($sessaoNova)
+            . '. A reserva aguarda sua aprovação.';
+
+        $this->criar(null, (int) $atividade['Empresa_ID'], $mensagem, self::LINK_RESERVAS_EMPRESA . '?atividade=' . (int) $agendamento->getIdAtividade());
+    }
+
     public function notificarCancelamentoPeloCliente(Agendamento $agendamento, Sessao $sessao): void
     {
         $atividade = $this->atividadeRepository->getAtividade((int) $agendamento->getIdAtividade());

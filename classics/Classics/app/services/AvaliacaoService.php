@@ -91,6 +91,31 @@ class AvaliacaoService
         ];
     }
 
+    public function getAvaliacaoDoUsuario(int $usuarioId, int $atividadeId): ?Avaliacao
+    {
+        if ($usuarioId <= 0 || $atividadeId <= 0) {
+            return null;
+        }
+
+        return $this->repository->getAvaliacaoPorUsuarioEAtividade($usuarioId, $atividadeId);
+    }
+
+    // RF12: o cliente pode avaliar pela página da atividade se participou dela
+    public function podeAvaliar(int $usuarioId, int $atividadeId): bool
+    {
+        return $usuarioId > 0 && $atividadeId > 0 && $this->participouDaAtividade($usuarioId, $atividadeId);
+    }
+
+    // O dono da avaliação pode excluí-la
+    public function excluirAvaliacao(int $usuarioId, int $atividadeId): bool
+    {
+        if ($usuarioId <= 0 || $atividadeId <= 0) {
+            return false;
+        }
+
+        return $this->repository->deleteAvaliacao($usuarioId, $atividadeId);
+    }
+
     private function participouDaAtividade(int $usuarioId, int $atividadeId): bool
     {
         foreach ($this->agendamentoService->getAgendamentosPorUsuario($usuarioId) as $item) {

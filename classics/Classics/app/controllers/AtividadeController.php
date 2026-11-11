@@ -752,9 +752,12 @@ class AtividadeController extends Controller {
 		$data['aba_ativa'] = $_GET['tab'] ?? 'dados';
 
 		$usuarioLogado = $_SESSION['usuario_logado'] ?? null;
-		$data['favoritado'] = is_object($usuarioLogado) && method_exists($usuarioLogado, 'getIdUsuario')
-			? $this->favoritoService->isFavorito((int) $usuarioLogado->getIdUsuario(), $id)
-			: false;
+		$clienteId = is_object($usuarioLogado) && method_exists($usuarioLogado, 'getIdUsuario') ? (int) $usuarioLogado->getIdUsuario() : 0;
+		$data['favoritado'] = $clienteId > 0 ? $this->favoritoService->isFavorito($clienteId, $id) : false;
+
+		// RF12: o cliente avalia, edita ou exclui a própria avaliação pela página da atividade
+		$data['minha_avaliacao'] = $clienteId > 0 ? $this->avaliacaoService->getAvaliacaoDoUsuario($clienteId, $id) : null;
+		$data['pode_avaliar'] = $clienteId > 0 && $this->avaliacaoService->podeAvaliar($clienteId, $id);
 
 		$this->view('atividades/atividade_show', $data);
 	}

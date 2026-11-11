@@ -5,6 +5,7 @@ namespace app\services;
 use app\models\Agendamento;
 use app\models\Sessao;
 use app\repositories\AgendamentoRepository;
+use app\repositories\AtividadeRepository;
 use app\repositories\AvaliacaoRepository;
 use DateTime;
 use Throwable;
@@ -70,10 +71,20 @@ class AgendamentoService
         $agendamentos = $this->repository->getAgendamentosPorUsuario($usuarioId);
         $avaliacoes = $this->avaliacaoRepository->getAvaliacoesPorUsuario($usuarioId);
 
+        $sessoesPorAtividade = [];
         foreach ($agendamentos as $indice => $item) {
-            $agendamentos[$indice]['pode_alterar'] = $this->podeAlterar($item['agendamento'], $item['sessao']);
+            $podeAlterar = $this->podeAlterar($item['agendamento'], $item['sessao']);
+            $agendamentos[$indice]['pode_alterar'] = $podeAlterar;
             $agendamentos[$indice]['pode_avaliar'] = $this->podeAvaliar($item['agendamento'], $item['sessao'], $item['atividade_duracao']);
             $agendamentos[$indice]['avaliacao'] = $avaliacoes[(int) $item['agendamento']->getIdAtividade()] ?? null;
+
+            // UC07 FA02: sessões para onde a reserva pode ser trocada
+            $agendamentos[$indice]['sessoes_troca'] = [];
+            if ($podeAlterar) {
+                $atividadeId = (int) $item['agendamento']->getIdAtividade();
+                $sessoesPorAtividade[$atividadeId] = $sessoesPorAtividade[$atividadeId] ?? $this->sessaoService->getSessoesDisponiveisPorAtividade($atividadeId);
+                $agendamentos[$indice]['sessoes_troca'] = $this->filtrarSessoesParaTroca($sessoesPorAtividade[$atividadeId], $item['agendamento']);
+            }
         }
 
         return $agendamentos;
@@ -106,27 +117,31 @@ class AgendamentoService
             ];
         }
 
+        $quantidadeAtual = (int) $agendamento->getQuantidadePessoas();
+        // As vagas já reservadas por este agendamento contam como livres
+        $vagasLivres = (int) $sessao->getQtdDisponivel() + $quantidadeAtual;
+
         $qtdMaxima = (int) $sessao->getQtdMax();
         if ($qtdMaxima > 0 && $novaQuantidade > $qtdMaxima) {
             return [
                 'sucesso' => false,
-                'erro' => 'lotacao'
+                'erro' => 'lotacao',
+                'vagas' => min($qtdMaxima, $vagasLivres)
             ];
         }
 
-        $quantidadeAtual = (int) $agendamento->getQuantidadePessoas();
         if ($novaQuantidade === $quantidadeAtual) {
             return [
                 'sucesso' => true
             ];
         }
 
-        // As vagas já reservadas por este agendamento contam como livres
-        $vagasLivres = (int) $sessao->getQtdDisponivel() + $quantidadeAtual;
+        // FE01: informa até quantas pessoas a reserva comporta nesta sessão
         if ($novaQuantidade > $vagasLivres) {
             return [
                 'sucesso' => false,
-                'erro' => 'lotacao'
+                'erro' => 'lotacao',
+                'vagas' => $vagasLivres
             ];
         }
 
@@ -149,6 +164,69 @@ class AgendamentoService
             'sucesso' => true,
             'pendente' => $voltaParaPendente
         ];
+    }
+
+    // UC07 FA02: troca a sessão da reserva; ela volta a aguardar a aprovação da empresa
+    public function trocarSessao(int $usuarioId, int $agendamentoId, int $novaSessaoId): array
+    {
+        $carregado = $this->carregarAgendamentoAlteravel($usuarioId, $agendamentoId);
+        if (empty($carregado['sucesso'])) {
+            return $carregado;
+        }
+
+        /** @var Agendamento $agendamento */
+        $agendamento = $carregado['agendamento'];
+        /** @var Sessao $sessaoAnterior */
+        $sessaoAnterior = $carregado['sessao'];
+
+        if ($novaSessaoId === (int) $agendamento->getIdSessao()) {
+            return ['sucesso' => false, 'erro' => 'mesma_sessao'];
+        }
+
+        $dadosNovaSessao = $this->sessaoService->getSessaoPorAtividade($novaSessaoId, (int) $agendamento->getIdAtividade());
+        if ($dadosNovaSessao === null) {
+            return ['sucesso' => false, 'erro' => 'sessao'];
+        }
+
+        $novaSessao = Sessao::arrayParaObjeto($dadosNovaSessao);
+        $dataNova = trim((string) $novaSessao->getData());
+        $horaNova = substr(trim((string) $novaSessao->getHora()), 0, 8);
+
+        // RN04: só sessões que ainda não começaram
+        try {
+            $sessaoFutura = new DateTime($dataNova . ' ' . $horaNova) > new DateTime();
+        } catch (Throwable $e) {
+            $sessaoFutura = false;
+        }
+        if (!$sessaoFutura) {
+            return ['sucesso' => false, 'erro' => 'encerrada'];
+        }
+
+        $quantidade = (int) $agendamento->getQuantidadePessoas();
+        $qtdMinima = (int) $novaSessao->getQtdMin();
+        if ($qtdMinima > 0 && $quantidade < $qtdMinima) {
+            return ['sucesso' => false, 'erro' => 'minimo'];
+        }
+
+        $qtdMaxima = (int) $novaSessao->getQtdMax();
+        if ($qtdMaxima > 0 && $quantidade > $qtdMaxima) {
+            return ['sucesso' => false, 'erro' => 'lotacao', 'vagas' => min($qtdMaxima, (int) $novaSessao->getQtdDisponivel())];
+        }
+
+        // RN02: a empresa precisa continuar aprovada para receber a reserva
+        $atividade = (new AtividadeRepository())->getAtividade((int) $agendamento->getIdAtividade());
+        if (!$atividade || strtolower(trim((string) ($atividade['Empresa_Status'] ?? ''))) !== 'aprovada') {
+            return ['sucesso' => false, 'erro' => 'indisponivel'];
+        }
+
+        $resultado = $this->repository->trocarSessao($agendamento, $novaSessaoId, $dataNova . ' ' . $horaNova, self::STATUS_PENDENTE);
+        if (empty($resultado['sucesso'])) {
+            return $resultado;
+        }
+
+        $this->notificacaoService->notificarSessaoTrocadaPeloCliente($agendamento, $sessaoAnterior, $novaSessao);
+
+        return ['sucesso' => true];
     }
 
     public function cancelarAgendamento(int $usuarioId, int $agendamentoId): array
@@ -327,6 +405,29 @@ class AgendamentoService
             'agendamento' => $agendamento,
             'sessao' => $sessao
         ];
+    }
+
+    // Outras sessões futuras da mesma atividade com vagas e limites que comportam a reserva
+    private function filtrarSessoesParaTroca(array $sessoes, Agendamento $agendamento): array
+    {
+        $quantidade = (int) $agendamento->getQuantidadePessoas();
+        $opcoes = [];
+
+        foreach ($sessoes as $sessao) {
+            $qtdMinima = (int) ($sessao['Qtd_min'] ?? 0);
+            $qtdMaxima = (int) ($sessao['Qtd_max'] ?? 0);
+
+            if ((int) ($sessao['ID_Sessao'] ?? 0) === (int) $agendamento->getIdSessao()
+                || (int) ($sessao['Qtd_disponivel'] ?? 0) < $quantidade
+                || ($qtdMinima > 0 && $quantidade < $qtdMinima)
+                || ($qtdMaxima > 0 && $quantidade > $qtdMaxima)) {
+                continue;
+            }
+
+            $opcoes[] = $sessao;
+        }
+
+        return $opcoes;
     }
 
     // RF12: só avalia quem teve o agendamento aprovado e cuja sessão já terminou (início + duração)

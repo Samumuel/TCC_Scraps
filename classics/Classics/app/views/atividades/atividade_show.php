@@ -33,7 +33,10 @@
             } elseif ($erroInscricao === 'encerrada') {
                 $mensagemInscricao = 'Esta sessão não está mais disponível para inscrição.';
             } elseif ($erroInscricao === 'lotacao') {
-                $mensagemInscricao = 'Não há disponibilidade suficiente para esta inscrição.';
+                // FE01: informa quantas vagas restam na sessão
+                $mensagemInscricao = isset($_GET['vagas'])
+                    ? 'Não há vagas suficientes. Vagas disponíveis nesta sessão: ' . max(0, (int) $_GET['vagas']) . '.'
+                    : 'Não há vagas suficientes nesta sessão.';
             } elseif ($erroInscricao === 'indisponivel') {
                 $mensagemInscricao = 'Esta atividade não está recebendo agendamentos no momento.';
             } else {
@@ -41,6 +44,20 @@
             }
             $tipoMensagemInscricao = 'danger';
         }
+
+        $mensagensAvaliacao = [
+            'avaliado' => ['Avaliação salva! Obrigado pela sua opinião.', 'success'],
+            'excluida' => ['Sua avaliação foi excluída.', 'success'],
+            'nota' => ['Escolha uma nota de 1 a 5 estrelas.', 'danger'],
+            'comentario' => ['O comentário deve ter no máximo 500 caracteres.', 'danger'],
+            'nao_permitido' => ['Só é possível avaliar atividades das quais você participou.', 'danger']
+        ];
+        $codigoAvaliacao = (string) ($_GET['avaliacao_sucesso'] ?? ($_GET['avaliacao_erro'] ?? ''));
+        $mensagemAvaliacao = $codigoAvaliacao !== ''
+            ? ($mensagensAvaliacao[$codigoAvaliacao] ?? ['Não foi possível concluir a operação. Tente novamente.', 'danger'])
+            : null;
+        $minhaAvaliacao = $minha_avaliacao ?? null;
+        $podeAvaliar = !empty($pode_avaliar);
         ?>
 
         <?php if (!empty($atividade)): ?>
@@ -81,6 +98,13 @@
                             </a>
                         <?php endif; ?>
                     </div>
+
+                    <?php if (!empty($atividade['Empresa_Nome'])): ?>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-building"></i> Oferecido por
+                            <a href="<?= URL_BASE ?>/empresa/ver?id=<?= (int) ($atividade['Empresa_ID'] ?? 0) ?>" class="fw-semibold"><?= htmlspecialchars((string) $atividade['Empresa_Nome'], ENT_QUOTES, 'UTF-8') ?></a>
+                        </p>
+                    <?php endif; ?>
 
                     <?php
                     $avaliacoes = $avaliacoes ?? [];
@@ -195,7 +219,9 @@
                                                                     data-bs-target="#inscricaoModal"
                                                                     data-sessao-id="<?= $sessaoId ?>"
                                                                     data-sessao-data="<?= htmlspecialchars($dataSessao, ENT_QUOTES, 'UTF-8') ?>"
-                                                                    data-sessao-hora="<?= htmlspecialchars($horaSessao, ENT_QUOTES, 'UTF-8') ?>">
+                                                                    data-sessao-hora="<?= htmlspecialchars($horaSessao, ENT_QUOTES, 'UTF-8') ?>"
+                                                                    data-sessao-vagas="<?= $qtdDisponivel ?>"
+                                                                    data-sessao-minimo="<?= max(1, (int) ($sessao['Qtd_min'] ?? 0)) ?>">
                                                                     Reservar
                                                                 </button>
                                                             <?php else: ?>
@@ -229,6 +255,73 @@
                                 </span>
                             <?php endif; ?>
                         </div>
+
+                        <?php if ($mensagemAvaliacao !== null): ?>
+                            <div class="alert alert-<?= $mensagemAvaliacao[1] ?>" role="alert">
+                                <?= htmlspecialchars($mensagemAvaliacao[0], ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($minhaAvaliacao !== null || $podeAvaliar): ?>
+                            <?php $notaAtual = $minhaAvaliacao !== null ? (int) $minhaAvaliacao->getNota() : 0; ?>
+                            <div class="card mb-3 cl-minha-avaliacao">
+                                <div class="card-body p-4">
+                                    <?php if ($minhaAvaliacao !== null): ?>
+                                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                                            <div>
+                                                <strong class="d-block mb-1">Sua avaliação</strong>
+                                                <?php $notaEstrelas = $notaAtual; require __DIR__ . '/../partials/estrelas.php'; ?>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <?php if ($podeAvaliar): ?>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#formAvaliacao" aria-expanded="false" aria-controls="formAvaliacao">
+                                                        <i class="bi bi-pencil"></i> Editar
+                                                    </button>
+                                                <?php endif; ?>
+                                                <form action="<?= URL_BASE ?>/avaliacao/excluir" method="POST" class="m-0" onsubmit="return confirm('Deseja excluir a sua avaliação?')">
+                                                    <input type="hidden" name="atividade_id" value="<?= (int) ($atividade['ID_Atividade'] ?? 0) ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i> Excluir
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <?php if (trim((string) $minhaAvaliacao->getComentario()) !== ''): ?>
+                                            <p class="text-muted mb-0"><?= nl2br(htmlspecialchars((string) $minhaAvaliacao->getComentario(), ENT_QUOTES, 'UTF-8')) ?></p>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <strong class="d-block mb-1">Você participou desta atividade</strong>
+                                        <p class="text-muted small mb-0">Conte como foi a sua experiência e ajude outros clientes.</p>
+                                    <?php endif; ?>
+
+                                    <?php if ($podeAvaliar): ?>
+                                        <div class="collapse <?= $minhaAvaliacao === null ? 'show' : '' ?>" id="formAvaliacao">
+                                            <form action="<?= URL_BASE ?>/avaliacao/salvar" method="POST" class="mt-3 pt-3 border-top">
+                                                <input type="hidden" name="atividade_id" value="<?= (int) ($atividade['ID_Atividade'] ?? 0) ?>">
+                                                <input type="hidden" name="origem" value="atividade">
+                                                <fieldset class="mb-3">
+                                                    <legend class="form-label fs-6">Sua nota</legend>
+                                                    <div class="cl-estrelas-input">
+                                                        <?php for ($nota = 5; $nota >= 1; $nota--): ?>
+                                                            <input type="radio" name="nota" id="avaliarNota<?= $nota ?>" value="<?= $nota ?>" <?= $nota === $notaAtual ? 'checked' : '' ?> required>
+                                                            <label for="avaliarNota<?= $nota ?>" title="<?= $nota ?> <?= $nota > 1 ? 'estrelas' : 'estrela' ?>"><i class="bi bi-star-fill"></i></label>
+                                                        <?php endfor; ?>
+                                                    </div>
+                                                </fieldset>
+                                                <div class="mb-3">
+                                                    <label for="avaliarComentario" class="form-label">Comentário <span class="text-muted fw-normal">(opcional)</span></label>
+                                                    <textarea class="form-control" id="avaliarComentario" name="comentario" rows="3" maxlength="500" placeholder="Conte como foi a sua experiência"><?= htmlspecialchars((string) ($minhaAvaliacao !== null ? $minhaAvaliacao->getComentario() : ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                                    <div class="form-text">Até 500 caracteres.</div>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-check-circle"></i> Salvar avaliação
+                                                </button>
+                                            </form>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
 
                         <?php if (empty($avaliacoes)): ?>
                             <div class="alert alert-info mb-0" role="alert">
@@ -293,7 +386,23 @@
                                 <div class="mb-3">
                                     <label for="quantidade_pessoas" class="form-label">Quantidade de pessoas</label>
                                     <input type="number" class="form-control" id="quantidade_pessoas" name="quantidade_pessoas" min="1" required>
-                                    <div class="form-text">Informe a quantidade total de participantes dessa inscrição.</div>
+                                    <div class="form-text" id="inscricaoVagasTexto">Informe a quantidade total de participantes dessa inscrição.</div>
+                                </div>
+                                <!-- UC07 passo 6: resumo do agendamento antes da confirmação -->
+                                <div class="rounded-3 p-3 cl-resumo-reserva" data-valor-pessoa="<?= htmlspecialchars((string) (float) ($atividade['Valor'] ?? 0), ENT_QUOTES, 'UTF-8') ?>">
+                                    <div class="fw-semibold mb-2">Resumo da reserva</div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Atividade</span>
+                                        <span class="text-end"><?= htmlspecialchars((string) ($atividade['Nome'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Valor</span>
+                                        <span id="inscricaoCalculo">R$ <?= number_format((float) ($atividade['Valor'] ?? 0), 2, ',', '.') ?> × 0 pessoas</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                        <span class="fw-semibold">Total</span>
+                                        <span class="fw-bold text-primary" id="inscricaoTotal">R$ 0,00</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -340,7 +449,28 @@
                 if (campoDescricao) {
                     campoDescricao.textContent = `${dataSessao} às ${horaSessao}`;
                 }
+
+                // Limites da sessão: a quantidade não pode passar das vagas disponíveis (RN05)
+                const vagas = parseInt(button.getAttribute('data-sessao-vagas') || '0', 10);
+                const minimo = parseInt(button.getAttribute('data-sessao-minimo') || '1', 10);
+                const campoQuantidade = document.getElementById('quantidade_pessoas');
+                campoQuantidade.min = minimo;
+                campoQuantidade.max = vagas;
+                campoQuantidade.value = minimo;
+                document.getElementById('inscricaoVagasTexto').textContent = `Vagas disponíveis nesta sessão: ${vagas}.`;
+                atualizarResumo();
             });
+
+            // Valor total = valor por pessoa × quantidade de pessoas
+            const resumo = inscricaoModal.querySelector('.cl-resumo-reserva');
+            const valorPessoa = parseFloat(resumo.dataset.valorPessoa || '0');
+            const moeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const atualizarResumo = () => {
+                const quantidade = Math.max(0, parseInt(document.getElementById('quantidade_pessoas').value || '0', 10) || 0);
+                document.getElementById('inscricaoCalculo').textContent = `${moeda(valorPessoa)} × ${quantidade} ${quantidade === 1 ? 'pessoa' : 'pessoas'}`;
+                document.getElementById('inscricaoTotal').textContent = moeda(valorPessoa * quantidade);
+            };
+            document.getElementById('quantidade_pessoas').addEventListener('input', atualizarResumo);
         }
         if (<?= json_encode($abaAtiva === 'sessoes') ?>) {
             const secaoSessoes = document.getElementById('sessoes');

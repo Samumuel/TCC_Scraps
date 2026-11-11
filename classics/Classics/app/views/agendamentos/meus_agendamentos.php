@@ -24,6 +24,8 @@
                 $mensagem = 'Agendamento atualizado! Como a quantidade de pessoas aumentou, ele voltou a aguardar a aprovação da empresa.';
             } elseif ($sucesso === 'cancelado') {
                 $mensagem = 'Agendamento cancelado com sucesso!';
+            } elseif ($sucesso === 'sessao_trocada') {
+                $mensagem = 'Sessão trocada! O agendamento voltou a aguardar a aprovação da empresa.';
             } elseif ($sucesso === 'avaliado') {
                 $mensagem = 'Avaliação salva! Obrigado pela sua opinião.';
             }
@@ -35,7 +37,16 @@
             } elseif ($erro === 'minimo') {
                 $mensagem = 'A quantidade de pessoas é menor que o mínimo exigido pela sessão.';
             } elseif ($erro === 'lotacao') {
-                $mensagem = 'Não há disponibilidade suficiente para esta quantidade de pessoas.';
+                // FE01: informa quantas vagas restam para esta reserva
+                $mensagem = isset($_GET['vagas'])
+                    ? 'Não há vagas suficientes. Vagas disponíveis nesta sessão para a sua reserva: ' . max(0, (int) $_GET['vagas']) . '.'
+                    : 'Não há vagas suficientes nesta sessão.';
+            } elseif ($erro === 'mesma_sessao') {
+                $mensagem = 'Escolha uma sessão diferente da atual.';
+            } elseif ($erro === 'encerrada') {
+                $mensagem = 'A sessão escolhida não está mais disponível.';
+            } elseif ($erro === 'indisponivel') {
+                $mensagem = 'Esta atividade não está recebendo agendamentos no momento.';
             } elseif ($erro === 'agendamento') {
                 $mensagem = 'Agendamento não encontrado.';
             } elseif ($erro === 'sessao') {
@@ -131,6 +142,9 @@
                                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#editar<?= $agendamentoId ?>" aria-expanded="false" aria-controls="editar<?= $agendamentoId ?>">
                                                 <i class="bi bi-pencil"></i> Editar
                                             </button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#trocar<?= $agendamentoId ?>" aria-expanded="false" aria-controls="trocar<?= $agendamentoId ?>">
+                                                <i class="bi bi-arrow-left-right"></i> Trocar sessão
+                                            </button>
                                             <form action="<?= URL_BASE ?>/agendamento/cancelar" method="POST" class="m-0" onsubmit="return confirm('Deseja cancelar este agendamento?')">
                                                 <input type="hidden" name="agendamento_id" value="<?= $agendamentoId ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -158,8 +172,40 @@
                                                     </div>
                                                 </form>
                                                 <p class="text-muted small mt-3 mb-0">
-                                                    * Até <?= $qtdLivre ?> pessoa(s) nesta sessão.<?= $agendamento->getStatus() === 'aprovado' ? ' Se aumentar a quantidade, o agendamento voltará a aguardar a aprovação da empresa.' : '' ?> Para trocar de sessão, data ou hora, cancele este agendamento e faça uma nova inscrição na página da atividade.
+                                                    * Até <?= $qtdLivre ?> pessoa(s) nesta sessão.<?= $agendamento->getStatus() === 'aprovado' ? ' Se aumentar a quantidade, o agendamento voltará a aguardar a aprovação da empresa.' : '' ?> Para mudar a data ou o horário, use "Trocar sessão".
                                                 </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- UC07 FA02: trocar a sessão (data e horário) da reserva -->
+                                        <div class="collapse" id="trocar<?= $agendamentoId ?>">
+                                            <div class="rounded-3 p-3 mt-3" style="background: var(--cl-muted);">
+                                                <h4 class="h6 mb-3">Trocar sessão</h4>
+                                                <?php if (empty($item['sessoes_troca'])): ?>
+                                                    <p class="text-muted small mb-0">Não há outra sessão desta atividade disponível para <?= $quantidade ?> <?= $quantidade > 1 ? 'pessoas' : 'pessoa' ?> no momento (com vagas suficientes e dentro do mínimo e máximo de participantes).</p>
+                                                <?php else: ?>
+                                                    <form action="<?= URL_BASE ?>/agendamento/trocar-sessao" method="POST" class="row g-2 align-items-end"
+                                                        onsubmit="return confirm('Trocar a sessão desta reserva? Ela voltará a aguardar a aprovação da empresa.')">
+                                                        <input type="hidden" name="agendamento_id" value="<?= $agendamentoId ?>">
+                                                        <div class="col-md-8">
+                                                            <label for="sessao<?= $agendamentoId ?>" class="form-label">Nova sessão</label>
+                                                            <select id="sessao<?= $agendamentoId ?>" name="sessao_id" class="form-select" required>
+                                                                <option value="">Escolha uma sessão</option>
+                                                                <?php foreach ($item['sessoes_troca'] as $opcaoSessao): ?>
+                                                                    <option value="<?= (int) $opcaoSessao['ID_Sessao'] ?>">
+                                                                        <?= htmlspecialchars($formatarData($opcaoSessao['Data'] ?? '') . ' às ' . substr((string) ($opcaoSessao['Hora'] ?? ''), 0, 5), ENT_QUOTES, 'UTF-8') ?>
+                                                                        (<?= (int) $opcaoSessao['Qtd_disponivel'] ?> vagas)
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-4 d-flex gap-2">
+                                                            <button type="submit" class="btn btn-primary">Trocar</button>
+                                                            <button type="button" class="btn btn-outline-secondary border-0" data-bs-toggle="collapse" data-bs-target="#trocar<?= $agendamentoId ?>">Cancelar</button>
+                                                        </div>
+                                                    </form>
+                                                    <p class="text-muted small mt-3 mb-0">* Só aparecem sessões futuras com vagas e limites de participantes que comportam <?= $quantidade ?> <?= $quantidade > 1 ? 'pessoas' : 'pessoa' ?>. Após a troca, a reserva volta a aguardar a aprovação da empresa.</p>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>

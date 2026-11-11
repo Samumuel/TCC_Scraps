@@ -108,4 +108,15 @@ class AvaliacaoRepository
 
         return $stmt->execute();
     }
+
+    // Exclui a avaliação do próprio usuário naquela atividade
+    public function deleteAvaliacao(int $usuarioId, int $atividadeId): bool
+    {
+        $stmt = $this->connection->prepare('DELETE FROM Avaliacao WHERE ID_Usuario = :id_usuario AND ID_Atividade = :id_atividade');
+        $stmt->bindValue(':id_usuario', $usuarioId, PDO::PARAM_INT);
+        $stmt->bindValue(':id_atividade', $atividadeId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->rowCount() > 0;
+    }
 }

@@ -104,7 +104,8 @@ class AtividadeRepository {
                 l.ID_Localizacao AS Localizacao_ID,
                 l.CEP AS Localizacao_CEP,
                 l.Complemento AS Localizacao_Complemento,
-                e.Status AS Empresa_Status
+                e.Status AS Empresa_Status,
+                e.Name AS Empresa_Nome
             FROM Atividades a
             LEFT JOIN Categorias c ON c.ID_Categoria = a.Categoria_ID
             LEFT JOIN Localizacao l ON l.ID_Atividade = a.ID_Atividade

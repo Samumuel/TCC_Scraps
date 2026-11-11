@@ -49,7 +49,8 @@ class AgendamentoController extends Controller
         }
 
         $erro = (string) ($resultado['erro'] ?? 'falha');
-        $this->redirect($this->montarUrlRetorno($atividadeId, 'erro_inscricao=' . rawurlencode($erro)));
+        $vagas = isset($resultado['vagas']) ? '&vagas=' . (int) $resultado['vagas'] : '';
+        $this->redirect($this->montarUrlRetorno($atividadeId, 'erro_inscricao=' . rawurlencode($erro) . $vagas));
     }
 
     public function meusAgendamentos()
@@ -87,8 +88,43 @@ class AgendamentoController extends Controller
             $this->redirect(URL_BASE . '/agendamento/meus?sucesso=' . (!empty($resultado['pendente']) ? 'atualizado_pendente' : 'atualizado'));
         }
 
+        $this->redirect($this->urlErroMeusAgendamentos($resultado));
+    }
+
+    // UC07 FA02: o cliente troca a sessão (data e horário) da própria reserva
+    public function trocarSessao()
+    {
+        $usuarioId = $this->getUsuarioLogadoId();
+        if ($usuarioId === null) {
+            $this->redirect(URL_BASE);
+        }
+
+        $agendamentoId = isset($_POST['agendamento_id']) ? (int) $_POST['agendamento_id'] : 0;
+        $novaSessaoId = isset($_POST['sessao_id']) ? (int) $_POST['sessao_id'] : 0;
+
+        if ($agendamentoId <= 0) {
+            $this->redirect(URL_BASE . '/agendamento/meus?erro=agendamento');
+        }
+
+        if ($novaSessaoId <= 0) {
+            $this->redirect(URL_BASE . '/agendamento/meus?erro=sessao');
+        }
+
+        $resultado = $this->service->trocarSessao($usuarioId, $agendamentoId, $novaSessaoId);
+
+        if (!empty($resultado['sucesso'])) {
+            $this->redirect(URL_BASE . '/agendamento/meus?sucesso=sessao_trocada');
+        }
+
+        $this->redirect($this->urlErroMeusAgendamentos($resultado));
+    }
+
+    private function urlErroMeusAgendamentos(array $resultado): string
+    {
         $erro = (string) ($resultado['erro'] ?? 'falha');
-        $this->redirect(URL_BASE . '/agendamento/meus?erro=' . rawurlencode($erro));
+        $vagas = isset($resultado['vagas']) ? '&vagas=' . (int) $resultado['vagas'] : '';
+
+        return URL_BASE . '/agendamento/meus?erro=' . rawurlencode($erro) . $vagas;
     }
 
     public function cancelar()
