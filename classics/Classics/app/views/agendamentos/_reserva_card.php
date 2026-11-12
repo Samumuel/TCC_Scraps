@@ -33,7 +33,7 @@
                 <div class="col-6 col-md-3">
                     <div class="cl-info-tile">
                         <i class="bi bi-calendar3"></i>
-                        <div><small>Data</small><?= htmlspecialchars($formatarData($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div><small>Data</small><?= htmlspecialchars(\app\helpers\Formatador::data($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                 </div>
                 <div class="col-6 col-md-2">

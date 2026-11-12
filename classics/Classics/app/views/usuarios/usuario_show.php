@@ -50,6 +50,13 @@
                                         </a>
                                     <?php endif; ?>
                                 </div>
+                                <form action="<?= URL_BASE ?>/usuarios/excluir" method="POST" class="mt-3"
+                                    onsubmit="return confirm('Excluir a sua conta? Seus agendamentos, avaliações e favoritos também serão apagados. Esta ação não pode ser desfeita.')">
+                                    <input type="hidden" name="id" value="<?= (int) $usuario['id'] ?>">
+                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0">
+                                        <i class="bi bi-trash"></i> Excluir minha conta
+                                    </button>
+                                </form>
                             <?php endif; ?>
                         </div>
                     </div>

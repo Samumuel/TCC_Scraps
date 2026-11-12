@@ -15,13 +15,6 @@ class EmpresaRepository {
         $this->connection = ConnectionFactory::getConnection();
     }
 
-    public function getEmpresas() {
-        $stmt = $this->connection->query("SELECT * FROM Empresa");
-        
-        $empresas = $stmt->fetchALL();
-        return $empresas;
-    }
-
     public function getEmpresaByEmail(string $email) {
         $stmt = $this->connection->prepare("SELECT * FROM Empresa WHERE LOWER(TRIM(Email)) = LOWER(TRIM(:email))");
         $stmt->bindValue(':email', $email);

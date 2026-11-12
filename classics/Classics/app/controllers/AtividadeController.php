@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\core\Controller;
+use app\helpers\UploadImagem;
 use app\models\Atividade;
 use app\models\Localizacao;
 use app\models\Sessao;
@@ -16,7 +17,6 @@ use app\services\SessaoService;
 use DateTime;
 
 class AtividadeController extends Controller {
-	private const TAMANHO_MAX_FOTO = 5_242_880; // 5mb de tamanha maximo;
 
 	private AtividadeService $service;
 	private CategoriaService $categoriaService;
@@ -139,7 +139,7 @@ class AtividadeController extends Controller {
 		}
 
 		$valor = (float) $valorInput;
-		$resultadoUpload = $this->processarUploadFoto($_FILES['fotos'] ?? null);
+		$resultadoUpload = UploadImagem::salvar($_FILES['fotos'] ?? null, 'atividades', 'atividade');
 		if (!$resultadoUpload['sucesso']) {
 			$data['atividade'] = [
 				'Nome' => $nome,
@@ -160,7 +160,7 @@ class AtividadeController extends Controller {
 		if ($novaCategoria !== '') {
 			$categoriaId = $this->categoriaService->saveCategoriaRetornandoId($novaCategoria, $empresaId);
 			if ($categoriaId === null) {
-				$this->removerFotoLocal((string) ($resultadoUpload['foto'] ?? ''));
+				UploadImagem::remover((string) ($resultadoUpload['foto'] ?? ''), 'atividades');
 				echo 'Erro ao salvar a categoria.';
 				return;
 			}
@@ -185,7 +185,7 @@ class AtividadeController extends Controller {
 	}
 
 	public function editar() {
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -207,7 +207,7 @@ class AtividadeController extends Controller {
 	}
 
 	public function atualizar() {
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -294,7 +294,7 @@ class AtividadeController extends Controller {
 
 		$valor = (float) $valorInput;
 		$fotoAtual = (string) ($atividadeAtual['Fotos'] ?? '');
-		$resultadoUpload = $this->processarUploadFoto($_FILES['fotos'] ?? null);
+		$resultadoUpload = UploadImagem::salvar($_FILES['fotos'] ?? null, 'atividades', 'atividade');
 		if (!$resultadoUpload['sucesso']) {
 			$data['atividade'] = [
 				'ID_Atividade' => $id,
@@ -337,14 +337,14 @@ class AtividadeController extends Controller {
 
 		if (!$this->service->updateAtividade($atividade)) {
 			if ($fotoNova !== null) {
-				$this->removerFotoLocal($fotoNova);
+				UploadImagem::remover($fotoNova, 'atividades');
 			}
 			echo 'Erro ao atualizar a atividade.';
 			return;
 		}
 
 		if ($fotoNova !== null && $fotoAtual !== '') {
-			$this->removerFotoLocal($fotoAtual);
+			UploadImagem::remover($fotoAtual, 'atividades');
 		}
 
 		$this->redirect($this->urlListaAtividades('sucesso=editada'));
@@ -352,7 +352,7 @@ class AtividadeController extends Controller {
 
 	public function localizacaoCadastrar()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -371,7 +371,7 @@ class AtividadeController extends Controller {
 
 	public function salvarLocalizacao()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -439,7 +439,7 @@ class AtividadeController extends Controller {
 
 	public function salvarSessaoEdicao()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -492,7 +492,7 @@ class AtividadeController extends Controller {
 
 	public function atualizarSessaoEdicao()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -558,7 +558,7 @@ class AtividadeController extends Controller {
 
 	public function excluirSessaoEdicao()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -577,7 +577,7 @@ class AtividadeController extends Controller {
 
 	public function sessaoCadastrar()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -597,7 +597,7 @@ class AtividadeController extends Controller {
 
 	public function salvarSessao()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -704,7 +704,7 @@ class AtividadeController extends Controller {
 
 	public function concluirCadastro()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -731,7 +731,7 @@ class AtividadeController extends Controller {
 
 	public function verAtividade() {
 		if (!isset($_GET['id'])) {
-			$this->redirect(URL_BASE . '/atividade/listar');
+			$this->redirect(URL_BASE . '/');
 		}
 
 		$id = (int) $_GET['id'];
@@ -764,7 +764,7 @@ class AtividadeController extends Controller {
 
 	// Exclusão por POST (o formulário pede confirmação); vale para a empresa e para o administrador
 	public function excluir() {
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect(URL_BASE);
 		}
@@ -792,7 +792,7 @@ class AtividadeController extends Controller {
 			$_SESSION['admin_empresa_alvo'] = ['id' => (int) $empresa['ID_Empresa'], 'nome' => (string) ($empresa['Name'] ?? '')];
 		}
 
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId === null) {
 			$this->redirect($this->isAdminLogado() ? URL_BASE . '/admin' : URL_BASE);
 		}
@@ -813,7 +813,7 @@ class AtividadeController extends Controller {
 	// Empresa dona das atividades nesta tela:
 	// - empresa logada: a própria, se aprovada (RN02)
 	// - administrador: a empresa escolhida no painel (botão "Atividades" ou "Criar atividade")
-	private function getEmpresaLogadaId(): ?int
+	private function getEmpresaDaTela(): ?int
 	{
 		if ($this->isAdminLogado()) {
 			$alvo = (int) ($_SESSION['admin_empresa_alvo']['id'] ?? 0);
@@ -821,17 +821,13 @@ class AtividadeController extends Controller {
 			return $alvo > 0 ? $alvo : null;
 		}
 
-		if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada']) || !$this->empresaLogadaAprovada()) {
-			return null;
-		}
-
-		return (int) $_SESSION['empresa_logada']->getIdEmpresa();
+		return $this->getEmpresaAprovadaId();
 	}
 
 	// RN02: o administrador só cria atividade para empresa aprovada
 	private function getEmpresaParaNovaAtividade(): ?int
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaDaTela();
 		if ($empresaId !== null && $this->isAdminLogado() && !(new EmpresaService())->isAprovada($empresaId)) {
 			return null;
 		}
@@ -839,10 +835,6 @@ class AtividadeController extends Controller {
 		return $empresaId;
 	}
 
-	private function isAdminLogado(): bool
-	{
-		return isset($_SESSION['admin_logado']) && is_object($_SESSION['admin_logado']);
-	}
 
 	// Volta para a lista de atividades da empresa (do administrador, a da empresa escolhida)
 	private function urlListaAtividades(string $query = ''): string
@@ -1016,75 +1008,6 @@ class AtividadeController extends Controller {
 		];
 	}
 
-	private function processarUploadFoto(?array $arquivo): array
-	{
-		if ($arquivo === null || !isset($arquivo['error']) || (int) $arquivo['error'] === UPLOAD_ERR_NO_FILE) {
-			return ['sucesso' => true, 'foto' => null, 'erro' => null];
-		}
 
-		if ((int) $arquivo['error'] !== UPLOAD_ERR_OK) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'Falha no upload da imagem.'];
-		}
-
-		if ((int) ($arquivo['size'] ?? 0) > self::TAMANHO_MAX_FOTO) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'A imagem deve ter no máximo 5MB.'];
-		}
-
-		$tmp = (string) ($arquivo['tmp_name'] ?? '');
-		if ($tmp === '' || !is_uploaded_file($tmp)) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'Arquivo de imagem inválido.'];
-		}
-
-		$finfo = finfo_open(FILEINFO_MIME_TYPE); //Valida o tipo do arquivo verdadeiro
-		if ($finfo === false) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'Não foi possível validar o arquivo enviado.'];
-		}
-
-		$mime = finfo_file($finfo, $tmp); 
-		finfo_close($finfo);
-		$extensoesPermitidas = [
-			'image/jpeg' => 'jpg',
-			'image/png' => 'png',
-			'image/webp' => 'webp'
-		];
-
-		if (!isset($extensoesPermitidas[$mime]) || getimagesize($tmp) === false) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'Formato de imagem inválido. Use JPG, PNG ou WEBP.'];
-		}
-
-		try {
-			$identificador = bin2hex(random_bytes(8)); // Gera um identificador único para o nome do arquivo.
-		} catch (\Exception $e) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'Não foi possível gerar o nome da imagem.'];
-		}
-
-		$nomeArquivo = 'atividade_' . $identificador . '.' . $extensoesPermitidas[$mime]; // Gera o nome da foto.
-		$caminhoRelativo = 'uploads/atividades/' . $nomeArquivo;
-		$diretorioUpload = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'atividades';
-
-		if (!is_dir($diretorioUpload) && !mkdir($diretorioUpload, 0775, true) && !is_dir($diretorioUpload)) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'Não foi possível preparar o diretório de upload.'];
-		}
-
-		$destino = $diretorioUpload . DIRECTORY_SEPARATOR . $nomeArquivo;
-		if (!move_uploaded_file($tmp, $destino)) {
-			return ['sucesso' => false, 'foto' => null, 'erro' => 'Não foi possível salvar a imagem enviada.'];
-		}
-
-		return ['sucesso' => true, 'foto' => $caminhoRelativo, 'erro' => null];
-	}
-
-	private function removerFotoLocal(string $caminhoRelativo): void
-	{
-		$prefixo = 'uploads/atividades/';
-		if ($caminhoRelativo === '' || strpos($caminhoRelativo, $prefixo) !== 0) {
-			return;
-		}
-
-		$caminhoCompleto = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $caminhoRelativo);
-		if (is_file($caminhoCompleto)) {
-			unlink($caminhoCompleto);
-		}
-	}
 
 }

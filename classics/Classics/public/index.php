@@ -14,24 +14,17 @@ $router->get('/cadastrar', 'AutenticacaoController@cadastrar');
 $router->post('/logar', 'AutenticacaoController@logar');
 
 
-$router->get('/usuarios', 'UsuarioController@index');
-$router->get('/usuarios/cadastrar', 'UsuarioController@cadastrar');
 $router->post('/usuarios/salvar', 'UsuarioController@salvar');
 $router->get('/usuarios/editar', 'UsuarioController@editar');
 $router->post('/usuarios/atualizar', 'UsuarioController@atualizar');
-$router->get('/usuarios/excluir', 'UsuarioController@excluir');
+$router->post('/usuarios/excluir', 'UsuarioController@excluir');
 $router->get('/usuarios/ver', 'UsuarioController@verUsuario');
 
-$router ->get('/empresa', 'EmpresaController@listarTodos');
-$router ->get('/empresa/cadastrar', 'EmpresaController@criar');
 $router ->post('/empresa/salvar', 'EmpresaController@salvar');
 $router ->get('/empresa/editar', 'EmpresaController@editar');   
 $router ->post('/empresa/atualizar', 'EmpresaController@atualizar');
-$router ->get('/empresa/excluir', 'EmpresaController@excluir');
 $router ->get('/empresa/ver', 'EmpresaController@verEmpresa');
 
-$router ->get('/atividade', 'AtividadeController@listarTodos');
-$router ->get('/atividade/listar', 'AtividadeController@listarTodos');
 $router ->get('/atividade/cadastrar', 'AtividadeController@criar'); 
 $router ->post('/atividade/salvar', 'AtividadeController@salvar');
 $router ->post('/agendamento/salvar', 'AgendamentoController@salvar');
@@ -83,12 +76,11 @@ $router->post('/admin/empresa/salvar', 'AdminController@salvarEmpresa');
 $router->get('/admin/empresa/atividade', 'AdminController@criarAtividade');
 
 $router->get('/categoria', 'CategoriaController@listarTodos');
-$router->get('/categoria/listar', 'CategoriaController@listarTodos');
 $router->get('/categoria/cadastrar', 'CategoriaController@criar');
 $router->post('/categoria/salvar', 'CategoriaController@salvar');
 $router->get('/categoria/editar', 'CategoriaController@editar');
 $router->post('/categoria/atualizar', 'CategoriaController@atualizar');
-$router->get('/categoria/excluir', 'CategoriaController@excluir');
+$router->post('/categoria/excluir', 'CategoriaController@excluir');
 
 
 

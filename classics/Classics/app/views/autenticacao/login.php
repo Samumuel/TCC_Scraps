@@ -63,8 +63,8 @@
                                 <i class="bi bi-lock"></i>
                                 <input type="password" class="form-control rounded-end-0<?= isset($erros['senha']) ? ' is-invalid' : '' ?>" id="senha" name="senha" placeholder="Sua senha" required>
                             </div>
-                            <button class="btn btn-outline-secondary" type="button" id="toggleSenha" aria-label="Mostrar senha">
-                                <i class="bi bi-eye" id="iconSenha"></i>
+                            <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senha" aria-label="Mostrar senha">
+                                <i class="bi bi-eye"></i>
                             </button>
                         </div>
                         <?php if (isset($erros['senha'])): ?>
@@ -88,6 +88,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= URL_BASE ?>/js/alternar-senha.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-email.js"></script>
     <script>
         // Ao corrigir um campo, some o aviso que veio do servidor para ele
@@ -99,19 +100,6 @@
             }, { once: true });
         });
 
-        const toggleSenha = document.querySelector('#toggleSenha');
-        const senhaInput = document.querySelector('#senha');
-        const iconSenha = document.querySelector('#iconSenha');
-
-        if (toggleSenha) {
-            toggleSenha.addEventListener('click', function() {
-                const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                senhaInput.setAttribute('type', type);
-
-                iconSenha.classList.toggle('bi-eye');
-                iconSenha.classList.toggle('bi-eye-slash');
-            });
-        }
     </script>
 </body>
 

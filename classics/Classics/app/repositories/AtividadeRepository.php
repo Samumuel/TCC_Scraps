@@ -118,6 +118,15 @@ class AtividadeRepository {
         return $stmt->fetch();
     }
 
+    public function getAtividadesPorEmpresa(int $empresaId): array
+    {
+        $stmt = $this->connection->prepare('SELECT * FROM Atividades WHERE Empresa_ID = :empresa_id ORDER BY Nome ASC');
+        $stmt->bindValue(':empresa_id', $empresaId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
     // Atividades de uma empresa com categoria, sessões futuras e sessões futuras com vaga
     public function getAtividadesDaEmpresaComResumo(int $empresaId, string $hoje, string $agora): array
     {

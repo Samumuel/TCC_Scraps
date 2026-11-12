@@ -16,17 +16,8 @@ class EmpresaController extends Controller {
         $this->service = new EmpresaService();
     }
 
-    // A lista de empresas fica no painel do administrador (/admin); o cadastro é feito pela página pública
-    public function listarTodos() {
-        $this->redirect(URL_BASE);
-    }
-
-    public function criar() {
-        $this->redirect(URL_BASE);
-    }
-
     public function salvar() {
-        $nome = $_POST['nome'];
+        $nome = trim((string) ($_POST['nome'] ?? ''));
         $email = trim((string) ($_POST['email'] ?? ''));
         $cnpj = $_POST['cnpj'] ?? null;
         $localizacao = $_POST['localizacao'] ?? null;
@@ -40,6 +31,7 @@ class EmpresaController extends Controller {
         }
 
         $validador = new Validador();
+        $validador->obrigatorio('nome', $nome, 'O nome da empresa é obrigatório.');
         $validador->obrigatorio('email', $email, 'O e-mail da empresa é obrigatório.');
         $validador->email('email', $email);
         $validador->cnpj('cnpj', $cnpj);
@@ -57,7 +49,7 @@ class EmpresaController extends Controller {
             ];
             $data['erros'] = $validador->getErros();
             $data['tipo_cadastro'] = 'empresa';
-            $this->view($cadastroPublico ? 'autenticacao/cadastrar' : 'empresas/empresa_create', $data);
+            $this->view('autenticacao/cadastrar', $data);
             return;
         }
 
@@ -84,7 +76,7 @@ class EmpresaController extends Controller {
             ];
             $data['erros']['email'] = "Este e-mail já está cadastrado.";
             $data['tipo_cadastro'] = 'empresa';
-            $this->view($cadastroPublico ? 'autenticacao/cadastrar' : 'empresas/empresa_create', $data);
+            $this->view('autenticacao/cadastrar', $data);
         }
     }
 
@@ -111,6 +103,7 @@ class EmpresaController extends Controller {
 
         $validador = new Validador();
         $email = trim((string) ($_POST['email'] ?? ''));
+        $validador->obrigatorio('nome', trim((string) ($_POST['nome'] ?? '')), 'O nome da empresa é obrigatório.');
         $validador->obrigatorio('email', $email, 'O e-mail da empresa é obrigatório.');
         $validador->email('email', $email);
         $validador->cnpj('cnpj', $_POST['cnpj'] ?? '');
@@ -127,7 +120,7 @@ class EmpresaController extends Controller {
         // O id vem da sessão; status e senha vazia são mantidos pelo service
         $empresa = new Empresa(
             $empresaId,
-            (string) ($_POST['nome'] ?? ''),
+            trim((string) ($_POST['nome'] ?? '')),
             $email,
             $_POST['cnpj'] ?? '',
             $_POST['localizacao'] ?? '',
@@ -166,11 +159,6 @@ class EmpresaController extends Controller {
         $this->view('empresas/empresa_show', $data);
     }
 
-    // A exclusão de empresas é feita pelo painel do administrador (/admin)
-    public function excluir() {
-        $this->redirect(URL_BASE);
-    }
-
     private function montarDadosEmpresaFormulario(int $empresaId): array
     {
         return [
@@ -183,12 +171,4 @@ class EmpresaController extends Controller {
         ];
     }
 
-    private function getEmpresaLogadaId(): ?int
-    {
-        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada'])) {
-            return null;
-        }
-
-        return (int) $_SESSION['empresa_logada']->getIdEmpresa();
-    }
 }

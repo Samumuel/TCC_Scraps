@@ -17,7 +17,7 @@ class CategoriaController extends Controller
 
 	public function criar()
 	{
-		if (!$this->getEmpresaLogadaId()) {
+		if (!$this->getEmpresaAprovadaId()) {
 			$this->redirect(URL_BASE);
 		}
 
@@ -26,7 +26,7 @@ class CategoriaController extends Controller
 
 	public function listarTodos()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaAprovadaId();
 		if (!$empresaId) {
 			$this->redirect(URL_BASE);
 		}
@@ -37,12 +37,17 @@ class CategoriaController extends Controller
 
 	public function salvar()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaAprovadaId();
 		if (!$empresaId) {
 			$this->redirect(URL_BASE);
 		}
 
-		$nomeCategoria = $_POST['nome_categoria'] ?? '';
+		$nomeCategoria = trim((string) ($_POST['nome_categoria'] ?? ''));
+		$erro = $this->validarNome($nomeCategoria);
+		if ($erro !== null) {
+			$this->view('categorias/categoria_create', ['nome_categoria' => $nomeCategoria, 'erro' => $erro]);
+			return;
+		}
 
 		$categoria = new Categoria();
 		$categoria->setNomeCategoria($nomeCategoria);
@@ -57,7 +62,7 @@ class CategoriaController extends Controller
 
 	public function editar()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaAprovadaId();
 		if (!$empresaId) {
 			$this->redirect(URL_BASE);
 		}
@@ -77,13 +82,21 @@ class CategoriaController extends Controller
 
 	public function atualizar()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaAprovadaId();
 		if (!$empresaId) {
 			$this->redirect(URL_BASE);
 		}
 
 		$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
-		$nomeCategoria = $_POST['nome_categoria'] ?? '';
+		$nomeCategoria = trim((string) ($_POST['nome_categoria'] ?? ''));
+		$erro = $this->validarNome($nomeCategoria);
+		if ($erro !== null) {
+			$this->view('categorias/categoria_edit', [
+				'categoria' => ['ID_Categoria' => $id, 'Nome_Categoria' => $nomeCategoria],
+				'erro' => $erro
+			]);
+			return;
+		}
 
 		$categoria = new Categoria($id, $nomeCategoria, $empresaId);
 
@@ -96,39 +109,33 @@ class CategoriaController extends Controller
 
 	public function excluir()
 	{
-		$empresaId = $this->getEmpresaLogadaId();
+		$empresaId = $this->getEmpresaAprovadaId();
 		if (!$empresaId) {
 			$this->redirect(URL_BASE);
 		}
 
-		if (!isset($_GET['id'])) {
-			$this->redirect(URL_BASE . '/categoria');
+		// Exclusão por POST (o formulário pede confirmação)
+		$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+		$resultado = $this->service->deleteCategoria($id, $empresaId);
+
+		if (!empty($resultado['sucesso'])) {
+			$this->redirect(URL_BASE . '/categoria?sucesso=excluida');
 		}
 
-		$id = (int) $_GET['id'];
-		if ($this->service->deleteCategoria($id, $empresaId)) {
-			$this->redirect(URL_BASE . '/categoria');
-		} else {
-			echo 'Erro ao excluir a categoria.';
-		}
+		$this->redirect(URL_BASE . '/categoria?erro=' . rawurlencode((string) ($resultado['erro'] ?? 'falha')));
 	}
 
-	// RN02: só a empresa aprovada pelo administrador gerencia categorias
-	private function getEmpresaLogadaId(): int
+	private function validarNome(string $nomeCategoria): ?string
 	{
-		if (!isset($_SESSION['empresa_logada']) || !$this->empresaLogadaAprovada()) {
-			return 0;
+		if ($nomeCategoria === '') {
+			return 'Informe o nome da categoria.';
 		}
 
-		$empresa = $_SESSION['empresa_logada'];
-		if (is_object($empresa) && method_exists($empresa, 'getIdEmpresa')) {
-			return (int) $empresa->getIdEmpresa();
+		if (mb_strlen($nomeCategoria) > 100) {
+			return 'O nome da categoria deve ter no máximo 100 caracteres.';
 		}
 
-		if (is_array($empresa) && isset($empresa['ID_Empresa'])) {
-			return (int) $empresa['ID_Empresa'];
-		}
-
-		return 0;
+		return null;
 	}
+
 }

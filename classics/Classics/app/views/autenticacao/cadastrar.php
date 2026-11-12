@@ -48,6 +48,13 @@
 
         <input type="hidden" name="tipo" id="tipo" value="usuario">
 
+        <?php
+        // Cada aba mostra só os erros do próprio formulário
+        $errosCadastro = $erros ?? [];
+        $cadastroEmpresa = isset($tipo_cadastro) && $tipo_cadastro === 'empresa';
+        $errosUsuario = $cadastroEmpresa ? [] : $errosCadastro;
+        $errosEmpresa = $cadastroEmpresa ? $errosCadastro : [];
+        ?>
         <?php if (isset($tipo_cadastro) && $tipo_cadastro === 'empresa'): ?>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -74,8 +81,8 @@
                         <label for="nomeUsuario" class="form-label">Nome de Usuário</label>
                         <input type="text" class="form-control" id="nomeUsuario" name="nomeUsuario"
                             value="<?= $usuario['nomeUsuario'] ?? '' ?>">
-                        <?php if (isset($erros['nomeUsuario'])): ?>
-                        <div class="text-danger small"><?= $erros['nomeUsuario'] ?></div>
+                        <?php if (isset($errosUsuario['nomeUsuario'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars((string) $errosUsuario['nomeUsuario'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -85,8 +92,8 @@
                             aria-describedby="emailUsuarioAjuda emailUsuarioErro"
                             value="<?= $usuario['email'] ?? '' ?>">
                         <div id="emailUsuarioAjuda" class="form-text">Digite um e-mail válido.</div>
-                        <?php if (isset($erros['email'])): ?>
-                        <div id="emailUsuarioErro" class="text-danger small"><?= htmlspecialchars($erros['email'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosUsuario['email'])): ?>
+                        <div id="emailUsuarioErro" class="text-danger small"><?= htmlspecialchars($errosUsuario['email'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -96,8 +103,8 @@
                             inputmode="numeric" pattern="[0-9]*" maxlength="11" data-maxlength="11"
                             value="<?= $usuario['cpf'] ?? '' ?>">
                         <div class="form-text">Digite apenas números (11 dígitos).</div>
-                        <?php if (isset($erros['cpf'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars($erros['cpf'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosUsuario['cpf'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars($errosUsuario['cpf'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -107,8 +114,8 @@
                             inputmode="numeric" pattern="[0-9]*" maxlength="11" data-maxlength="11"
                             value="<?= $usuario['telefone'] ?? '' ?>">
                         <div class="form-text">Digite apenas números (10 ou 11 dígitos).</div>
-                        <?php if (isset($erros['telefone'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars($erros['telefone'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosUsuario['telefone'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars($errosUsuario['telefone'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -124,12 +131,12 @@
                         <label for="senha" class="form-label">Senha</label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="senha" name="senha" autocomplete="new-password" data-validar-senha>
-                            <button class="btn btn-outline-secondary" type="button" id="toggleSenha" data-alternar-senha="senha" aria-label="Mostrar senha">
-                                <i class="bi bi-eye" id="iconSenha"></i>
+                            <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senha" aria-label="Mostrar senha">
+                                <i class="bi bi-eye"></i>
                             </button>
                         </div>
-                        <?php if (isset($erros['senha'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars((string) $erros['senha'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosUsuario['senha'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars((string) $errosUsuario['senha'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -141,8 +148,8 @@
                                 <i class="bi bi-eye"></i>
                             </button>
                         </div>
-                        <?php if (isset($erros['confirmar_senha'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars((string) $erros['confirmar_senha'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosUsuario['confirmar_senha'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars((string) $errosUsuario['confirmar_senha'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -163,14 +170,17 @@
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome da empresa</label>
                         <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($empresa['nome'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+                        <?php if (isset($errosEmpresa['nome'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars((string) $errosEmpresa['nome'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php endif; ?>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">E-mail</label>
                         <input type="email" class="form-control email-validacao" id="emailEmpresa" name="email"
                             aria-describedby="emailEmpresaAjuda emailEmpresaErro" value="<?= htmlspecialchars($empresa['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                         <div id="emailEmpresaAjuda" class="form-text">Digite um e-mail válido. Este campo é obrigatório.</div>
-                        <?php if (isset($erros['email'])): ?>
-                        <div id="emailEmpresaErro" class="text-danger small"><?= htmlspecialchars($erros['email'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosEmpresa['email'])): ?>
+                        <div id="emailEmpresaErro" class="text-danger small"><?= htmlspecialchars($errosEmpresa['email'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="mb-3">
@@ -178,8 +188,8 @@
                         <input type="text" class="form-control somente-numeros" id="cnpj" name="cnpj"
                             inputmode="numeric" pattern="[0-9]*" maxlength="14" data-maxlength="14" value="<?= htmlspecialchars($empresa['cnpj'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                         <div class="form-text">Digite apenas números (14 dígitos).</div>
-                        <?php if (isset($erros['cnpj'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars($erros['cnpj'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosEmpresa['cnpj'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars($errosEmpresa['cnpj'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="mb-3">
@@ -191,8 +201,8 @@
                         <input type="text" class="form-control somente-numeros" id="telefone" name="telefone"
                             inputmode="numeric" pattern="[0-9]*" maxlength="11" data-maxlength="11" value="<?= htmlspecialchars($empresa['telefone'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                         <div class="form-text">Digite apenas números (10 ou 11 dígitos).</div>
-                        <?php if (isset($erros['telefone'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars($erros['telefone'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosEmpresa['telefone'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars($errosEmpresa['telefone'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="mb-3">
@@ -203,8 +213,8 @@
                                 <i class="bi bi-eye"></i>
                             </button>
                         </div>
-                        <?php if (isset($erros['senha'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars((string) $erros['senha'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosEmpresa['senha'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars((string) $errosEmpresa['senha'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="mb-3">
@@ -215,8 +225,8 @@
                                 <i class="bi bi-eye"></i>
                             </button>
                         </div>
-                        <?php if (isset($erros['confirmar_senha'])): ?>
-                        <div class="text-danger small"><?= htmlspecialchars((string) $erros['confirmar_senha'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php if (isset($errosEmpresa['confirmar_senha'])): ?>
+                        <div class="text-danger small"><?= htmlspecialchars((string) $errosEmpresa['confirmar_senha'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="d-grid">
@@ -240,21 +250,7 @@
     <script src="<?= URL_BASE ?>/js/validacao-numerica.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-email.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-senha.js"></script>
-    <script>
-    // Botões de mostrar/ocultar senha: data-alternar-senha indica o id do campo
-    document.querySelectorAll('[data-alternar-senha]').forEach(function(botao) {
-        const campo = document.getElementById(botao.dataset.alternarSenha);
-        const icone = botao.querySelector('i');
-
-        botao.addEventListener('click', function() {
-            const tipo = campo.getAttribute('type') === 'password' ? 'text' : 'password';
-            campo.setAttribute('type', tipo);
-
-            icone.classList.toggle('bi-eye');
-            icone.classList.toggle('bi-eye-slash');
-        });
-    });
-    </script>
+    <script src="<?= URL_BASE ?>/js/alternar-senha.js"></script>
 </body>
 
 </html>

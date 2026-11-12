@@ -14,7 +14,8 @@ CREATE TABLE Usuario (
 
 CREATE TABLE Categorias ( 
     ID_Categoria INT PRIMARY KEY AUTO_INCREMENT, 
-    Nome_Categoria VARCHAR(100) 
+    Nome_Categoria VARCHAR(100),
+    Empresa_ID INT NOT NULL
 );
 
 CREATE TABLE Empresa ( 
@@ -107,6 +108,4 @@ CREATE TABLE Notificacao (
     FOREIGN KEY (ID_Usuario) REFERENCES Usuario(ID_Usuario),
     FOREIGN KEY (ID_Empresa) REFERENCES Empresa(ID_Empresa)
 );
-
-ALTER TABLE `categorias` ADD `Empresa_ID` INT NOT NULL AFTER `Nome_Categoria`;
 

@@ -15,10 +15,6 @@ class AtividadeService {
         $this->repository = new AtividadeRepository();
     }
 
-    public function getAtividades(){
-        return $this->repository->getAtividades();
-    }
-
     public function filtrarAtividades(string $busca, string $cidade, string $categoria, string $data): array
     {
         $erros = [];
@@ -62,16 +58,13 @@ class AtividadeService {
         ];
     }
 
+    // Atividades de uma empresa (consulta filtrada no banco, sem carregar todas as atividades)
     public function getAtividadesPorEmpresa(int $empresaId): array
     {
-        $atividades = [];
-        foreach ($this->repository->getAtividades() ?: [] as $atividade) {
-            if ((int) ($atividade['Empresa_ID'] ?? 0) === $empresaId) {
-                $atividades[] = Atividade::arrayParaObjeto($atividade);
-            }
-        }
-
-        return $atividades;
+        return array_map(
+            fn(array $atividade) => Atividade::arrayParaObjeto($atividade),
+            $this->repository->getAtividadesPorEmpresa($empresaId)
+        );
     }
 
     public function countAtividades(): int

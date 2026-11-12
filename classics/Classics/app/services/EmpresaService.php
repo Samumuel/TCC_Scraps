@@ -35,11 +35,6 @@ class EmpresaService {
 
     }
 
-    public function getEmpresas(){
-        return $this->repository->getEmpresas();
-    
-    }
-
     public function getEmpresa(int $id){
         return $this->repository->getEmpresa($id);
     }

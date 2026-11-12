@@ -80,6 +80,15 @@ class CategoriaRepository
         return $stmt->execute();
     }
 
+    public function countAtividadesDaCategoria(int $id): int
+    {
+        $stmt = $this->connection->prepare('SELECT COUNT(*) FROM Atividades WHERE Categoria_ID = :id');
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
+    }
+
     public function deleteCategoria(int $id, int $empresaId): bool
     {
         $sql = 'DELETE FROM Categorias WHERE ID_Categoria = :id AND Empresa_ID = :empresa_id';

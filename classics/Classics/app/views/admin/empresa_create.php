@@ -95,7 +95,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-numerica.js"></script>
-<?php require __DIR__ . '/_alternar_senha.php'; ?>
+    <script src="<?= URL_BASE ?>/js/alternar-senha.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-senha.js"></script>
 </body>
 

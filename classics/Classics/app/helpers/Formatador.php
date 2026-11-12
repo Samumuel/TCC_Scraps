@@ -68,4 +68,21 @@ class Formatador
 
         return $numeros !== '' ? $numeros : '-';
     }
+
+    // Rótulo, cor e ícone de cada status de agendamento (Meus Agendamentos e Reservas da empresa)
+    public const STATUS_AGENDAMENTO = [
+        'pendente' => ['Aguardando aprovação', 'warning', 'bi-hourglass-split'],
+        'aprovado' => ['Confirmado', 'success', 'bi-check-circle'],
+        'cancelado' => ['Cancelado', 'danger', 'bi-x-circle'],
+        'recusado' => ['Recusado', 'danger', 'bi-slash-circle']
+    ];
+
+    // 2026-11-15 => 15/11/2026
+    public static function data(?string $data): string
+    {
+        $data = trim((string) $data);
+        $partes = explode('-', $data);
+
+        return count($partes) === 3 ? $partes[2] . '/' . $partes[1] . '/' . $partes[0] : ($data !== '' ? $data : '-');
+    }
 }

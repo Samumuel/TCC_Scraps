@@ -89,4 +89,49 @@ class Controller
     {
         return $this->getStatusEmpresaLogada() === EmpresaService::STATUS_APROVADA;
     }
+
+    // ---- Quem está logado (usados por todos os controllers) ----
+
+    protected function getUsuarioLogadoId(): ?int
+    {
+        if (!isset($_SESSION['usuario_logado']) || !is_object($_SESSION['usuario_logado'])) {
+            return null;
+        }
+
+        return (int) $_SESSION['usuario_logado']->getIdUsuario();
+    }
+
+    // Cliente: usuário comum (não administrador) logado
+    protected function getClienteLogadoId(): ?int
+    {
+        if (isset($_SESSION['empresa_logada']) || !isset($_SESSION['usuario_logado']) || !is_object($_SESSION['usuario_logado'])) {
+            return null;
+        }
+
+        $tipo = strtolower(trim((string) $_SESSION['usuario_logado']->getTipoUsuario()));
+
+        return in_array($tipo, ['user', 'cliente'], true) ? (int) $_SESSION['usuario_logado']->getIdUsuario() : null;
+    }
+
+    protected function getEmpresaLogadaId(): ?int
+    {
+        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada'])) {
+            return null;
+        }
+
+        return (int) $_SESSION['empresa_logada']->getIdEmpresa();
+    }
+
+    // RN02: id da empresa logada somente se ela estiver aprovada
+    protected function getEmpresaAprovadaId(): ?int
+    {
+        $empresaId = $this->getEmpresaLogadaId();
+
+        return $empresaId !== null && $this->empresaLogadaAprovada() ? $empresaId : null;
+    }
+
+    protected function isAdminLogado(): bool
+    {
+        return isset($_SESSION['admin_logado']) && is_object($_SESSION['admin_logado']);
+    }
 }

@@ -94,8 +94,8 @@
                         <label for="senha" class="form-label">Senha <?= isset($usuario['id']) ? '(Preencha apenas se quiser alterar)' : '' ?></label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="senha" name="senha" autocomplete="new-password" data-validar-senha="opcional">
-                            <button class="btn btn-outline-secondary" type="button" id="toggleSenha">
-                                <i class="bi bi-eye" id="iconSenha"></i>
+                            <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senha" aria-label="Mostrar senha">
+                                <i class="bi bi-eye"></i>
                             </button>
                         </div>
                         <?php if (isset($erros['senha'])): ?>
@@ -115,21 +115,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-numerica.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-email.js"></script>
-    <script>
-        const toggleSenha = document.querySelector('#toggleSenha');
-        const senhaInput = document.querySelector('#senha');
-        const iconSenha = document.querySelector('#iconSenha');
-
-        if (toggleSenha) {
-            toggleSenha.addEventListener('click', function() {
-                const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                senhaInput.setAttribute('type', type);
-                
-                iconSenha.classList.toggle('bi-eye');
-                iconSenha.classList.toggle('bi-eye-slash');
-            });
-        }
-    </script>
+    <script src="<?= URL_BASE ?>/js/alternar-senha.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-senha.js"></script>
 </body>
 

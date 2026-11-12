@@ -37,6 +37,10 @@
                 $mensagemInscricao = isset($_GET['vagas'])
                     ? 'Não há vagas suficientes. Vagas disponíveis nesta sessão: ' . max(0, (int) $_GET['vagas']) . '.'
                     : 'Não há vagas suficientes nesta sessão.';
+            } elseif ($erroInscricao === 'minimo') {
+                $mensagemInscricao = isset($_GET['minimo'])
+                    ? 'Esta sessão exige no mínimo ' . max(1, (int) $_GET['minimo']) . ' participantes por reserva.'
+                    : 'A quantidade de pessoas é menor que o mínimo exigido pela sessão.';
             } elseif ($erroInscricao === 'indisponivel') {
                 $mensagemInscricao = 'Esta atividade não está recebendo agendamentos no momento.';
             } else {

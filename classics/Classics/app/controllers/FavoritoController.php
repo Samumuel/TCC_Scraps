@@ -48,28 +48,10 @@ class FavoritoController extends Controller
         }
 
         if (($resultado['erro'] ?? '') === 'atividade') {
-            $this->redirect(URL_BASE . '/atividade/listar');
+            $this->redirect(URL_BASE . '/');
         }
 
         $this->redirect(URL_BASE . '/atividade/ver?id=' . $atividadeId);
     }
 
-    private function getClienteLogadoId(): ?int
-    {
-        if (!isset($_SESSION['usuario_logado']) || !is_object($_SESSION['usuario_logado']) || isset($_SESSION['empresa_logada'])) {
-            return null;
-        }
-
-        $usuario = $_SESSION['usuario_logado'];
-        if (!method_exists($usuario, 'getIdUsuario') || !method_exists($usuario, 'getTipoUsuario')) {
-            return null;
-        }
-
-        $tipo = strtolower(trim((string) $usuario->getTipoUsuario()));
-        if (!in_array($tipo, ['user', 'cliente'], true)) {
-            return null;
-        }
-
-        return (int) $usuario->getIdUsuario();
-    }
 }

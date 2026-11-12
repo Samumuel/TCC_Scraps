@@ -65,22 +65,11 @@
             $tipoMensagem = 'danger';
         }
 
-        $statusLabels = [
-            'pendente' => ['Aguardando aprovação', 'warning', 'bi-hourglass-split'],
-            'aprovado' => ['Confirmado', 'success', 'bi-check-circle'],
-            'cancelado' => ['Cancelado', 'danger', 'bi-x-circle'],
-            'recusado' => ['Recusado', 'danger', 'bi-slash-circle']
-        ];
+        $statusLabels = \app\helpers\Formatador::STATUS_AGENDAMENTO;
 
         $proximos = array_values(array_filter($agendamentos, fn($item) => !empty($item['pode_alterar'])));
         $anteriores = array_values(array_filter($agendamentos, fn($item) => empty($item['pode_alterar'])));
 
-        $formatarData = function (?string $data): string {
-            $data = trim((string) $data);
-            $partes = explode('-', $data);
-
-            return count($partes) === 3 ? $partes[2] . '/' . $partes[1] . '/' . $partes[0] : ($data !== '' ? $data : '-');
-        };
         ?>
 
         <div class="cl-page-header">
@@ -133,7 +122,7 @@
                                         </div>
 
                                         <div class="d-flex flex-wrap gap-4 mb-3">
-                                            <span class="cl-meta"><i class="bi bi-calendar3"></i> <?= htmlspecialchars($formatarData($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <span class="cl-meta"><i class="bi bi-calendar3"></i> <?= htmlspecialchars(\app\helpers\Formatador::data($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></span>
                                             <span class="cl-meta"><i class="bi bi-clock"></i> <?= htmlspecialchars(substr((string) ($sessao->getHora() ?? '-'), 0, 5), ENT_QUOTES, 'UTF-8') ?></span>
                                             <span class="cl-meta"><i class="bi bi-people"></i> <?= $quantidade ?> <?= $quantidade > 1 ? 'pessoas' : 'pessoa' ?></span>
                                         </div>
@@ -193,7 +182,7 @@
                                                                 <option value="">Escolha uma sessão</option>
                                                                 <?php foreach ($item['sessoes_troca'] as $opcaoSessao): ?>
                                                                     <option value="<?= (int) $opcaoSessao['ID_Sessao'] ?>">
-                                                                        <?= htmlspecialchars($formatarData($opcaoSessao['Data'] ?? '') . ' às ' . substr((string) ($opcaoSessao['Hora'] ?? ''), 0, 5), ENT_QUOTES, 'UTF-8') ?>
+                                                                        <?= htmlspecialchars(\app\helpers\Formatador::data($opcaoSessao['Data'] ?? '') . ' às ' . substr((string) ($opcaoSessao['Hora'] ?? ''), 0, 5), ENT_QUOTES, 'UTF-8') ?>
                                                                         (<?= (int) $opcaoSessao['Qtd_disponivel'] ?> vagas)
                                                                     </option>
                                                                 <?php endforeach; ?>
@@ -261,7 +250,7 @@
                                         </span>
                                     </div>
                                     <div class="d-flex flex-wrap gap-4">
-                                        <span class="cl-meta"><i class="bi bi-calendar3"></i> <?= htmlspecialchars($formatarData($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <span class="cl-meta"><i class="bi bi-calendar3"></i> <?= htmlspecialchars(\app\helpers\Formatador::data($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></span>
                                         <span class="cl-meta"><i class="bi bi-clock"></i> <?= htmlspecialchars(substr((string) ($sessao->getHora() ?? '-'), 0, 5), ENT_QUOTES, 'UTF-8') ?></span>
                                         <span class="cl-meta"><i class="bi bi-people"></i> <?= $quantidade ?> <?= $quantidade > 1 ? 'pessoas' : 'pessoa' ?></span>
                                     </div>

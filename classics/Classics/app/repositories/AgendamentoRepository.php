@@ -40,6 +40,19 @@ class AgendamentoRepository
 
             $qtdDisponivel = isset($sessao['Qtd_disponivel']) ? (int) $sessao['Qtd_disponivel'] : 0;
             $qtdMaxima = isset($sessao['Qtd_max']) ? (int) $sessao['Qtd_max'] : 0;
+            $qtdMinima = isset($sessao['Qtd_min']) ? (int) $sessao['Qtd_min'] : 0;
+
+            // A reserva precisa respeitar o mínimo de participantes da sessão
+            if ($qtdMinima > 0 && $quantidadePessoas < $qtdMinima) {
+                $this->connection->rollBack();
+
+                return [
+                    'sucesso' => false,
+                    'erro' => 'minimo',
+                    'minimo' => $qtdMinima,
+                    'atividade_id' => (int) ($sessao['ID_Atividade'] ?? 0)
+                ];
+            }
 
             if ($quantidadePessoas <= 0) {
                 $this->connection->rollBack();

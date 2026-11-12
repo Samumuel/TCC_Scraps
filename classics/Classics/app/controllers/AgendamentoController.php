@@ -19,12 +19,9 @@ class AgendamentoController extends Controller
 
     public function salvar()
     {
-        $usuarioId = $this->getUsuarioLogadoId();
+        // Só o cliente (não empresa nem administrador) faz reservas
+        $usuarioId = $this->getClienteLogadoId();
         $atividadeIdFallback = isset($_POST['atividade_id']) ? (int) $_POST['atividade_id'] : 0;
-
-        if (!$this->usuarioPodeSeInscrever()) {
-            $this->redirect($this->montarUrlRetorno($atividadeIdFallback, 'erro_inscricao=acesso'));
-        }
 
         if ($usuarioId === null) {
             $this->redirect($this->montarUrlRetorno($atividadeIdFallback, 'erro_inscricao=acesso'));
@@ -50,7 +47,8 @@ class AgendamentoController extends Controller
 
         $erro = (string) ($resultado['erro'] ?? 'falha');
         $vagas = isset($resultado['vagas']) ? '&vagas=' . (int) $resultado['vagas'] : '';
-        $this->redirect($this->montarUrlRetorno($atividadeId, 'erro_inscricao=' . rawurlencode($erro) . $vagas));
+        $minimo = isset($resultado['minimo']) ? '&minimo=' . (int) $resultado['minimo'] : '';
+        $this->redirect($this->montarUrlRetorno($atividadeId, 'erro_inscricao=' . rawurlencode($erro) . $vagas . $minimo));
     }
 
     public function meusAgendamentos()
@@ -151,7 +149,7 @@ class AgendamentoController extends Controller
 
     public function reservasEmpresa()
     {
-        $empresaId = $this->getEmpresaLogadaId();
+        $empresaId = $this->getEmpresaAprovadaId();
         if ($empresaId === null) {
             $this->redirect(URL_BASE);
         }
@@ -181,7 +179,7 @@ class AgendamentoController extends Controller
 
     private function executarAcaoReservaEmpresa(string $acao)
     {
-        $empresaId = $this->getEmpresaLogadaId();
+        $empresaId = $this->getEmpresaAprovadaId();
         if ($empresaId === null) {
             $this->redirect(URL_BASE);
         }
@@ -213,49 +211,13 @@ class AgendamentoController extends Controller
         $this->redirect(URL_BASE . '/agendamento/empresa?' . $filtro . 'erro=' . rawurlencode($erro));
     }
 
-    private function getUsuarioLogadoId(): ?int
-    {
-        if (!isset($_SESSION['usuario_logado']) || !is_object($_SESSION['usuario_logado'])) {
-            return null;
-        }
 
-        if (!method_exists($_SESSION['usuario_logado'], 'getIdUsuario')) {
-            return null;
-        }
 
-        return (int) $_SESSION['usuario_logado']->getIdUsuario();
-    }
-
-    // RN02: só a empresa aprovada pelo administrador gerencia reservas
-    private function getEmpresaLogadaId(): ?int
-    {
-        if (!isset($_SESSION['empresa_logada']) || !is_object($_SESSION['empresa_logada']) || !$this->empresaLogadaAprovada()) {
-            return null;
-        }
-
-        return (int) $_SESSION['empresa_logada']->getIdEmpresa();
-    }
-
-    private function usuarioPodeSeInscrever(): bool
-    {
-        if (!isset($_SESSION['usuario_logado']) || isset($_SESSION['empresa_logada'])) {
-            return false;
-        }
-
-        $usuario = $_SESSION['usuario_logado'];
-        if (!is_object($usuario) || !method_exists($usuario, 'getTipoUsuario')) {
-            return false;
-        }
-
-        $tipo = strtolower(trim((string) $usuario->getTipoUsuario()));
-
-        return in_array($tipo, ['user', 'cliente'], true);
-    }
 
     private function montarUrlRetorno(int $atividadeId, string $query): string
     {
         if ($atividadeId <= 0) {
-            return URL_BASE . '/atividade/listar?' . $query;
+            return URL_BASE . '/?' . $query;
         }
 
         return URL_BASE . '/atividade/ver?id=' . $atividadeId . '&tab=sessoes&' . $query;

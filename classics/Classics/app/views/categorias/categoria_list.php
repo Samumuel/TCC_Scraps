@@ -26,6 +26,19 @@ if(!isset($_SESSION['empresa_logada'])){
             </a>
         </div>
 
+        <?php
+        $mensagensCategoria = [
+            'excluida' => ['Categoria excluída.', 'success'],
+            'em_uso' => ['Esta categoria está sendo usada por uma ou mais atividades e não pode ser excluída. Troque a categoria dessas atividades antes.', 'danger'],
+            'categoria' => ['Categoria não encontrada.', 'danger']
+        ];
+        $codigoCategoria = (string) ($_GET['sucesso'] ?? ($_GET['erro'] ?? ''));
+        $mensagemCategoria = $codigoCategoria !== '' ? ($mensagensCategoria[$codigoCategoria] ?? ['Não foi possível concluir a operação.', 'danger']) : null;
+        ?>
+        <?php if ($mensagemCategoria !== null): ?>
+            <div class="alert alert-<?= $mensagemCategoria[1] ?>" role="alert"><?= htmlspecialchars($mensagemCategoria[0], ENT_QUOTES, 'UTF-8') ?></div>
+        <?php endif; ?>
+
         <div class="card shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -47,9 +60,12 @@ if(!isset($_SESSION['empresa_logada'])){
                                             <a href="<?= URL_BASE ?>/categoria/editar?id=<?= $categoria['ID_Categoria'] ?>" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-pencil"></i> Editar
                                             </a>
-                                            <a href="<?= URL_BASE ?>/categoria/excluir?id=<?= $categoria['ID_Categoria'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir esta categoria?')">
-                                                <i class="bi bi-trash"></i> Excluir
-                                            </a>
+                                            <form action="<?= URL_BASE ?>/categoria/excluir" method="POST" class="d-inline m-0" onsubmit="return confirm('Deseja excluir esta categoria?')">
+                                                <input type="hidden" name="id" value="<?= (int) $categoria['ID_Categoria'] ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i> Excluir
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

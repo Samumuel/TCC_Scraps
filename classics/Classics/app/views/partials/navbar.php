@@ -14,7 +14,7 @@ if ($navAdmin !== null) {
     ];
 } else {
     $navLinks = [
-        ['Explorar', '/', ['/', '/atividade', '/atividade/listar', '/atividade/ver']]
+        ['Explorar', '/', ['/', '/atividade/ver']]
     ];
 }
 
@@ -25,7 +25,7 @@ if ($navUsuario !== null) {
     $navLinks[] = ['Minhas Atividades', '/empresa/atividades', ['/empresa/atividades', '/atividade/editar']];
     $navLinks[] = ['Reservas', '/agendamento/empresa', ['/agendamento/empresa']];
     $navLinks[] = ['Nova Atividade', '/atividade/cadastrar', ['/atividade/cadastrar', '/atividade/localizacao/cadastrar', '/atividade/sessao/cadastrar']];
-    $navLinks[] = ['Categorias', '/categoria', ['/categoria', '/categoria/listar', '/categoria/cadastrar', '/categoria/editar']];
+    $navLinks[] = ['Categorias', '/categoria', ['/categoria', '/categoria/cadastrar', '/categoria/editar']];
 }
 
 $navPerfilUrl = null;

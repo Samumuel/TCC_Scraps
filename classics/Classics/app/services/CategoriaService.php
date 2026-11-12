@@ -47,8 +47,19 @@ class CategoriaService
         return $this->repository->updateCategoria($categoria, $empresaId);
     }
 
-    public function deleteCategoria(int $id, int $empresaId): bool
+    // Categoria usada por alguma atividade não pode ser excluída (evita erro de chave estrangeira)
+    public function deleteCategoria(int $id, int $empresaId): array
     {
-        return $this->repository->deleteCategoria($id, $empresaId);
+        if (!$this->repository->getCategoria($id, $empresaId)) {
+            return ['sucesso' => false, 'erro' => 'categoria'];
+        }
+
+        if ($this->repository->countAtividadesDaCategoria($id) > 0) {
+            return ['sucesso' => false, 'erro' => 'em_uso'];
+        }
+
+        return $this->repository->deleteCategoria($id, $empresaId)
+            ? ['sucesso' => true]
+            : ['sucesso' => false, 'erro' => 'falha'];
     }
 }

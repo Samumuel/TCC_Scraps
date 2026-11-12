@@ -42,24 +42,13 @@
             $tipoMensagem = 'danger';
         }
 
-        $statusLabels = [
-            'pendente' => ['Aguardando aprovação', 'warning', 'bi-hourglass-split'],
-            'aprovado' => ['Confirmado', 'success', 'bi-check-circle'],
-            'cancelado' => ['Cancelado', 'danger', 'bi-x-circle'],
-            'recusado' => ['Recusado', 'danger', 'bi-slash-circle']
-        ];
+        $statusLabels = \app\helpers\Formatador::STATUS_AGENDAMENTO;
 
         $pendentes = array_values(array_filter($agendamentos, fn($item) => !empty($item['pode_alterar']) && $item['agendamento']->getStatus() === 'pendente'));
         $proximos = array_values(array_filter($agendamentos, fn($item) => !empty($item['pode_alterar']) && $item['agendamento']->getStatus() !== 'pendente'));
         $anteriores = array_values(array_filter($agendamentos, fn($item) => empty($item['pode_alterar'])));
         $pessoasConfirmadas = array_sum(array_map(fn($item) => (int) $item['agendamento']->getQuantidadePessoas(), $proximos));
 
-        $formatarData = function (?string $data): string {
-            $data = trim((string) $data);
-            $partes = explode('-', $data);
-
-            return count($partes) === 3 ? $partes[2] . '/' . $partes[1] . '/' . $partes[0] : ($data !== '' ? $data : '-');
-        };
         ?>
 
         <div class="cl-page-header">
@@ -209,7 +198,7 @@
                                     <tr>
                                         <td class="px-4 py-3"><?= htmlspecialchars($item['atividade_nome'] !== '' ? $item['atividade_nome'] : '-', ENT_QUOTES, 'UTF-8') ?></td>
                                         <td class="px-4 py-3"><?= htmlspecialchars($item['cliente_nome'] !== '' ? $item['cliente_nome'] : '-', ENT_QUOTES, 'UTF-8') ?></td>
-                                        <td class="px-4 py-3"><?= htmlspecialchars($formatarData($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></td>
+                                        <td class="px-4 py-3"><?= htmlspecialchars(\app\helpers\Formatador::data($sessao->getData()), ENT_QUOTES, 'UTF-8') ?></td>
                                         <td class="px-4 py-3"><?= htmlspecialchars(substr((string) ($sessao->getHora() ?? '-'), 0, 5), ENT_QUOTES, 'UTF-8') ?></td>
                                         <td class="px-4 py-3"><?= (int) $agendamento->getQuantidadePessoas() ?></td>
                                         <td class="px-4 py-3">
