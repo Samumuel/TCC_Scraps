@@ -86,6 +86,8 @@ class AdminController extends Controller
         if (!in_array($dados['status'], EmpresaService::STATUS_VALIDOS, true)) {
             $validador->obrigatorio('status', '', 'Selecione um status válido.');
         }
+        // Senha em branco mantém a atual; senha nova precisa seguir a regra
+        $validador->senha('senha', $_POST['senha'] ?? '', false);
 
         if ($validador->temErros()) {
             $this->view('admin/empresa_edit', ['empresa' => $dados, 'erros' => $validador->getErros()]);
@@ -142,7 +144,7 @@ class AdminController extends Controller
         $validador->email('email', $dados['email']);
         $validador->cnpj('cnpj', $dados['cnpj']);
         $validador->telefone('telefone', $dados['telefone']);
-        $validador->obrigatorio('senha', trim($senha), 'Informe uma senha.');
+        $validador->senha('senha', $senha);
 
         if ($validador->temErros()) {
             $this->view('admin/empresa_create', ['empresa' => $dados, 'erros' => $validador->getErros()]);
@@ -207,7 +209,7 @@ class AdminController extends Controller
         if ($dados['idade'] !== '' && (!ctype_digit($dados['idade']) || (int) $dados['idade'] > 120)) {
             $validador->obrigatorio('idade', '', 'Informe uma idade válida.');
         }
-        $validador->obrigatorio('senha', trim($senha), 'Informe uma senha.');
+        $validador->senha('senha', $senha);
 
         if ($validador->temErros()) {
             $this->view('admin/usuario_create', ['usuario' => $dados, 'erros' => $validador->getErros()]);
@@ -285,6 +287,9 @@ class AdminController extends Controller
         if ($dados['idade'] !== '' && (!ctype_digit($dados['idade']) || (int) $dados['idade'] > 120)) {
             $validador->obrigatorio('idade', '', 'Informe uma idade válida.');
         }
+
+        // Senha em branco mantém a atual; senha nova precisa seguir a regra
+        $validador->senha('senha', $_POST['senha'] ?? '', false);
 
         if ($validador->temErros()) {
             $this->view('admin/usuario_edit', ['usuario' => $dados, 'erros' => $validador->getErros()]);

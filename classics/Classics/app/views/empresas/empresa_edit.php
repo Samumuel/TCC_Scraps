@@ -71,13 +71,13 @@
                     <div class="mb-3">
                         <label for="senha" class="form-label">Senha <?= isset($empresa['ID_Empresa']) ? '(Preencha apenas se quiser alterar)' : '' ?></label>
                         <div class="input-group">
-                            <input type="password" class="form-control" id="senha" name="senha">
+                            <input type="password" class="form-control" id="senha" name="senha" autocomplete="new-password" data-validar-senha="opcional">
                             <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senha" aria-label="Mostrar senha">
                                 <i class="bi bi-eye"></i>
                             </button>
                         </div>
                         <?php if (isset($erros['senha'])): ?>
-                            <div class="text-danger small"><?= $erros['senha'] ?></div>
+                            <div class="text-danger small"><?= htmlspecialchars((string) $erros['senha'], ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -108,6 +108,7 @@
         });
     });
     </script>
+    <script src="<?= URL_BASE ?>/js/validacao-senha.js"></script>
 </body>
 
 </html>

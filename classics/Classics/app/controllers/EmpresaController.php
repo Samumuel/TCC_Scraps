@@ -31,7 +31,7 @@ class EmpresaController extends Controller {
         $cnpj = $_POST['cnpj'] ?? null;
         $localizacao = $_POST['localizacao'] ?? null;
         $telefone = $_POST['telefone'] ?? null;
-        $senha = $_POST['senha'];
+        $senha = (string) ($_POST['senha'] ?? '');
         $cadastroPublico = isset($_POST['cadastro_publico']);
 
         // Somente o cadastro público está disponível
@@ -44,6 +44,8 @@ class EmpresaController extends Controller {
         $validador->email('email', $email);
         $validador->cnpj('cnpj', $cnpj);
         $validador->telefone('telefone', $telefone);
+        $validador->senha('senha', $senha);
+        $validador->confirmacaoSenha('confirmar_senha', $senha, $_POST['confirmar_senha'] ?? '');
         if ($validador->temErros()) {
             $data['empresa'] = [
                 'nome' => $nome,
@@ -113,6 +115,8 @@ class EmpresaController extends Controller {
         $validador->email('email', $email);
         $validador->cnpj('cnpj', $_POST['cnpj'] ?? '');
         $validador->telefone('telefone', $_POST['telefone'] ?? '');
+        // Senha em branco mantém a atual; senha nova precisa seguir a regra
+        $validador->senha('senha', $_POST['senha'] ?? '', false);
         if ($validador->temErros()) {
             $data['empresa'] = $this->montarDadosEmpresaFormulario($empresaId);
             $data['erros'] = $validador->getErros();

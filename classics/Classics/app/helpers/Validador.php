@@ -113,6 +113,35 @@ class Validador {
     }
 
 
+    // Senha forte: pelo menos 8 caracteres, 1 letra maiúscula e 1 número.
+    // $obrigatoria = false nas edições, em que senha em branco mantém a atual.
+    public function senha(string $campo, mixed $valor, bool $obrigatoria = true): self
+    {
+        $senha = (string) ($valor ?? '');
+
+        if ($senha === '') {
+            if ($obrigatoria) {
+                $this->erros[$campo] = 'Informe uma senha.';
+            }
+            return $this;
+        }
+
+        if (mb_strlen($senha) < 8 || !preg_match('/[A-Z]/', $senha) || !preg_match('/\d/', $senha)) {
+            $this->erros[$campo] = 'A senha deve ter pelo menos 8 caracteres, com ao menos uma letra maiúscula e um número.';
+        }
+
+        return $this;
+    }
+
+    public function confirmacaoSenha(string $campo, mixed $senha, mixed $confirmacao): self
+    {
+        if ((string) ($senha ?? '') !== (string) ($confirmacao ?? '')) {
+            $this->erros[$campo] = 'As senhas não coincidem.';
+        }
+
+        return $this;
+    }
+
     public function temErros() : bool {
 
         return !empty($this->erros);

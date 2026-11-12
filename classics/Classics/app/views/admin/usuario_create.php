@@ -82,7 +82,7 @@
                     <div class="mb-4">
                         <label for="senha" class="form-label">Senha</label>
                         <div class="input-group">
-                            <input type="password" class="form-control" id="senha" name="senha" autocomplete="new-password"<?= isset($erros['senha']) ? ' aria-invalid="true"' : '' ?>>
+                            <input type="password" class="form-control" id="senha" name="senha" autocomplete="new-password" data-validar-senha<?= isset($erros['senha']) ? ' aria-invalid="true"' : '' ?>>
                             <button class="btn btn-outline-secondary" type="button" data-alternar-senha="senha" aria-label="Mostrar senha">
                                 <i class="bi bi-eye"></i>
                             </button>
@@ -106,6 +106,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= URL_BASE ?>/js/validacao-numerica.js"></script>
 <?php require __DIR__ . '/_alternar_senha.php'; ?>
+    <script src="<?= URL_BASE ?>/js/validacao-senha.js"></script>
 </body>
 
 </html>

@@ -841,3 +841,19 @@ h2, .h2 {
 .cl-resumo-reserva {
     background: var(--cl-muted);
 }
+
+/* Checklist da regra de senha */
+.cl-senha-regras {
+    list-style: none;
+    padding: 0;
+    margin: 0.4rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    font-size: 0.8rem;
+    color: var(--cl-muted-foreground);
+}
+
+.cl-senha-regras li.ok {
+    color: var(--cl-success);
+}

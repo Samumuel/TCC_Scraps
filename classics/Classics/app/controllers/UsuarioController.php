@@ -38,7 +38,7 @@ class UsuarioController extends Controller
         $cpf   = $_POST['cpf'] ?? '';
         $telefone = $_POST['telefone'] ?? '';
         $idade = $_POST['idade'] ?? '';
-        $senha  = $_POST['senha'];
+        $senha  = (string) ($_POST['senha'] ?? '');
         $cadastroPublico = isset($_POST['cadastro_publico']);
 
         // Somente o cadastro público está disponível; o perfil é sempre de cliente
@@ -53,6 +53,8 @@ class UsuarioController extends Controller
         $validador->email('email', $email);
         $validador->cpf('cpf', $cpf);
         $validador->telefone('telefone', $telefone);
+        $validador->senha('senha', $senha);
+        $validador->confirmacaoSenha('confirmar_senha', $senha, $_POST['confirmar_senha'] ?? '');
 
         if ($validador->temErros()) {
 
@@ -125,6 +127,8 @@ class UsuarioController extends Controller
         $validador->email('email', $email);
         $validador->cpf('cpf', $_POST['cpf'] ?? '');
         $validador->telefone('telefone', $_POST['telefone'] ?? '');
+        // Senha em branco mantém a atual; senha nova precisa seguir a regra
+        $validador->senha('senha', $_POST['senha'] ?? '', false);
         if ($validador->temErros()) {
             $data['usuario'] = $this->montarDadosUsuarioFormulario($id, $fotoAtual);
             $data['erros'] = $validador->getErros();
@@ -155,7 +159,7 @@ class UsuarioController extends Controller
             // O tipo de usuário não pode ser alterado pelo próprio usuário
             (string) ($usuarioAtual['tipo_usuario'] ?? 'user'),
             $fotoParaSalvar,
-            $_POST['senha']
+            (string) ($_POST['senha'] ?? '')
         );
 
         if ($this->service->updateUsuario($usuario)) {
